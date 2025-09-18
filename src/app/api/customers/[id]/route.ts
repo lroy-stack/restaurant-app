@@ -1,0 +1,206 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createServiceClient } from '@/utils/supabase/server'
+import { z } from 'zod'
+
+export const dynamic = 'force-dynamic'
+
+const updateCustomerSchema = z.object({
+  name: z.string().optional(),
+  phone: z.string().optional(),
+  preferences: z.string().optional(),
+  allergies: z.array(z.string()).optional(),
+  gdprConsent: z.boolean().optional(),
+  marketingConsent: z.boolean().optional()
+})
+
+// GET specific customer
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const supabase = await createServiceClient()
+
+    const { data: customer, error } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('id', (await params).id)
+      .single()
+
+    if (error) {
+      return NextResponse.json(
+        { success: false, error: 'Customer not found' },
+        { status: 404 }
+      )
+    }
+
+    // Get customer's reservations
+    const { data: reservations } = await supabase
+      .from('reservations')
+      .select('*')
+      .eq('customerEmail', customer.email)
+      .order('createdAt', { ascending: false })
+
+    // Calculate statistics
+    const totalReservations = reservations?.length || 0
+    const totalSpent = reservations?.reduce((sum, r) => {
+      if (r.status === 'COMPLETED') {
+        return sum + (r.partySize * 45) // Average €45 per person
+      }
+      return sum
+    }, 0) || 0
+    
+    const lastVisit = reservations?.[0]?.createdAt || null
+
+    const enrichedCustomer = {
+      ...customer,
+      totalReservations,
+      totalSpent,
+      lastVisit,
+      reservations: reservations || []
+    }
+
+    return NextResponse.json({
+      success: true,
+      customer: enrichedCustomer
+    })
+
+  } catch (error) {
+    console.error('GET customer error:', error)
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+// PATCH update customer
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const body = await request.json()
+    const data = updateCustomerSchema.parse(body)
+
+    const supabase = await createServiceClient()
+
+    const { data: updatedCustomer, error } = await supabase
+      .from('customers')
+      .update({
+        ...data,
+        updatedAt: new Date().toISOString()
+      })
+      .eq('id', (await params).id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Update customer error:', error)
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Failed to update customer',
+          details: error.message
+        },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      customer: updatedCustomer,
+      message: 'Customer updated successfully'
+    })
+
+  } catch (error) {
+    console.error('PATCH customer error:', error)
+    
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid data', details: error.errors },
+        { status: 400 }
+      )
+    }
+
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE customer (GDPR compliance)
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const supabase = await createServiceClient()
+
+    // Get customer first to check if exists
+    const { data: customer, error: fetchError } = await supabase
+      .from('customers')
+      .select('email')
+      .eq('id', (await params).id)
+      .single()
+
+    if (fetchError) {
+      return NextResponse.json(
+        { success: false, error: 'Customer not found' },
+        { status: 404 }
+      )
+    }
+
+    // For GDPR compliance, we should:
+    // 1. Keep reservation records but anonymize customer data
+    // 2. Delete the customer record
+    // 3. Log the deletion for audit purposes
+
+    // Anonymize reservations
+    const { error: reservationError } = await supabase
+      .from('reservations')
+      .update({
+        customerName: 'DELETED_USER',
+        customerEmail: 'deleted@gdpr.compliance',
+        customerPhone: null,
+        specialRequests: null,
+        updatedAt: new Date().toISOString()
+      })
+      .eq('customerEmail', customer.email)
+
+    if (reservationError) {
+      console.error('Error anonymizing reservations:', reservationError)
+    }
+
+    // Delete customer record
+    const { error: deleteError } = await supabase
+      .from('customers')
+      .delete()
+      .eq('id', (await params).id)
+
+    if (deleteError) {
+      console.error('Delete customer error:', deleteError)
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Failed to delete customer',
+          details: deleteError.message
+        },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Customer data deleted successfully (GDPR compliant)'
+    })
+
+  } catch (error) {
+    console.error('DELETE customer error:', error)
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

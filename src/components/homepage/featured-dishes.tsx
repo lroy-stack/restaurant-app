@@ -1,0 +1,285 @@
+'use client'
+
+import { useState } from 'react'
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
+import { useTopRecommendedItems } from "@/hooks/use-recommended-menu-items"
+import {
+  Star,
+  ArrowRight,
+  Eye,
+  ShoppingCart,
+  Heart
+} from "lucide-react"
+import { cn } from "@/lib/utils"
+import { ProductDetailModal } from "@/components/menu/ProductDetailModal"
+import { AllergenInfo } from '@/app/(admin)/dashboard/menu/components/ui/allergen-badges'
+import { useCart } from '@/hooks/useCart'
+
+interface FeaturedDishesProps {
+  maxItems?: number
+  showViewMore?: boolean
+  className?: string
+}
+
+/**
+ * Componente que reutiliza EXACTAMENTE las tarjetas del /menu
+ * Para mostrar platos destacados usando componentes centralizados
+ */
+export function FeaturedDishes({
+  maxItems = 4,
+  showViewMore = true,
+  className
+}: FeaturedDishesProps) {
+  const { topItems, loading, error } = useTopRecommendedItems(maxItems)
+  const [selectedItem, setSelectedItem] = useState<any>(null)
+  const [selectedItemCategory, setSelectedItemCategory] = useState<any>(null)
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  const { addToCart, isInCart, getCartItem } = useCart()
+
+  // Mapear item para carrito
+  const mapMenuItemToCartItem = (item: any) => {
+    return {
+      id: item.id,
+      type: 'dish' as const,
+      name: item.name,
+      nameEn: item.nameEn,
+      description: item.description,
+      descriptionEn: item.descriptionEn,
+      price: item.price,
+      image_url: item.imageUrl,
+      category: item.category?.name || 'Platos',
+      categoryEn: item.category?.nameEn || 'Dishes'
+    }
+  }
+
+  const handleAddToCart = (item: any) => {
+    const cartItem = mapMenuItemToCartItem(item)
+    addToCart(cartItem)
+  }
+
+  const openDetailModal = (item: any) => {
+    setSelectedItem(item)
+    setSelectedItemCategory(item.category || { name: 'Platos', nameEn: 'Dishes', type: 'FOOD' })
+    setShowDetailModal(true)
+  }
+
+  const closeDetailModal = () => {
+    setShowDetailModal(false)
+    setSelectedItem(null)
+    setSelectedItemCategory(null)
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <section className={cn("py-12 sm:py-16 bg-gradient-to-br from-muted/30 to-accent/5", className)}>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-12">
+            <div className="h-8 w-64 mx-auto mb-4 bg-muted animate-pulse rounded" />
+            <div className="h-4 w-96 mx-auto bg-muted animate-pulse rounded" />
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:gap-4 md:gap-6 lg:grid-cols-4">
+            {Array.from({ length: maxItems }).map((_, index) => (
+              <Card key={index} className="overflow-hidden">
+                <div className="aspect-square bg-muted animate-pulse" />
+                <CardContent className="p-2 sm:p-4">
+                  <div className="h-4 w-3/4 mb-2 bg-muted animate-pulse rounded" />
+                  <div className="h-3 w-full mb-2 bg-muted animate-pulse rounded" />
+                  <div className="h-3 w-2/3 mb-3 bg-muted animate-pulse rounded" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <section className={cn("py-12 sm:py-16 bg-gradient-to-br from-muted/30 to-accent/5", className)}>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h3 className="enigma-section-title text-destructive">Error al cargar platos destacados</h3>
+            <p className="text-muted-foreground mb-6">{error}</p>
+            <Link href="/menu">
+              <Button variant="outline">Ver Menú Completo</Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  // No hay platos
+  if (!topItems.length) {
+    return (
+      <section className={cn("py-12 sm:py-16 bg-gradient-to-br from-muted/30 to-accent/5", className)}>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h3 className="enigma-section-title">Platos de la Casa</h3>
+            <p className="text-muted-foreground mb-8">
+              Próximamente destacaremos nuestros platos más especiales
+            </p>
+            <Link href="/menu">
+              <Button>
+                Ver Menú Completo
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <>
+      <section className={cn("py-12 sm:py-16 bg-gradient-to-br from-muted/30 to-accent/5", className)}>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-8 sm:mb-12">
+            <h3 className="enigma-section-title">Platos de la Casa</h3>
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+              Nuestros platos más especiales, elaborados con ingredientes premium y técnicas de autor
+            </p>
+          </div>
+
+          {/* Grid de platos - USANDO EXACTAMENTE LAS TARJETAS DEL /MENU */}
+          <div className="grid grid-cols-2 gap-2 sm:gap-4 md:gap-6 lg:grid-cols-4">
+            {topItems.map((item) => {
+              const allergens = item.allergens || []
+
+              return (
+                <Card key={item.id} className="group h-full flex flex-col overflow-hidden hover:shadow-lg transition-all duration-200 border-border/50 hover:border-primary/20">
+                  {/* CARD HEADER - Status Badges & Price */}
+                  <div className="flex items-start justify-between p-2 sm:p-4 pb-2 sm:pb-3 border-b border-border/50">
+                    <div className="flex gap-1.5 flex-wrap">
+                      {item.isRecommended && (
+                        <div className="w-6 h-6 bg-accent/20 rounded-full flex items-center justify-center">
+                          <Heart className="w-3 h-3 text-accent fill-current" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-sm sm:text-lg font-bold text-primary">€{item.price}</div>
+                    </div>
+                  </div>
+
+                  {/* CARD BODY - Content */}
+                  <CardContent className="flex-1 flex flex-col p-2 sm:p-4 pt-2 sm:pt-3">
+                    {/* Item Name & Description */}
+                    <div className="mb-3 sm:mb-4">
+                      <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2 leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                        {item.name}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                        {item.description}
+                      </p>
+                    </div>
+
+                    {/* Allergen & Dietary Info - COMPONENTE REUTILIZADO */}
+                    <div className="mb-3 sm:mb-4">
+                      <AllergenInfo
+                        allergens={allergens}
+                        isVegetarian={item.isVegetarian}
+                        isVegan={item.isVegan}
+                        isGlutenFree={item.isGlutenFree}
+                        variant="default"
+                        size="sm"
+                        layout="inline"
+                        showNames={false}
+                        maxVisible={99}
+                        className="justify-start"
+                        language="es"
+                      />
+                    </div>
+
+                    {/* CARD FOOTER - Action Buttons EXACTOS DEL /MENU */}
+                    <div className="mt-auto pt-2 sm:pt-3 border-t border-border/30">
+                      {/* Cart Status */}
+                      {isInCart(item.id) && getCartItem(item.id) && (
+                        <div className="mb-1 sm:mb-2 text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
+                          <ShoppingCart className="h-3 w-3" />
+                          <span className="truncate">
+                            En carrito ({getCartItem(item.id)?.quantity})
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-1 sm:gap-2 justify-end">
+                        {/* View Details */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openDetailModal(item)}
+                          className="h-6 w-6 sm:h-8 sm:w-8 p-0"
+                          title="Ver Detalle"
+                        >
+                          <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                        </Button>
+
+                        {/* Add to Cart */}
+                        <Button
+                          onClick={() => handleAddToCart(item)}
+                          size="sm"
+                          className={cn(
+                            "relative h-6 w-6 sm:h-8 sm:w-8 p-0 transition-all duration-200",
+                            isInCart(item.id)
+                              ? "bg-green-50 border-green-200 hover:bg-green-100 text-green-700 border"
+                              : "bg-primary hover:bg-primary/90 text-primary-foreground"
+                          )}
+                          title={isInCart(item.id) ? 'Añadir Más' : 'Al Carrito'}
+                        >
+                          <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
+
+                          {/* Quantity badge */}
+                          {isInCart(item.id) && getCartItem(item.id) && getCartItem(item.id)!.quantity > 0 && (
+                            <Badge
+                              className="absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 h-3 w-3 sm:h-4 sm:w-4 p-0 text-xs flex items-center justify-center bg-red-500 hover:bg-red-500 text-white border-0 rounded-full"
+                            >
+                              {getCartItem(item.id)?.quantity}
+                            </Badge>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+
+          {/* Link al menú completo */}
+          {showViewMore && (
+            <div className="text-center mt-8">
+              <Link href="/menu">
+                <Button size="lg" className="bg-primary hover:bg-primary/90 px-8">
+                  Ver Menú Completo
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* MODAL REUTILIZADO DEL /MENU */}
+      <ProductDetailModal
+        isOpen={showDetailModal}
+        onClose={closeDetailModal}
+        item={selectedItem}
+        category={selectedItemCategory}
+        language="es"
+        onAddToCart={handleAddToCart}
+        isInCart={isInCart}
+        getCartItem={getCartItem}
+      />
+    </>
+  )
+}

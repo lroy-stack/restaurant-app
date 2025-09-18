@@ -1,0 +1,10 @@
+# Enigma Cocina Con Alma - Panel de Administración PRIVADO
+User-agent: *
+Disallow: /
+
+# Específicamente bloquear todas las rutas admin
+Disallow: /auth/
+Disallow: /dashboard/
+Disallow: /api/
+
+# No sitemap - panel privado

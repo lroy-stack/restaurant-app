@@ -1,0 +1,695 @@
+[
+  {
+    "session_id": "fed4e761-67b9-4d67-b4d6-9ffa38cba31f",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/fed4e761-67b9-4d67-b4d6-9ffa38cba31f.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "fed4e761-67b9-4d67-b4d6-9ffa38cba31f",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/fed4e761-67b9-4d67-b4d6-9ffa38cba31f.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Update"
+  },
+  {
+    "session_id": "fed4e761-67b9-4d67-b4d6-9ffa38cba31f",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/fed4e761-67b9-4d67-b4d6-9ffa38cba31f.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "fed4e761-67b9-4d67-b4d6-9ffa38cba31f",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/fed4e761-67b9-4d67-b4d6-9ffa38cba31f.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "0773a53c-8bc3-46fa-814c-699d6e0ec883",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/0773a53c-8bc3-46fa-814c-699d6e0ec883.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "0773a53c-8bc3-46fa-814c-699d6e0ec883",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/0773a53c-8bc3-46fa-814c-699d6e0ec883.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "0773a53c-8bc3-46fa-814c-699d6e0ec883",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/0773a53c-8bc3-46fa-814c-699d6e0ec883.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "0773a53c-8bc3-46fa-814c-699d6e0ec883",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/0773a53c-8bc3-46fa-814c-699d6e0ec883.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "0773a53c-8bc3-46fa-814c-699d6e0ec883",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/0773a53c-8bc3-46fa-814c-699d6e0ec883.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "0773a53c-8bc3-46fa-814c-699d6e0ec883",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/0773a53c-8bc3-46fa-814c-699d6e0ec883.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "0773a53c-8bc3-46fa-814c-699d6e0ec883",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/0773a53c-8bc3-46fa-814c-699d6e0ec883.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "0773a53c-8bc3-46fa-814c-699d6e0ec883",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/0773a53c-8bc3-46fa-814c-699d6e0ec883.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "0773a53c-8bc3-46fa-814c-699d6e0ec883",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/0773a53c-8bc3-46fa-814c-699d6e0ec883.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "0773a53c-8bc3-46fa-814c-699d6e0ec883",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/0773a53c-8bc3-46fa-814c-699d6e0ec883.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "25c9574f-9128-4eed-aa40-afc5ae77fd53",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/25c9574f-9128-4eed-aa40-afc5ae77fd53.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "25c9574f-9128-4eed-aa40-afc5ae77fd53",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/25c9574f-9128-4eed-aa40-afc5ae77fd53.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "25c9574f-9128-4eed-aa40-afc5ae77fd53",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/25c9574f-9128-4eed-aa40-afc5ae77fd53.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "25c9574f-9128-4eed-aa40-afc5ae77fd53",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/25c9574f-9128-4eed-aa40-afc5ae77fd53.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "25c9574f-9128-4eed-aa40-afc5ae77fd53",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/25c9574f-9128-4eed-aa40-afc5ae77fd53.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "25c9574f-9128-4eed-aa40-afc5ae77fd53",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/25c9574f-9128-4eed-aa40-afc5ae77fd53.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "25c9574f-9128-4eed-aa40-afc5ae77fd53",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/25c9574f-9128-4eed-aa40-afc5ae77fd53.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "25c9574f-9128-4eed-aa40-afc5ae77fd53",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/25c9574f-9128-4eed-aa40-afc5ae77fd53.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "b4919914-9e12-41d3-a51a-6f06c5167677",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/b4919914-9e12-41d3-a51a-6f06c5167677.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "b4919914-9e12-41d3-a51a-6f06c5167677",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/b4919914-9e12-41d3-a51a-6f06c5167677.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "b4919914-9e12-41d3-a51a-6f06c5167677",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/b4919914-9e12-41d3-a51a-6f06c5167677.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Fetch"
+  },
+  {
+    "session_id": "b4919914-9e12-41d3-a51a-6f06c5167677",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/b4919914-9e12-41d3-a51a-6f06c5167677.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use archon - get_project (MCP)"
+  },
+  {
+    "session_id": "b4919914-9e12-41d3-a51a-6f06c5167677",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/b4919914-9e12-41d3-a51a-6f06c5167677.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "b4919914-9e12-41d3-a51a-6f06c5167677",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/b4919914-9e12-41d3-a51a-6f06c5167677.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "b4919914-9e12-41d3-a51a-6f06c5167677",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/b4919914-9e12-41d3-a51a-6f06c5167677.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Web Search"
+  },
+  {
+    "session_id": "b4919914-9e12-41d3-a51a-6f06c5167677",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/b4919914-9e12-41d3-a51a-6f06c5167677.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "e4e442ae-6859-45c5-b704-cb0c6753ac81",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/e4e442ae-6859-45c5-b704-cb0c6753ac81.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "e4e442ae-6859-45c5-b704-cb0c6753ac81",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/e4e442ae-6859-45c5-b704-cb0c6753ac81.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "e4e442ae-6859-45c5-b704-cb0c6753ac81",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/e4e442ae-6859-45c5-b704-cb0c6753ac81.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "e4e442ae-6859-45c5-b704-cb0c6753ac81",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/e4e442ae-6859-45c5-b704-cb0c6753ac81.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "e4e442ae-6859-45c5-b704-cb0c6753ac81",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/e4e442ae-6859-45c5-b704-cb0c6753ac81.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "ed5e857a-650b-4fa9-a9d6-2f9bb6106f23",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/ed5e857a-650b-4fa9-a9d6-2f9bb6106f23.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "29d57e98-1613-47e9-a2cf-3bc08051e143",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/29d57e98-1613-47e9-a2cf-3bc08051e143.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "29d57e98-1613-47e9-a2cf-3bc08051e143",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/29d57e98-1613-47e9-a2cf-3bc08051e143.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "29d57e98-1613-47e9-a2cf-3bc08051e143",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/29d57e98-1613-47e9-a2cf-3bc08051e143.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "29d57e98-1613-47e9-a2cf-3bc08051e143",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/29d57e98-1613-47e9-a2cf-3bc08051e143.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "29d57e98-1613-47e9-a2cf-3bc08051e143",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/29d57e98-1613-47e9-a2cf-3bc08051e143.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "29d57e98-1613-47e9-a2cf-3bc08051e143",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/29d57e98-1613-47e9-a2cf-3bc08051e143.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "29d57e98-1613-47e9-a2cf-3bc08051e143",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/29d57e98-1613-47e9-a2cf-3bc08051e143.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "29d57e98-1613-47e9-a2cf-3bc08051e143",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/29d57e98-1613-47e9-a2cf-3bc08051e143.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "29d57e98-1613-47e9-a2cf-3bc08051e143",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/29d57e98-1613-47e9-a2cf-3bc08051e143.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "29d57e98-1613-47e9-a2cf-3bc08051e143",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/29d57e98-1613-47e9-a2cf-3bc08051e143.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "29d57e98-1613-47e9-a2cf-3bc08051e143",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/29d57e98-1613-47e9-a2cf-3bc08051e143.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "29d57e98-1613-47e9-a2cf-3bc08051e143",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/29d57e98-1613-47e9-a2cf-3bc08051e143.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "29d57e98-1613-47e9-a2cf-3bc08051e143",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/29d57e98-1613-47e9-a2cf-3bc08051e143.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "29d57e98-1613-47e9-a2cf-3bc08051e143",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/29d57e98-1613-47e9-a2cf-3bc08051e143.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "29d57e98-1613-47e9-a2cf-3bc08051e143",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/29d57e98-1613-47e9-a2cf-3bc08051e143.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "6c623e55-7f5d-4a12-8527-eaa8de486b3d",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/6c623e55-7f5d-4a12-8527-eaa8de486b3d.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "6c623e55-7f5d-4a12-8527-eaa8de486b3d",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/6c623e55-7f5d-4a12-8527-eaa8de486b3d.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "84e6b9e5-d54d-4c7e-a40f-a215f6017dd5",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/84e6b9e5-d54d-4c7e-a40f-a215f6017dd5.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Update"
+  },
+  {
+    "session_id": "84e6b9e5-d54d-4c7e-a40f-a215f6017dd5",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/84e6b9e5-d54d-4c7e-a40f-a215f6017dd5.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "84e6b9e5-d54d-4c7e-a40f-a215f6017dd5",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/84e6b9e5-d54d-4c7e-a40f-a215f6017dd5.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "84e6b9e5-d54d-4c7e-a40f-a215f6017dd5",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/84e6b9e5-d54d-4c7e-a40f-a215f6017dd5.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "84e6b9e5-d54d-4c7e-a40f-a215f6017dd5",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/84e6b9e5-d54d-4c7e-a40f-a215f6017dd5.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "84e6b9e5-d54d-4c7e-a40f-a215f6017dd5",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/84e6b9e5-d54d-4c7e-a40f-a215f6017dd5.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "21854dfa-72c6-49d5-b837-f61f3c2047d3",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/21854dfa-72c6-49d5-b837-f61f3c2047d3.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "21854dfa-72c6-49d5-b837-f61f3c2047d3",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/21854dfa-72c6-49d5-b837-f61f3c2047d3.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "21854dfa-72c6-49d5-b837-f61f3c2047d3",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/21854dfa-72c6-49d5-b837-f61f3c2047d3.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "21854dfa-72c6-49d5-b837-f61f3c2047d3",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/21854dfa-72c6-49d5-b837-f61f3c2047d3.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "21854dfa-72c6-49d5-b837-f61f3c2047d3",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/21854dfa-72c6-49d5-b837-f61f3c2047d3.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "21854dfa-72c6-49d5-b837-f61f3c2047d3",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/21854dfa-72c6-49d5-b837-f61f3c2047d3.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "21854dfa-72c6-49d5-b837-f61f3c2047d3",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/21854dfa-72c6-49d5-b837-f61f3c2047d3.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "06c652dd-bfc8-4688-b9aa-a26e6e113411",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/06c652dd-bfc8-4688-b9aa-a26e6e113411.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "06c652dd-bfc8-4688-b9aa-a26e6e113411",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/06c652dd-bfc8-4688-b9aa-a26e6e113411.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "06c652dd-bfc8-4688-b9aa-a26e6e113411",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/06c652dd-bfc8-4688-b9aa-a26e6e113411.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "06c652dd-bfc8-4688-b9aa-a26e6e113411",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/06c652dd-bfc8-4688-b9aa-a26e6e113411.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "06c652dd-bfc8-4688-b9aa-a26e6e113411",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/06c652dd-bfc8-4688-b9aa-a26e6e113411.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "2ae502e9-d7df-465f-a901-d6aa32f8015a",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/2ae502e9-d7df-465f-a901-d6aa32f8015a.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "2ae502e9-d7df-465f-a901-d6aa32f8015a",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/2ae502e9-d7df-465f-a901-d6aa32f8015a.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "2ae502e9-d7df-465f-a901-d6aa32f8015a",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/2ae502e9-d7df-465f-a901-d6aa32f8015a.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "2ae502e9-d7df-465f-a901-d6aa32f8015a",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/2ae502e9-d7df-465f-a901-d6aa32f8015a.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "c8d30742-a727-459c-806d-81d46606253a",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/c8d30742-a727-459c-806d-81d46606253a.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "c8d30742-a727-459c-806d-81d46606253a",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/c8d30742-a727-459c-806d-81d46606253a.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "c8d30742-a727-459c-806d-81d46606253a",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/c8d30742-a727-459c-806d-81d46606253a.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "c8d30742-a727-459c-806d-81d46606253a",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/c8d30742-a727-459c-806d-81d46606253a.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "28894c3c-ca83-4365-bb05-2adb17a17674",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/28894c3c-ca83-4365-bb05-2adb17a17674.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "28894c3c-ca83-4365-bb05-2adb17a17674",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/28894c3c-ca83-4365-bb05-2adb17a17674.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "28894c3c-ca83-4365-bb05-2adb17a17674",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/28894c3c-ca83-4365-bb05-2adb17a17674.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "28894c3c-ca83-4365-bb05-2adb17a17674",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/28894c3c-ca83-4365-bb05-2adb17a17674.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "a44a146b-338d-456e-adb1-0bbc4d2f96ca",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/a44a146b-338d-456e-adb1-0bbc4d2f96ca.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "a44a146b-338d-456e-adb1-0bbc4d2f96ca",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/a44a146b-338d-456e-adb1-0bbc4d2f96ca.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "a44a146b-338d-456e-adb1-0bbc4d2f96ca",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/a44a146b-338d-456e-adb1-0bbc4d2f96ca.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "a44a146b-338d-456e-adb1-0bbc4d2f96ca",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/a44a146b-338d-456e-adb1-0bbc4d2f96ca.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "5febfe35-1e30-41eb-b1e0-417d41d564fc",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/5febfe35-1e30-41eb-b1e0-417d41d564fc.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "7537f35a-45db-4b5e-b4d2-8e6f8d056681",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/7537f35a-45db-4b5e-b4d2-8e6f8d056681.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "7537f35a-45db-4b5e-b4d2-8e6f8d056681",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/7537f35a-45db-4b5e-b4d2-8e6f8d056681.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "7537f35a-45db-4b5e-b4d2-8e6f8d056681",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/7537f35a-45db-4b5e-b4d2-8e6f8d056681.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "3663f935-5a9d-400c-bf78-d00c452cbcab",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/3663f935-5a9d-400c-bf78-d00c452cbcab.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "3663f935-5a9d-400c-bf78-d00c452cbcab",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/3663f935-5a9d-400c-bf78-d00c452cbcab.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "3663f935-5a9d-400c-bf78-d00c452cbcab",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/3663f935-5a9d-400c-bf78-d00c452cbcab.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "24133cc4-b185-4c5f-91ea-2a775628023e",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/24133cc4-b185-4c5f-91ea-2a775628023e.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "44eb1785-cd74-49cf-8450-51a92e1f283d",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/44eb1785-cd74-49cf-8450-51a92e1f283d.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "44eb1785-cd74-49cf-8450-51a92e1f283d",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/44eb1785-cd74-49cf-8450-51a92e1f283d.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Fetch"
+  },
+  {
+    "session_id": "44eb1785-cd74-49cf-8450-51a92e1f283d",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/44eb1785-cd74-49cf-8450-51a92e1f283d.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "44eb1785-cd74-49cf-8450-51a92e1f283d",
+    "transcript_path": "/Users/lr0y/.claude/projects/-Users-lr0y-local-ai-packaged-enigma-next/44eb1785-cd74-49cf-8450-51a92e1f283d.jsonl",
+    "cwd": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  }
+]

@@ -1,0 +1,75 @@
+import { ReactNode } from 'react'
+import { Metadata } from 'next'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+
+export const metadata: Metadata = {
+  title: {
+    template: '%s | Admin - Enigma Cocina Con Alma',
+    default: 'Admin - Enigma Cocina Con Alma'
+  },
+  description: 'Panel de administración del restaurante Enigma Cocina Con Alma',
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
+
+interface AdminRouteLayoutProps {
+  children: ReactNode
+}
+
+/**
+ * Admin Route Group Layout
+ * 
+ * Este layout se aplica a todas las páginas administrativas dentro del Route Group (admin)
+ * Incluye protección Supabase y estructura básica de administración
+ * 
+ * Protección: Solo usuarios autenticados en Supabase pueden acceder
+ * 
+ * Páginas afectadas:
+ * - /dashboard/*
+ * - Cualquier nueva ruta admin que se añada
+ */
+export default async function AdminRouteLayout({ children }: AdminRouteLayoutProps) {
+  // Server-side Supabase auth protection at layout level
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+      }
+    }
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    redirect('/almaenigma')
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Admin-specific header/navigation can be added here */}
+      <main>
+        {children}
+      </main>
+    </div>
+  )
+}

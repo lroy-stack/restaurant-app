@@ -1,0 +1,693 @@
+// prisma/schema.prisma - Enigma Cocina Con Alma Complete Database Schema
+// ALL TABLES in "restaurante" schema namespace as required by PRP
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["restaurante"]
+}
+
+// ============================================
+// AUTHENTICATION (NextAuth.js v5 Required Tables)
+// CRITICAL: ALL tables must be in "restaurante" schema
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          UserRole  @default(CUSTOMER)
+  isActive      Boolean   @default(true)
+  
+  // VIP Customer Intelligence (Badezeit patterns)
+  isVip                Boolean   @default(false)
+  totalVisits          Int       @default(0)
+  totalSpent           Decimal   @default(0) @db.Decimal(10,2)
+  averagePartySize     Int       @default(2)
+  lastVisit            DateTime?
+  
+  // Customer Preferences
+  preferredLanguage    Language  @default(ES)
+  preferredLocation    TableLocation?
+  dietaryRestrictions  String[]  @default([])
+  favoriteDisheIds     String[]  @default([])
+  
+  // GDPR Compliance
+  emailConsent           Boolean   @default(false)
+  smsConsent             Boolean   @default(false)
+  marketingConsent       Boolean   @default(false)
+  dataProcessingConsent  Boolean   @default(true)
+  consentDate            DateTime?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  accounts               Account[]
+  sessions               Session[]
+  orders                 Order[]
+  customerNotesCreated   CustomerNote[]
+  
+  @@map("users")
+  @@schema("restaurante")
+}
+
+model Customer {
+  id                     String                  @id @default(cuid())
+  firstName              String
+  lastName               String
+  email                  String                  @unique
+  phone                  String?
+  language               Language                @default(ES)
+  dateOfBirth            DateTime?
+  preferredTime          String?
+  preferredLocation      TableLocation?
+  dietaryRestrictions    String[]  @default([])
+  allergies              String?
+  favoriteDisheIds       String[]  @default([])
+  emailConsent           Boolean                 @default(false)
+  smsConsent             Boolean                 @default(false)
+  marketingConsent       Boolean                 @default(false)
+  dataProcessingConsent  Boolean                 @default(true)
+  consentDate            DateTime?
+  totalVisits            Int                     @default(0)
+  totalSpent             Decimal                 @default(0) @db.Decimal(10,2)
+  averagePartySize       Int                     @default(2)
+  lastVisit              DateTime?
+  isVip                  Boolean                 @default(false)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  notes                  CustomerNote[]
+  newsletterSubscription NewsletterSubscription?
+  reservations           Reservation[]
+  gdprConsents           GdprConsent[]
+
+  @@map("customers")
+  @@schema("restaurante")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+  @@schema("restaurante")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("sessions")
+  @@schema("restaurante")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+  @@schema("restaurante")
+}
+
+// ============================================
+// RESTAURANT CONFIGURATION
+// ============================================
+
+model Restaurant {
+  id      String @id @default(cuid())
+  name    String @default("Enigma Cocina Con Alma")
+  address String @default("Carrer Justicia 6A, 03710 Calpe")
+  phone   String @default("+34 672 79 60 06")
+  email   String @default("info@enigmaconalma.com")
+  
+  // Multi-language support
+  nameEn      String? @default("Enigma Kitchen With Soul")
+  nameDe      String? @default("Enigma Küche Mit Seele")
+  addressEn   String? @default("Carrer Justicia 6A, 03710 Calpe, Spain")
+  addressDe   String? @default("Carrer Justicia 6A, 03710 Calpe, Spanien")
+  
+  // Business configuration
+  timezone    String @default("Europe/Madrid")
+  currency    String @default("EUR")
+  
+  // Relations
+  tables        Table[]
+  reservations  Reservation[]
+  menuItems     MenuItem[]
+  categories    MenuCategory[]
+  orders        Order[]
+  businessHours BusinessHours[]
+  floorPlanElements FloorPlanElement[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("restaurants")
+  @@schema("restaurante")
+}
+
+// ============================================
+// TABLES & LAYOUT
+// ============================================
+
+model Table {
+  id       String        @id @default(cuid())
+  number   String        @unique
+  capacity Int
+  location TableLocation
+  qrCode   String        @unique
+  isActive Boolean       @default(true)
+  
+  // Relations
+  restaurant   Restaurant    @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  reservations Reservation[]
+  orders       Order[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("tables")
+  @@schema("restaurante")
+}
+
+enum TableLocation {
+  TERRACE
+  INTERIOR
+  BAR
+  TERRACE_CAMPANARI
+  SALA_VIP
+  SALA_PRINCIPAL
+  TERRACE_JUSTICIA
+  
+  @@schema("restaurante")
+}
+
+// ============================================
+// RESERVATIONS
+// ============================================
+
+model Reservation {
+  id              String            @id @default(cuid())
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  partySize       Int
+  date            DateTime
+  time            DateTime
+  status          ReservationStatus
+  specialRequests String?
+  
+  // Enhanced reservation features
+  occasion           String?          // Birthday, Anniversary, Business, etc.
+  dietaryNotes       String?          // Special dietary requirements
+  preferredLanguage  Language         @default(ES)
+  
+  // Pre-order functionality
+  hasPreOrder     Boolean           @default(false)
+  preOrderItems   ReservationItem[]
+  
+  // Confirmation and communication
+  isConfirmed        Boolean           @default(false)
+  confirmationSentAt DateTime?
+  reminderSentAt     DateTime?
+  checkedInAt        DateTime?
+  completedAt        DateTime?
+  cancelledAt        DateTime?
+  cancellationReason String?
+  
+  // Source tracking
+  source          ReservationSource @default(WEBSITE)
+  
+  // Relations
+  customer     Customer   @relation(fields: [customerEmail], references: [email])
+  table        Table?     @relation(fields: [tableId], references: [id])
+  tableId      String?
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("reservations")
+  @@schema("restaurante")
+}
+
+enum ReservationSource {
+  WEBSITE
+  PHONE
+  WALK_IN
+  WHATSAPP
+  EMAIL
+  SOCIAL_MEDIA
+  
+  @@schema("restaurante")
+}
+
+model ReservationItem {
+  id            String @id @default(cuid())
+  quantity      Int
+  notes         String?
+  
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+  reservationId String
+  menuItem      MenuItem    @relation(fields: [menuItemId], references: [id])
+  menuItemId    String
+  
+  @@map("reservation_items")
+  @@schema("restaurante")
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  SEATED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  
+  @@schema("restaurante")
+}
+
+// ============================================
+// MENU SYSTEM (46 platos, 46 vinos, 91 bebidas)
+// ============================================
+
+model MenuCategory {
+  id          String       @id @default(cuid())
+  name        String
+  nameEn      String?
+  nameDe      String?      // German translation support
+  description String?
+  descriptionEn String?
+  descriptionDe String?
+  type        CategoryType
+  order       Int          @default(0)
+  isActive    Boolean      @default(true)
+  
+  items        MenuItem[]
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("menu_categories")
+  @@schema("restaurante")
+}
+
+enum CategoryType {
+  FOOD
+  WINE
+  BEVERAGE
+  
+  @@schema("restaurante")
+}
+
+model MenuItem {
+  id          String  @id @default(cuid())
+  name        String
+  nameEn      String?
+  nameDe      String?  // German translation support
+  description String
+  descriptionEn String?
+  descriptionDe String?
+  price       Decimal @db.Decimal(8,2)
+  isAvailable Boolean @default(true)
+  imageUrl    String?
+  
+  // Dietary flags
+  isVegetarian Boolean @default(false)
+  isVegan      Boolean @default(false)
+  isGlutenFree Boolean @default(false)
+  isLactoseFree Boolean @default(false)
+  
+  // Seasonal and signature dishes
+  isSignature        Boolean   @default(false)
+  isSeasonalSpecial  Boolean   @default(false)
+  availableFrom      DateTime?
+  availableTo        DateTime?
+  
+  // EU-14 Allergen compliance (expanded)
+  containsGluten    Boolean @default(false)
+  containsMilk      Boolean @default(false)
+  containsEggs      Boolean @default(false)
+  containsNuts      Boolean @default(false)
+  containsFish      Boolean @default(false)
+  containsShellfish Boolean @default(false)
+  containsSoy       Boolean @default(false)
+  containsCelery    Boolean @default(false)
+  containsMustard   Boolean @default(false)
+  containsSesame    Boolean @default(false)
+  containsSulfites  Boolean @default(false)
+  containsLupin     Boolean @default(false)
+  containsMollusks  Boolean @default(false)
+  containsPeanuts   Boolean @default(false)
+  
+  category   MenuCategory @relation(fields: [categoryId], references: [id])
+  categoryId String
+  
+  // Relations
+  restaurant       Restaurant        @relation(fields: [restaurantId], references: [id])
+  restaurantId     String
+  allergens        MenuItemAllergen[]
+  orderItems       OrderItem[]
+  reservationItems ReservationItem[]
+  winePairings     WinePairing[]     @relation("FoodItem")
+  foodPairings     WinePairing[]     @relation("WineItem")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("menu_items")
+  @@schema("restaurante")
+}
+
+// ============================================
+// ALLERGEN MANAGEMENT (EU-14 Compliance)
+// ============================================
+
+model Allergen {
+  id     String @id @default(cuid())
+  name   String @unique
+  nameEn String @unique
+  
+  menuItems MenuItemAllergen[]
+  
+  @@map("allergens")
+  @@schema("restaurante")
+}
+
+model MenuItemAllergen {
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItemId String
+  allergen   Allergen @relation(fields: [allergenId], references: [id])
+  allergenId String
+  
+  @@id([menuItemId, allergenId])
+  @@map("menu_item_allergens")
+  @@schema("restaurante")
+}
+
+// ============================================
+// WINE PAIRING SYSTEM
+// ============================================
+
+model WinePairing {
+  id          String @id @default(cuid())
+  description String?
+  
+  foodItem   MenuItem @relation("FoodItem", fields: [foodItemId], references: [id])
+  foodItemId String
+  wineItem   MenuItem @relation("WineItem", fields: [wineItemId], references: [id])
+  wineItemId String
+  
+  @@unique([foodItemId, wineItemId])
+  @@map("wine_pairings")
+  @@schema("restaurante")
+}
+
+// ============================================
+// ORDER SYSTEM (QR Commands from tables)
+// ============================================
+
+model Order {
+  id           String      @id @default(cuid())
+  orderNumber  String      @unique
+  totalAmount  Decimal     @db.Decimal(10,2)
+  status       OrderStatus
+  notes        String?
+  
+  // Timing
+  orderedAt   DateTime
+  confirmedAt DateTime?
+  readyAt     DateTime?
+  servedAt    DateTime?
+  
+  table        Table      @relation(fields: [tableId], references: [id])
+  tableId      String
+  customer     User?      @relation(fields: [customerId], references: [id])
+  customerId   String?
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  
+  items OrderItem[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("orders")
+  @@schema("restaurante")
+}
+
+model OrderItem {
+  id         String          @id @default(cuid())
+  quantity   Int
+  unitPrice  Decimal         @db.Decimal(8,2)
+  totalPrice Decimal         @db.Decimal(10,2)
+  status     OrderItemStatus
+  notes      String?
+  
+  order      Order    @relation(fields: [orderId], references: [id])
+  orderId    String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItemId String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("order_items")
+  @@schema("restaurante")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  SERVED
+  CANCELLED
+  
+  @@schema("restaurante")
+}
+
+enum OrderItemStatus {
+  PENDING
+  PREPARING
+  READY
+  SERVED
+  CANCELLED
+  
+  @@schema("restaurante")
+}
+
+// ============================================
+// USER ROLES
+// ============================================
+
+enum UserRole {
+  ADMIN     // Full platform control
+  MANAGER   // Daily operations + menu management  
+  STAFF     // Reservations and orders only
+  CUSTOMER  // Public user
+  
+  @@schema("restaurante")
+}
+
+// ============================================
+// MULTI-LANGUAGE SUPPORT
+// ============================================
+
+enum Language {
+  ES  // Spanish (primary)
+  EN  // English (tourist market)
+  DE  // German (expansion ready)
+  
+  @@schema("restaurante")
+}
+
+// ============================================
+// CUSTOMER INTELLIGENCE & CRM
+// ============================================
+
+model CustomerNote {
+  id          String   @id @default(cuid())
+  customerId  String
+  note        String
+  isImportant Boolean  @default(false)
+  createdBy   String   // Staff member who created the note
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdByUser User   @relation(fields: [createdBy], references: [id])
+  
+  @@map("customer_notes")
+  @@schema("restaurante")
+}
+
+model NewsletterSubscription {
+  id             String    @id @default(cuid())
+  customerId     String    @unique
+  isActive       Boolean   @default(true)
+  subscribedAt   DateTime  @default(now())
+  unsubscribedAt DateTime?
+  
+  customer       Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  @@map("newsletter_subscriptions")
+  @@schema("restaurante")
+}
+
+// ============================================
+// GDPR COMPLIANCE & AUDIT TRAIL
+// ============================================
+
+model GdprConsent {
+  id            String      @id @default(cuid())
+  customerId    String
+  consentType   ConsentType
+  granted       Boolean
+  ipAddress     String?
+  userAgent     String?
+  consentDate   DateTime    @default(now())
+  withdrawnAt   DateTime?
+  
+  customer      Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  @@map("gdpr_consents")
+  @@schema("restaurante")
+}
+
+enum ConsentType {
+  EMAIL_MARKETING
+  SMS_MARKETING
+  DATA_PROCESSING
+  ANALYTICS
+  COOKIES
+  
+  @@schema("restaurante")
+}
+
+// ============================================
+// ANALYTICS & BUSINESS INTELLIGENCE
+// ============================================
+
+model AnalyticsEvent {
+  id        String             @id @default(cuid())
+  eventType AnalyticsEventType
+  eventData Json
+  sessionId String?
+  userId    String?
+  ipAddress String?
+  userAgent String?
+  timestamp DateTime           @default(now())
+  
+  @@map("analytics_events")
+  @@schema("restaurante")
+}
+
+enum AnalyticsEventType {
+  PAGE_VIEW
+  RESERVATION_STARTED
+  RESERVATION_COMPLETED
+  RESERVATION_CANCELLED
+  MENU_VIEWED
+  QR_CODE_SCANNED
+  ORDER_PLACED
+  ORDER_COMPLETED
+  EMAIL_OPENED
+  PHONE_CLICKED
+  VIP_CUSTOMER_IDENTIFIED
+  CUSTOMER_RETURNED
+  
+  @@schema("restaurante")
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  category    String   @default("general")
+  isPublic    Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?  // Staff member who updated the setting
+  
+  @@map("system_settings")
+  @@schema("restaurante")
+}
+
+model BusinessHours {
+  id          String    @id @default(cuid())
+  dayOfWeek   Int       // 0 = Sunday, 1 = Monday, etc.
+  isOpen      Boolean   @default(true)
+  openTime    String?   // "18:00" format
+  closeTime   String?   // "24:00" format
+  isHoliday   Boolean   @default(false)
+  holidayName String?
+  date        DateTime? // For specific holiday dates
+  restaurantId String
+
+  // QR System Configuration (day_of_week = 7 for global settings)
+  qrOrderingEnabled Boolean? @default(false)
+  qrOnlyMenu        Boolean? @default(true)
+
+  restaurant  Restaurant @relation(fields: [restaurantId], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("business_hours")
+  @@schema("restaurante")
+}
+
+// ============================================
+// FLOOR PLAN SYSTEM (React Flow Integration)
+// ============================================
+
+model FloorPlanElement {
+  id          String   @id @default(uuid())
+  restaurantId String
+  elementType String   @db.VarChar(50)
+  positionX   Decimal  @map("position_x")
+  positionY   Decimal  @map("position_y")
+  width       Decimal
+  height      Decimal
+  rotation    Decimal  @default(0)
+  zIndex      Int      @default(0) @map("z_index")
+  styleData   Json?    @map("style_data")
+  elementData Json?    @map("element_data")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  restaurant  Restaurant @relation(fields: [restaurantId], references: [id])
+
+  @@map("floor_plan_elements")
+  @@schema("restaurante")
+}

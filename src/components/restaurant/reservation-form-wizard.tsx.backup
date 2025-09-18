@@ -1,0 +1,693 @@
+"use client"
+
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
+import { CalendarDays, Clock, Users, MapPin, ChefHat, ArrowLeft, ArrowRight, CheckCircle } from "lucide-react"
+import { toast } from "sonner"
+import type { TableLocation, Language } from "@prisma/client"
+
+// Enhanced validation schema with 6h minimum rule
+const reservationSchema = z.object({
+  // Step 1: Basic Info - FIXED: Separate firstName/lastName
+  firstName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
+  lastName: z.string().min(2, "El apellido debe tener al menos 2 caracteres"),
+  customerEmail: z.string().email("Email válido requerido"),
+  customerPhone: z.string().min(9, "Teléfono válido requerido"),
+  preferredLanguage: z.enum(["ES", "EN", "DE"]).default("ES"),
+  
+  // Step 2: Reservation Details
+  partySize: z.number().min(1, "Mínimo 1 persona").max(12, "Máximo 12 personas"),
+  date: z.string().min(1, "Fecha requerida"),
+  time: z.string().min(1, "Hora requerida"),
+  preferredLocation: z.enum(["TERRACE", "INTERIOR", "BAR"]).optional(),
+  
+  // Step 3: Special Requirements - FIXED: dietaryNotes as string + tableId
+  occasion: z.string().optional(),
+  specialRequests: z.string().optional(),
+  dietaryRestrictions: z.array(z.string()).default([]), // Keep for form UI
+  dietaryNotes: z.string().optional(), // Send to API as combined string
+  hasPreOrder: z.boolean().default(false),
+  preOrderNotes: z.string().optional(),
+  tableId: z.string().optional(), // Specific table selection
+
+  // Step 4: GDPR Consent - ADDED: Required GDPR fields
+  dataProcessingConsent: z.boolean().refine(val => val === true, {
+    message: "El consentimiento para procesamiento de datos es obligatorio"
+  }),
+  emailConsent: z.boolean().default(false),
+  marketingConsent: z.boolean().default(false),
+})
+
+type ReservationFormData = z.infer<typeof reservationSchema>
+
+const steps = [
+  { id: 1, title: "Información Personal", description: "Datos de contacto" },
+  { id: 2, title: "Detalles de Reserva", description: "Fecha, hora y mesa" },
+  { id: 3, title: "Preferencias", description: "Ocasiones especiales y notas" },
+  { id: 4, title: "Privacidad GDPR", description: "Consentimientos requeridos" },
+  { id: 5, title: "Confirmación", description: "Revisar y confirmar" },
+]
+
+const occasions = [
+  "Cumpleaños",
+  "Aniversario", 
+  "Cena de negocios",
+  "Celebración familiar",
+  "Cita romántica",
+  "Evento especial",
+  "Otro"
+]
+
+const dietaryOptions = [
+  "Vegetariano",
+  "Vegano",
+  "Sin gluten",
+  "Sin lactosa",
+  "Sin frutos secos",
+  "Sin mariscos",
+  "Halal",
+  "Kosher"
+]
+
+const locationOptions = [
+  { value: "TERRACE" as TableLocation, label: "Terraza", description: "Ambiente exterior con plantas" },
+  { value: "INTERIOR" as TableLocation, label: "Interior", description: "Ambiente íntimo y acogedor" },
+  { value: "BAR" as TableLocation, label: "Barra", description: "Experiencia directa con el chef" },
+]
+
+// Available time slots (6:00 PM - 11:00 PM)
+const timeSlots = [
+  "18:00", "18:30", "19:00", "19:30", "20:00", "20:30",
+  "21:00", "21:30", "22:00", "22:30", "23:00"
+]
+
+interface ReservationFormWizardProps {
+  onSubmit?: (data: ReservationFormData) => Promise<void>
+  className?: string
+}
+
+export function ReservationFormWizard({ onSubmit, className }: ReservationFormWizardProps) {
+  const [currentStep, setCurrentStep] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const form = useForm<ReservationFormData>({
+    resolver: zodResolver(reservationSchema),
+    defaultValues: {
+      preferredLanguage: "ES",
+      partySize: 2,
+      dietaryRestrictions: [],
+      hasPreOrder: false,
+      dataProcessingConsent: false,
+      emailConsent: false,
+      marketingConsent: false,
+    },
+  })
+
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = form
+  const watchedData = watch()
+
+  // 6-hour minimum validation
+  const getTomorrowDate = () => {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return tomorrow.toISOString().split('T')[0]
+  }
+
+  const getAvailableSlots = () => {
+    if (!watchedData.date) return []
+    
+    const selectedDate = new Date(watchedData.date)
+    const today = new Date()
+    
+    if (selectedDate.toDateString() === today.toDateString()) {
+      const currentHour = today.getHours()
+      return timeSlots.filter(slot => {
+        const slotHour = parseInt(slot.split(':')[0] || '0')
+        return slotHour > currentHour + 6 // 6 hour minimum booking requirement
+      })
+    }
+    
+    return timeSlots
+  }
+
+  const validateStep = (step: number): boolean => {
+    const values = watchedData
+
+    switch (step) {
+      case 1:
+        return !!(values.firstName && values.lastName && values.customerEmail && values.customerPhone)
+      case 2:
+        return !!(values.partySize && values.date && values.time)
+      case 3:
+        return true // Optional step
+      case 4:
+        return values.dataProcessingConsent === true // GDPR consent required
+      default:
+        return false
+    }
+  }
+
+  const nextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(prev => Math.min(prev + 1, steps.length))
+    } else {
+      toast.error("Por favor completa todos los campos requeridos")
+    }
+  }
+
+  const prevStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1))
+  }
+
+  const handleFormSubmit = async (data: ReservationFormData) => {
+    setIsSubmitting(true)
+
+    try {
+      // Validate 6-hour minimum rule
+      const selectedDateTime = new Date(`${data.date}T${data.time}`)
+      const now = new Date()
+      const timeDiff = selectedDateTime.getTime() - now.getTime()
+      const hoursDiff = timeDiff / (1000 * 60 * 60)
+
+      if (hoursDiff < 6) {
+        toast.error("Las reservas deben realizarse con mínimo 6 horas de antelación")
+        return
+      }
+
+      // FIXED: Convert dietary restrictions array to single string
+      const processedData = {
+        ...data,
+        dietaryNotes: data.dietaryRestrictions.length > 0
+          ? data.dietaryRestrictions.join(", ")
+          : undefined
+      }
+
+      if (onSubmit) {
+        await onSubmit(processedData)
+      } else {
+        // Default behavior - simulate API call
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        toast.success("¡Reserva enviada! Te contactaremos pronto para confirmar.")
+      }
+
+    } catch (error) {
+      toast.error("Error al procesar la reserva. Inténtalo de nuevo.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">Nombre *</Label>
+                <Input
+                  id="firstName"
+                  {...register("firstName")}
+                  placeholder="Su nombre"
+                  className="text-base"
+                />
+                {errors.firstName && (
+                  <p className="text-sm text-destructive">{errors.firstName.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Apellidos *</Label>
+                <Input
+                  id="lastName"
+                  {...register("lastName")}
+                  placeholder="Sus apellidos"
+                  className="text-base"
+                />
+                {errors.lastName && (
+                  <p className="text-sm text-destructive">{errors.lastName.message}</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="customerEmail">Email *</Label>
+              <Input
+                id="customerEmail"
+                type="email"
+                {...register("customerEmail")}
+                placeholder="su@email.com"
+                className="text-base"
+              />
+              {errors.customerEmail && (
+                <p className="text-sm text-destructive">{errors.customerEmail.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="customerPhone">Teléfono *</Label>
+              <Input
+                id="customerPhone"
+                {...register("customerPhone")}
+                placeholder="+34 123 456 789"
+                className="text-base"
+              />
+              {errors.customerPhone && (
+                <p className="text-sm text-destructive">{errors.customerPhone.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="preferredLanguage">Idioma Preferido</Label>
+              <Select onValueChange={(value) => setValue("preferredLanguage", value as Language)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar idioma" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ES">Español</SelectItem>
+                  <SelectItem value="EN">English</SelectItem>
+                  <SelectItem value="DE">Deutsch</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )
+      
+      case 2:
+        return (
+          <div className="space-y-4">
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="partySize">
+                  <Users className="inline w-4 h-4 mr-1" />
+                  Comensales *
+                </Label>
+                <Select onValueChange={(value) => setValue("partySize", parseInt(value))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((size) => (
+                      <SelectItem key={size} value={size.toString()}>
+                        {size} {size === 1 ? "persona" : "personas"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.partySize && (
+                  <p className="text-sm text-destructive">{errors.partySize.message}</p>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="date">
+                  <CalendarDays className="inline w-4 h-4 mr-1" />
+                  Fecha *
+                </Label>
+                <Input
+                  id="date"
+                  type="date"
+                  min={getTomorrowDate()}
+                  {...register("date")}
+                  className="text-base"
+                />
+                {errors.date && (
+                  <p className="text-sm text-destructive">{errors.date.message}</p>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="time">
+                  <Clock className="inline w-4 h-4 mr-1" />
+                  Hora *
+                </Label>
+                <Select onValueChange={(value) => setValue("time", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getAvailableSlots().map((slot) => (
+                      <SelectItem key={slot} value={slot}>
+                        {slot}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.time && (
+                  <p className="text-sm text-destructive">{errors.time.message}</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>
+                <MapPin className="inline w-4 h-4 mr-1" />
+                Preferencia de Mesa
+              </Label>
+              <div className="grid gap-3">
+                {locationOptions.map((location) => (
+                  <div
+                    key={location.value}
+                    className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-muted/50"
+                    onClick={() => setValue("preferredLocation", location.value)}
+                  >
+                    <div>
+                      <div className="font-medium">{location.label}</div>
+                      <div className="text-sm text-muted-foreground">{location.description}</div>
+                    </div>
+                    <input
+                      type="radio"
+                      name="preferredLocation"
+                      value={location.value}
+                      {...register("preferredLocation")}
+                      className="text-primary"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {getAvailableSlots().length === 0 && watchedData.date && (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <Clock className="inline w-4 h-4 mr-1" />
+                  No hay horarios disponibles para hoy. Las reservas requieren mínimo 6 horas de antelación.
+                </p>
+              </div>
+            )}
+          </div>
+        )
+      
+      case 3:
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="occasion">Ocasión Especial</Label>
+              <Select onValueChange={(value) => setValue("occasion", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar ocasión (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {occasions.map((occasion) => (
+                    <SelectItem key={occasion} value={occasion}>
+                      {occasion}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Restricciones Dietéticas</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {dietaryOptions.map((option) => (
+                  <label key={option} className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      value={option}
+                      onChange={(e) => {
+                        const current = watchedData.dietaryRestrictions || []
+                        if (e.target.checked) {
+                          setValue("dietaryRestrictions", [...current, option])
+                        } else {
+                          setValue("dietaryRestrictions", current.filter(item => item !== option))
+                        }
+                      }}
+                      className="rounded border-gray-300"
+                    />
+                    <span className="text-sm">{option}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="specialRequests">Solicitudes Especiales</Label>
+              <Textarea
+                id="specialRequests"
+                {...register("specialRequests")}
+                placeholder="Alergias adicionales, preferencias de mesa, celebraciones especiales..."
+                rows={3}
+                className="text-base"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  {...register("hasPreOrder")}
+                  className="rounded border-gray-300"
+                />
+                <span className="text-sm font-medium">¿Desea pre-ordenar del menú?</span>
+              </label>
+              {watchedData.hasPreOrder && (
+                <Textarea
+                  {...register("preOrderNotes")}
+                  placeholder="Platos que le gustaría pre-ordenar (opcional)..."
+                  rows={2}
+                  className="text-base"
+                />
+              )}
+            </div>
+          </div>
+        )
+      
+      case 4:
+        return (
+          <div className="space-y-4">
+            <div className="text-center space-y-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                <ChefHat className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold">Privacidad y Consentimientos</h3>
+              <p className="text-muted-foreground">
+                Necesitamos tu consentimiento para procesar tus datos según GDPR
+              </p>
+            </div>
+
+            <div className="space-y-4 p-4 border rounded-lg bg-blue-50">
+              <div className="space-y-3">
+                <label className="flex items-start space-x-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    {...register("dataProcessingConsent")}
+                    className="mt-1 rounded border-gray-300"
+                  />
+                  <div className="flex-1">
+                    <span className="text-sm font-medium text-red-600">*</span>
+                    <span className="text-sm font-medium"> Procesamiento de Datos (Obligatorio)</span>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Acepto que mis datos personales sean procesados para gestionar mi reserva según el GDPR Art. 6.
+                    </p>
+                  </div>
+                </label>
+                {errors.dataProcessingConsent && (
+                  <p className="text-sm text-destructive">{errors.dataProcessingConsent.message}</p>
+                )}
+
+                <label className="flex items-start space-x-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    {...register("emailConsent")}
+                    className="mt-1 rounded border-gray-300"
+                  />
+                  <div className="flex-1">
+                    <span className="text-sm font-medium">Confirmaciones por Email</span>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Acepto recibir confirmaciones y comunicaciones sobre mi reserva por email.
+                    </p>
+                  </div>
+                </label>
+
+                <label className="flex items-start space-x-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    {...register("marketingConsent")}
+                    className="mt-1 rounded border-gray-300"
+                  />
+                  <div className="flex-1">
+                    <span className="text-sm font-medium">Marketing y Ofertas</span>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Acepto recibir newsletter y ofertas especiales del restaurante.
+                    </p>
+                  </div>
+                </label>
+              </div>
+
+              <div className="text-xs text-gray-600 border-t pt-3">
+                <p>Puedes retirar tu consentimiento en cualquier momento contactando con nosotros.</p>
+                <p>Consulta nuestra <strong>Política de Privacidad v1.0</strong> para más información.</p>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 5:
+        return (
+          <div className="space-y-4">
+            <div className="text-center space-y-4">
+              <CheckCircle className="w-12 h-12 text-green-500 mx-auto" />
+              <h3 className="text-xl font-bold">Confirmar Reserva</h3>
+              <p className="text-muted-foreground">
+                Por favor revisa los detalles antes de enviar tu reserva
+              </p>
+            </div>
+            
+            <Card className="bg-muted/30">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex justify-between">
+                  <span className="font-medium">Cliente:</span>
+                  <span>{watchedData.firstName} {watchedData.lastName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Email:</span>
+                  <span>{watchedData.customerEmail}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Teléfono:</span>
+                  <span>{watchedData.customerPhone}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Fecha y hora:</span>
+                  <span>{watchedData.date} a las {watchedData.time}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Comensales:</span>
+                  <span>{watchedData.partySize} personas</span>
+                </div>
+                {watchedData.preferredLocation && (
+                  <div className="flex justify-between">
+                    <span className="font-medium">Mesa:</span>
+                    <span>{locationOptions.find(l => l.value === watchedData.preferredLocation)?.label}</span>
+                  </div>
+                )}
+                {watchedData.occasion && (
+                  <div className="flex justify-between">
+                    <span className="font-medium">Ocasión:</span>
+                    <span>{watchedData.occasion}</span>
+                  </div>
+                )}
+                {watchedData.dietaryRestrictions && watchedData.dietaryRestrictions.length > 0 && (
+                  <div className="space-y-1">
+                    <span className="font-medium">Restricciones dietéticas:</span>
+                    <div className="flex flex-wrap gap-1">
+                      {watchedData.dietaryRestrictions.map((restriction) => (
+                        <Badge key={restriction} variant="secondary" className="text-xs">
+                          {restriction}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {watchedData.specialRequests && (
+                  <div className="space-y-1">
+                    <span className="font-medium">Solicitudes especiales:</span>
+                    <p className="text-sm text-muted-foreground">{watchedData.specialRequests}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <ChefHat className="inline w-4 h-4 mr-1" />
+                Te contactaremos por WhatsApp en las próximas 2 horas para confirmar tu reserva.
+              </p>
+            </div>
+          </div>
+        )
+      
+      default:
+        return null
+    }
+  }
+
+  return (
+    <div className={className}>
+      {/* Progress Steps */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          {steps.map((step, index) => (
+            <div key={step.id} className="flex items-center">
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                  currentStep >= step.id
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {currentStep > step.id ? (
+                  <CheckCircle className="w-4 h-4" />
+                ) : (
+                  step.id
+                )}
+              </div>
+              {index < steps.length - 1 && (
+                <div
+                  className={`flex-1 h-0.5 ml-4 ${
+                    currentStep > step.id ? "bg-primary" : "bg-muted"
+                  }`}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+        
+        <div className="text-center">
+          <h2 className="text-xl font-bold">{steps[currentStep - 1]?.title}</h2>
+          <p className="text-muted-foreground">{steps[currentStep - 1]?.description}</p>
+        </div>
+      </div>
+
+      {/* Form Content */}
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
+        <Card>
+          <CardContent className="p-6">
+            {renderStep()}
+          </CardContent>
+        </Card>
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between mt-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={prevStep}
+            disabled={currentStep === 1}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Anterior
+          </Button>
+          
+          {currentStep < steps.length ? (
+            <Button
+              type="button"
+              onClick={nextStep}
+              disabled={!validateStep(currentStep)}
+            >
+              Siguiente
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn-primary"
+            >
+              {isSubmitting ? "Enviando..." : "Confirmar Reserva"}
+            </Button>
+          )}
+        </div>
+      </form>
+    </div>
+  )
+}
