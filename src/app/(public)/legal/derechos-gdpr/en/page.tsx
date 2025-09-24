@@ -527,4 +527,4 @@ function DefaultGdprRightsContent() {
 // EXPORTS
 // ============================================
 
-export { DefaultGdprRightsContent }
+// Only default export and generateMetadata are valid for Next.js pages

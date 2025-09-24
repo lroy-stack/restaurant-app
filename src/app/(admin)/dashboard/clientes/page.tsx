@@ -23,10 +23,10 @@ export default function ClientesPage() {
   
   // Extract filters from URL params
   const filters = {
-    status: searchParams.get('status') || undefined,
-    vipStatus: searchParams.get('vipStatus') || undefined,
-    search: searchParams.get('search') || undefined,
-    dateRange: searchParams.get('dateRange') || undefined
+    ...(searchParams.get('status') && { status: searchParams.get('status') || undefined }),
+    ...(searchParams.get('vipStatus') && { vipStatus: searchParams.get('vipStatus') || undefined }),
+    ...(searchParams.get('search') && { search: searchParams.get('search') || undefined }),
+    ...(searchParams.get('dateRange') && { dateRange: searchParams.get('dateRange') || undefined })
   }
 
   // Use the real-time hook for customers

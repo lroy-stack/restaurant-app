@@ -146,7 +146,7 @@ export const realtimeUpdateSchema = z.object({
   reservationId: z.string().optional(),
   status: z.enum(['available', 'reserved', 'occupied', 'maintenance']).optional(),
   timestamp: z.string(),
-  metadata: z.record(z.any()).optional()
+  metadata: z.record(z.string(), z.unknown()).optional()
 })
 
 // Pre-order integration schema
@@ -162,7 +162,7 @@ export const preOrderIntegrationSchema = z.object({
     winery: z.string().optional(),
     wine_type: z.string().optional(),
     allergens: z.array(z.string()).optional(),
-    dietary_info: z.record(z.boolean()).optional()
+    dietary_info: z.record(z.string(), z.boolean()).optional()
   })),
   subtotal: z.number(),
   estimatedPrepTime: z.number().optional(), // minutes

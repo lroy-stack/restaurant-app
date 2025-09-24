@@ -59,16 +59,16 @@ export function createAdminSupabaseClient(cookieStore: ReadonlyRequestCookies) {
   }
 
   return createServerClient(
-    supabaseUrl,
-    serviceRoleKey,
+    supabaseUrl!,
+    serviceRoleKey!,
     {
       cookies: {
         getAll() {
           return cookieStore.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: Array<{name: string; value: string; options?: any}>) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
+            cookiesToSet.forEach(({ name, value, options }: {name: string; value: string; options?: any}) =>
               cookieStore.set(name, value, options)
             )
           } catch {

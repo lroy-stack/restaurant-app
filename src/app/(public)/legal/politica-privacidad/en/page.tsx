@@ -398,4 +398,4 @@ function DefaultPrivacyPolicyContent() {
 // EXPORTS
 // ============================================
 
-export { DefaultPrivacyPolicyContent }
+// Only default export and generateMetadata are valid for Next.js pages

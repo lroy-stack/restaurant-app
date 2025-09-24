@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-// Badge import removed - not used
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { cn } from '@/lib/utils'
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -438,7 +438,6 @@ export function CompactCustomerList({
         <div className="space-y-2">
           {customers.map((customer) => {
             const itemProps: {
-              key: string
               customer: Customer
               isSelected?: boolean
               onSelectionChange?: (id: string, checked: boolean) => void
@@ -448,7 +447,6 @@ export function CompactCustomerList({
               onGdprDelete?: (id: string) => void
               showCheckbox?: boolean
             } = {
-              key: customer.id,
               customer,
             }
 

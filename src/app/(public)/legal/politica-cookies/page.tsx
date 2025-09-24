@@ -479,4 +479,4 @@ function DefaultCookiePolicyContent() {
 // EXPORTS
 // ============================================
 
-export { DefaultCookiePolicyContent }
+// Only default export and generateMetadata are valid for Next.js pages
