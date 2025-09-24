@@ -195,7 +195,7 @@
   --mesh-gradient-color-2: #cb5810;
 }
 
-/* ENIGMA OBSIDIANA THEME - Professional Dark Mode (Optimized) */
+/* ENIGMA OBSIDIANA THEME - Professional Dark Mode (Aggressive Blue) */
 .theme-obsidian, .dark {
   /* Core Surface Colors - Following shadcn/ui best practices */
   --background: oklch(0.141 0.005 220);          /* Professional dark base - shadcn pattern */
@@ -208,9 +208,9 @@
   --popover: oklch(0.21 0.008 220);              /* Same elevation as cards */
   --popover-foreground: oklch(0.985 0.002 220);
 
-  /* Primary Brand Colors - Atlantic Blue for dark theme */
-  --primary: oklch(0.75 0.12 200);               /* Brighter Atlantic Blue for dark */
-  --primary-foreground: oklch(0.141 0.005 220);  /* Dark text on bright primary */
+  /* 🔥 AGGRESSIVE BLUE PRIMARY - Deep, saturated, professional */
+  --primary: oklch(0.58 0.22 200);               /* Aggressive Atlantic Blue - deeper, more saturated */
+  --primary-foreground: oklch(0.985 0.002 220);  /* High contrast white text */
 
   /* Secondary Surfaces - Sage Green harmony */
   --secondary: oklch(0.28 0.01 125);             /* Dark sage green secondary */
@@ -228,24 +228,24 @@
   --destructive: oklch(0.67 0.18 25);            /* Brighter error red for visibility */
   --destructive-foreground: oklch(0.985 0.002 220);
 
-  /* Interactive Elements - shadcn/ui transparency pattern */
-  --border: oklch(1 0 0 / 12%);                  /* White border with transparency */
-  --input: oklch(1 0 0 / 18%);                   /* Slightly more opaque inputs */
-  --ring: oklch(0.75 0.12 200);                  /* Focus ring matches primary */
+  /* 🔥 AGGRESSIVE BLUE INTERACTIVE - Consistent with new primary */
+  --border: oklch(0.45 0.18 200 / 35%);          /* Aggressive blue borders with transparency */
+  --input: oklch(0.52 0.2 200 / 15%);            /* Subtle aggressive blue input backgrounds */
+  --ring: oklch(0.52 0.25 200);                  /* Intense focus ring - even more saturated */
 
-  /* Sidebar System - Independent navigation hierarchy */
+  /* 🔥 AGGRESSIVE BLUE SIDEBAR - Professional navigation hierarchy */
   --sidebar: oklch(0.18 0.006 220);              /* Distinct sidebar - slightly lighter */
   --sidebar-foreground: oklch(0.985 0.002 220);
-  --sidebar-primary: oklch(0.75 0.12 200);       /* Atlantic Blue navigation */
-  --sidebar-primary-foreground: oklch(0.141 0.005 220);
+  --sidebar-primary: oklch(0.58 0.22 200);       /* Aggressive Blue navigation - matches primary */
+  --sidebar-primary-foreground: oklch(0.985 0.002 220);
   --sidebar-accent: oklch(0.25 0.008 220);       /* Hover states */
   --sidebar-accent-foreground: oklch(0.985 0.002 220);
-  --sidebar-border: oklch(1 0 0 / 12%);          /* Consistent transparent border */
-  --sidebar-ring: oklch(0.75 0.12 200);          /* Focus consistency */
+  --sidebar-border: oklch(0.45 0.18 200 / 25%);  /* Aggressive blue sidebar borders */
+  --sidebar-ring: oklch(0.52 0.25 200);          /* Focus consistency - intense */
 
-  /* Mesh Gradient Colors - Dark Obsidian Theme */
+  /* Mesh Gradient Colors - Aggressive Blue Obsidian Theme */
   --mesh-gradient-color-1: #1a1b23;
-  --mesh-gradient-color-2: #3d4a5c;
+  --mesh-gradient-color-2: #2d4a6b;              /* Deeper blue gradient */
 }
 
 @layer base {

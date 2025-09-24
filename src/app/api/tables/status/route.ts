@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/utils/supabase/server'
+import { getSpainDate } from '@/lib/utils/timestamps'
 
 interface StatusUpdateData {
   tableId: string
@@ -52,28 +53,41 @@ export async function GET(request: NextRequest) {
       if (table.reservations && table.reservations.length > 0) {
         const now = new Date()
         
-        // Find active reservation (within time window)
+        // Find active reservation with correct business logic
         const activeReservation = table.reservations.find((res: any) => {
-          // Combine date and time fields
-          const resDateTime = new Date(`${res.date} ${res.time}`)
-          const timeDiff = Math.abs(now.getTime() - resDateTime.getTime())
-          const hoursDiff = timeDiff / (1000 * 60 * 60)
-          
-          return res.status === 'confirmed' && hoursDiff <= 2 // Within 2 hours
+          // 🚀 CRITICAL FIX: Use Spain timezone helper for accurate comparison
+          const nowMadrid = getSpainDate()
+          const resDateTime = new Date(res.time) // res.time already stored in Spain local time
+
+          // Compare dates in Madrid timezone
+          const todayMadrid = nowMadrid.toDateString()
+          const resDateMadrid = resDateTime.toDateString()
+          const isToday = resDateMadrid === todayMadrid
+
+          // 🚀 FIXED: SEATED = OCUPADA (SOLO para HOY en timezone Madrid)
+          if (res.status === 'SEATED' && isToday) {
+            return true
+          }
+
+          // CONFIRMED = RESERVADA (solo para HOY y dentro de 2.5h)
+          if (res.status === 'CONFIRMED' && isToday) {
+            const timeDiff = resDateTime.getTime() - nowMadrid.getTime()
+            // Solo si es en las próximas 2.5 horas
+            return timeDiff > 0 && timeDiff <= (150 * 60000)
+          }
+
+          // PENDING no se incluye en el plano
+          return false
         })
         
         if (activeReservation) {
-          const resDateTime = new Date(`${activeReservation.date} ${activeReservation.time}`)
-          const now = new Date()
-          
-          if (resDateTime > now) {
-            // Future reservation
-            calculatedStatus = 'reserved'
-          } else {
-            // Current or recent reservation
+          // Determinar estado basado en status de reserva
+          if (activeReservation.status === 'SEATED') {
             calculatedStatus = 'occupied'
+          } else if (activeReservation.status === 'CONFIRMED') {
+            calculatedStatus = 'reserved'
           }
-          
+
           currentReservation = {
             customerName: activeReservation.customerName,
             partySize: activeReservation.partySize,

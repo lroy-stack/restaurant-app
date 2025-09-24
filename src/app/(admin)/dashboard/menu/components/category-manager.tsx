@@ -47,17 +47,17 @@ import {
 import { toast } from 'sonner'
 import { useCategories } from '../hooks/use-categories'
 import { CategoryForm } from './forms/category-form'
-import { MenuCategory } from '../schemas/menu-category.schema'
+import { CategoryWithStats } from '../schemas/category.schema'
 
 interface CategoryManagerProps {
-  onCategorySelect?: (category: MenuCategory) => void
+  onCategorySelect?: (category: CategoryWithStats) => void
 }
 
 export function CategoryManager({ onCategorySelect }: CategoryManagerProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<MenuCategory | null>(null)
+  const [editingCategory, setEditingCategory] = useState<CategoryWithStats | null>(null)
   const [selectedType, setSelectedType] = useState<'FOOD' | 'WINE' | 'BEVERAGE' | null>(null)
 
   const {
@@ -72,8 +72,7 @@ export function CategoryManager({ onCategorySelect }: CategoryManagerProps) {
   // Filter categories based on search and type
   const filteredCategories = categories.filter((category) => {
     const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category.nameEn?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      category.nameEn?.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesType = selectedType ? category.type === selectedType : true
 
@@ -90,12 +89,12 @@ export function CategoryManager({ onCategorySelect }: CategoryManagerProps) {
     setShowCreateDialog(true)
   }
 
-  const handleEditCategory = (category: MenuCategory) => {
+  const handleEditCategory = (category: CategoryWithStats) => {
     setEditingCategory(category)
     setShowEditDialog(true)
   }
 
-  const handleDeleteCategory = async (category: MenuCategory) => {
+  const handleDeleteCategory = async (category: CategoryWithStats) => {
     if (window.confirm(`¿Estás seguro de que quieres eliminar la categoría "${category.name}"?`)) {
       const success = await deleteCategory(category.id)
       if (success) {
@@ -327,7 +326,7 @@ export function CategoryManager({ onCategorySelect }: CategoryManagerProps) {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {category._count?.items || 0} elementos
+                          {category.itemCount || 0} elementos
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">

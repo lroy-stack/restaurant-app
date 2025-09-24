@@ -207,7 +207,7 @@ export function useRealtimeCustomers(filters: RealtimeFilters = {}): UseRealtime
   const exportCustomerData = async (id: string): Promise<boolean> => {
     try {
       const response = await fetch(`/api/customers/${id}/export`, {
-        method: 'POST'
+        method: 'GET'
       })
 
       if (response.ok) {
@@ -236,7 +236,7 @@ export function useRealtimeCustomers(filters: RealtimeFilters = {}): UseRealtime
 
   const deleteCustomerData = async (id: string): Promise<boolean> => {
     try {
-      const response = await fetch(`/api/customers/${id}/gdpr-delete`, {
+      const response = await fetch(`/api/customers/${id}`, {
         method: 'DELETE'
       })
 

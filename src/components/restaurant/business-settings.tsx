@@ -69,7 +69,7 @@ const restaurantSettingsSchema = z.object({
   email: z.string().email("Email válido requerido"),
   capacity: z.number().min(1, "Capacidad mínima 1").max(200, "Capacidad máxima 200"),
   minReservationHours: z.number().min(1).max(72),
-  maxPartySize: z.number().min(2).max(20),
+  maxPartySize: z.number().min(2).max(50), // Allow up to 50 for large events
   enableOnlineReservations: z.boolean(),
   requireConfirmation: z.boolean(),
   allowWalkIns: z.boolean(),
@@ -143,7 +143,7 @@ export function BusinessSettings({
       email: "info@enigmaconalma.com",
       capacity: 50,
       minReservationHours: 6,
-      maxPartySize: 12,
+      maxPartySize: 10, // Updated to match restaurant capacity
       enableOnlineReservations: true,
       requireConfirmation: true,
       allowWalkIns: true,

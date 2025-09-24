@@ -3,8 +3,8 @@ import { createServiceClient } from '@/utils/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
-// POST export customer data (GDPR compliance)
-export async function POST(
+// GET export customer data (GDPR compliance)
+export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {

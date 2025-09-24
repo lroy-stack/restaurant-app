@@ -1,0 +1,113 @@
+// Dynamic Restaurant Information Service
+// CRITICAL: Fetch restaurant data from database - NO hardcoding
+// Centralizes all restaurant info for email templates
+
+import { createClient } from '@/lib/supabase/server'
+
+export interface RestaurantInfo {
+  name: string
+  email: string
+  phone: string
+  address: {
+    street: string
+    number: string
+    city: string
+    postalCode: string
+    country: string
+  }
+  social: {
+    website: string
+    googleMaps: string
+  }
+  branding: {
+    logo: string
+    primaryColor: string
+    accentColor: string
+  }
+}
+
+/**
+ * Fetch restaurant information from database
+ * Returns dynamic restaurant data for email templates
+ */
+export async function getRestaurantInfo(restaurantId?: string): Promise<RestaurantInfo> {
+  try {
+    const supabase = await createClient()
+
+    // Default to Enigma's restaurant ID if not provided
+    const targetRestaurantId = restaurantId || 'rest_enigma_001'
+
+    const { data: restaurant, error } = await supabase
+      .from('restaurants')
+      .select('*')
+      .eq('id', targetRestaurantId)
+      .single()
+
+    if (error) {
+      console.error('Error fetching restaurant info:', error)
+      // Fallback to minimal info if database fails
+      return getDefaultRestaurantInfo()
+    }
+
+    return {
+      name: restaurant.name || 'Enigma Cocina Con Alma',
+      email: restaurant.email || 'reservas@enigmaconalma.com',
+      phone: restaurant.phone || '+34 911 234 567',
+      address: {
+        street: restaurant.address_street || 'Calle Ejemplo',
+        number: restaurant.address_number || '123',
+        city: restaurant.address_city || 'Madrid',
+        postalCode: restaurant.address_postal_code || '28001',
+        country: restaurant.address_country || 'España'
+      },
+      social: {
+        website: restaurant.website || 'https://enigmaconalma.com',
+        googleMaps: restaurant.google_maps_url || 'https://maps.google.com/?q=enigma+cocina+con+alma+madrid'
+      },
+      branding: {
+        logo: '/logo512.png', // PNG logo as requested
+        primaryColor: 'oklch(0.45 0.15 200)', // From globals.css --primary
+        accentColor: 'oklch(0.6 0.18 40)' // From globals.css --accent
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch restaurant info:', error)
+    return getDefaultRestaurantInfo()
+  }
+}
+
+/**
+ * Fallback restaurant info if database query fails
+ * Uses minimal hardcoded values as safety net
+ */
+function getDefaultRestaurantInfo(): RestaurantInfo {
+  return {
+    name: 'Enigma Cocina Con Alma',
+    email: 'reservas@enigmaconalma.com',
+    phone: '+34 911 234 567',
+    address: {
+      street: 'Calle Ejemplo',
+      number: '123',
+      city: 'Madrid',
+      postalCode: '28001',
+      country: 'España'
+    },
+    social: {
+      website: 'https://enigmaconalma.com',
+      googleMaps: 'https://maps.google.com/?q=enigma+cocina+con+alma+madrid'
+    },
+    branding: {
+      logo: '/logo512.png',
+      primaryColor: 'oklch(0.45 0.15 200)',
+      accentColor: 'oklch(0.6 0.18 40)'
+    }
+  }
+}
+
+/**
+ * Helper to format full address string
+ */
+export function formatAddress(info: RestaurantInfo): string {
+  const { address } = info
+  return `${address.street}, ${address.number}\n${address.postalCode} ${address.city}, ${address.country}`
+}

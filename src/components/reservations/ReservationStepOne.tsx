@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Calendar, Loader2, Eye, Building, TreePine } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Language } from '@/lib/validations/reservation-professional'
+import { useBusinessHours } from '@/hooks/useBusinessHours'
 
 interface ReservationStepOneProps {
   language: Language
@@ -80,13 +81,16 @@ export default function ReservationStepOne({
   const [loadingZones, setLoadingZones] = useState(true)
 
   // Form context and watched values - MUST be declared before useEffect
-  const { 
-    register, 
-    watch, 
-    setValue, 
-    trigger, 
-    formState: { errors } 
+  const {
+    register,
+    watch,
+    setValue,
+    trigger,
+    formState: { errors }
   } = useFormContext()
+
+  // Get dynamic maxPartySize from business hours
+  const { maxPartySize } = useBusinessHours()
 
   const t = content[language]
   
@@ -273,7 +277,7 @@ export default function ReservationStepOne({
         {/* Time Selection */}
         <div className="space-y-2">
           <Label>{t.timeLabel}</Label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4">
+          <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2 mt-4">
             {timeSlots.map((time) => (
               <Button
                 key={time}
@@ -281,7 +285,7 @@ export default function ReservationStepOne({
                 size="sm"
                 type="button"
                 onClick={() => setValue('stepOne.time', time)}
-                className="text-sm h-12 min-h-[48px] font-medium"
+                className="text-xs sm:text-sm h-10 sm:h-12 min-h-[40px] sm:min-h-[48px] font-medium touch-manipulation min-w-0 px-2 sm:px-3"
               >
                 {time}
               </Button>
@@ -305,7 +309,7 @@ export default function ReservationStepOne({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+              {Array.from({ length: maxPartySize }, (_, i) => i + 1).map((num) => (
                 <SelectItem key={num} value={num.toString()}>
                   {num} {num === 1 ? t.person : t.people}
                 </SelectItem>

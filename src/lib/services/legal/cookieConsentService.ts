@@ -2,7 +2,7 @@
 // Cookie Consent Management Service - AEPD 2025 Compliant
 // PRP Implementation: Complete GDPR Article 7 & AEPD Cookie Compliance
 
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/utils/supabase/server'
 import {
   CookieConsent,
   CreateCookieConsent,
@@ -17,9 +17,20 @@ import {
   LegalAPIResponse,
   LEGAL_CONSTANTS
 } from '@/types/legal'
+import { NextRequest } from 'next/server'
+import { getSpainTimestamp, getSpainDate, getSpainExpiryDate } from '@/lib/utils/timestamps'
 
 export class CookieConsentService {
-  private supabase = createClient()
+  // 🚀 CRITICAL FIX: Lazy initialization - no client in constructor
+
+  /**
+   * Create Supabase client within request context
+   * Following Next.js Context7 best practices
+   */
+  private async getSupabaseClient(request: NextRequest) {
+    // 🚀 CRITICAL FIX: Use the same client that works in the rest of the app
+    return await createServiceClient()
+  }
 
   // ============================================
   // CONSENT CREATION & MANAGEMENT
@@ -30,16 +41,21 @@ export class CookieConsentService {
    * AEPD 2025 compliant with 24-month maximum duration
    */
   async createConsent(
+    request: NextRequest,
     consentData: CreateCookieConsent,
     userAgent: string,
     ipAddress: string
   ): Promise<LegalAPIResponse<CookieConsent>> {
     try {
+      console.log('🔍 CookieConsentService.createConsent - Input data:', JSON.stringify(consentData, null, 2))
+
       // Validate consent data
       const validatedData = CreateCookieConsentSchema.parse(consentData)
 
+      console.log('✅ CookieConsentService.createConsent - Validation passed')
+
       // Calculate expiry timestamp (AEPD max 24 months)
-      const expiryDate = new Date()
+      const expiryDate = getSpainDate()
       expiryDate.setMonth(expiryDate.getMonth() + LEGAL_CONSTANTS.MAX_CONSENT_DURATION_MONTHS)
 
       // Ensure necessary cookies are always true (AEPD requirement)
@@ -51,23 +67,41 @@ export class CookieConsentService {
         user_agent: userAgent
       }
 
-      const { data, error } = await this.supabase
+      console.log('🔧 Getting Supabase client...')
+      const supabase = await this.getSupabaseClient(request)
+
+      console.log('📝 Inserting consent record:', JSON.stringify(consentRecord, null, 2))
+      const { data, error } = await supabase
+        .schema('restaurante')  // 🚀 CRITICAL FIX: Specify schema like other working APIs
         .from('cookie_consents')
         .insert(consentRecord)
         .select()
         .single()
 
-      if (error) throw error
+      console.log('📊 Supabase response:', { data, error })
+      console.log('📊 Full error details:', JSON.stringify(error, null, 2))
+      console.log('📊 Error properties:', Object.keys(error || {}))
+
+      if (error) {
+        console.error('❌ Supabase error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+          statusCode: error.statusCode
+        })
+        throw error
+      }
 
       const consent = CookieConsentSchema.parse(data)
 
       // Log consent creation for audit
-      await this.logConsentActivity('consent_given', consent.id, null, consent, ipAddress, userAgent)
+      await this.logConsentActivity(request, 'consent_given', consent.id, null, consent, ipAddress, userAgent)
 
       return {
         success: true,
         data: consent,
-        timestamp: new Date().toISOString(),
+        timestamp: getSpainTimestamp(),
         version: consent.policy_version
       }
     } catch (error) {
@@ -75,7 +109,7 @@ export class CookieConsentService {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to create consent',
-        timestamp: new Date().toISOString(),
+        timestamp: getSpainTimestamp(),
         version: LEGAL_CONSTANTS.DEFAULT_POLICY_VERSION
       }
     }
@@ -86,6 +120,7 @@ export class CookieConsentService {
    * Maintains audit trail of preference changes
    */
   async updateConsent(
+    request: NextRequest,
     consentId: string,
     updateData: UpdateCookieConsent,
     ipAddress: string,
@@ -93,12 +128,12 @@ export class CookieConsentService {
   ): Promise<LegalAPIResponse<CookieConsent>> {
     try {
       // Get existing consent for audit trail
-      const existingConsent = await this.getConsentById(consentId)
+      const existingConsent = await this.getConsentById(request, consentId)
       if (!existingConsent) {
         return {
           success: false,
           error: 'Consent record not found',
-          timestamp: new Date().toISOString(),
+          timestamp: getSpainTimestamp(),
           version: LEGAL_CONSTANTS.DEFAULT_POLICY_VERSION
         }
       }
@@ -106,11 +141,12 @@ export class CookieConsentService {
       // Validate update data
       const validatedData = UpdateCookieConsentSchema.parse(updateData)
 
-      const { data, error } = await this.supabase
+      const supabase = await this.getSupabaseClient(request)
+      const { data, error } = await supabase
         .from('cookie_consents')
         .update({
           ...validatedData,
-          updated_at: new Date().toISOString()
+          updated_at: getSpainTimestamp()
         })
         .eq('consent_id', consentId)
         .select()
@@ -125,6 +161,7 @@ export class CookieConsentService {
 
       // Log consent modification for audit
       await this.logConsentActivity(
+        request,
         eventType,
         updatedConsent.id,
         existingConsent,
@@ -136,7 +173,7 @@ export class CookieConsentService {
       return {
         success: true,
         data: updatedConsent,
-        timestamp: new Date().toISOString(),
+        timestamp: getSpainTimestamp(),
         version: updatedConsent.policy_version
       }
     } catch (error) {
@@ -144,7 +181,7 @@ export class CookieConsentService {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to update consent',
-        timestamp: new Date().toISOString(),
+        timestamp: getSpainTimestamp(),
         version: LEGAL_CONSTANTS.DEFAULT_POLICY_VERSION
       }
     }
@@ -155,6 +192,7 @@ export class CookieConsentService {
    * GDPR Article 7(3) - Right to withdraw consent
    */
   async withdrawConsent(
+    request: NextRequest,
     consentId: string,
     withdrawalMethod: WithdrawalMethod,
     ipAddress: string,
@@ -166,17 +204,17 @@ export class CookieConsentService {
         marketing_cookies: false,
         functionality_cookies: false,
         security_cookies: false,
-        withdrawal_timestamp: new Date().toISOString(),
+        withdrawal_timestamp: getSpainTimestamp(),
         withdrawal_method: withdrawalMethod
       }
 
-      return await this.updateConsent(consentId, withdrawalData, ipAddress, userAgent)
+      return await this.updateConsent(request, consentId, withdrawalData, ipAddress, userAgent)
     } catch (error) {
       console.error('Error withdrawing consent:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to withdraw consent',
-        timestamp: new Date().toISOString(),
+        timestamp: getSpainTimestamp(),
         version: LEGAL_CONSTANTS.DEFAULT_POLICY_VERSION
       }
     }
@@ -190,9 +228,10 @@ export class CookieConsentService {
    * Get current consent by consent ID
    * Used for validating cookie usage permissions
    */
-  async getConsentById(consentId: string): Promise<CookieConsent | null> {
+  async getConsentById(request: NextRequest, consentId: string): Promise<CookieConsent | null> {
     try {
-      const { data, error } = await this.supabase
+      const supabase = await this.getSupabaseClient(request)
+      const { data, error } = await supabase
         .from('cookie_consents')
         .select('*')
         .eq('consent_id', consentId)
@@ -211,14 +250,15 @@ export class CookieConsentService {
    * Get active consent for a customer
    * Returns most recent non-withdrawn consent
    */
-  async getActiveConsentByCustomer(customerId: string): Promise<CookieConsent | null> {
+  async getActiveConsentByCustomer(request: NextRequest, customerId: string): Promise<CookieConsent | null> {
     try {
-      const { data, error } = await this.supabase
+      const supabase = await this.getSupabaseClient(request)
+      const { data, error } = await supabase
         .from('cookie_consents')
         .select('*')
         .eq('customer_id', customerId)
         .is('withdrawal_timestamp', null)
-        .gte('expiry_timestamp', new Date().toISOString())
+        .gte('expiry_timestamp', getSpainTimestamp())
         .order('consent_timestamp', { ascending: false })
         .limit(1)
         .single()
@@ -236,14 +276,16 @@ export class CookieConsentService {
    * Get active consent for a session (anonymous users)
    * Used before customer registration/login
    */
-  async getActiveConsentBySession(sessionId: string): Promise<CookieConsent | null> {
+  async getActiveConsentBySession(request: NextRequest, sessionId: string): Promise<CookieConsent | null> {
     try {
-      const { data, error } = await this.supabase
+      const supabase = await this.getSupabaseClient(request)
+      const { data, error } = await supabase
+        .schema('restaurante')
         .from('cookie_consents')
         .select('*')
         .eq('session_id', sessionId)
         .is('withdrawal_timestamp', null)
-        .gte('expiry_timestamp', new Date().toISOString())
+        .gte('expiry_timestamp', getSpainTimestamp())
         .order('consent_timestamp', { ascending: false })
         .limit(1)
         .single()
@@ -258,10 +300,39 @@ export class CookieConsentService {
   }
 
   /**
+   * CRITICAL FUNCTION: Get active consent by IP address
+   * Used for first-visit detection and popup control
+   * GDPR/AEPD compliance: IP-based consent verification
+   */
+  async getActiveConsentByIP(request: NextRequest, ipAddress: string): Promise<CookieConsent | null> {
+    try {
+      const supabase = await this.getSupabaseClient(request)
+      const { data, error } = await supabase
+        .schema('restaurante')
+        .from('cookie_consents')
+        .select('*')
+        .eq('ip_address', ipAddress)
+        .is('withdrawal_timestamp', null)
+        .gte('expiry_timestamp', getSpainTimestamp())
+        .order('consent_timestamp', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (error || !data) return null
+
+      return CookieConsentSchema.parse(data)
+    } catch (error) {
+      console.error('Error fetching active consent by IP:', error)
+      return null
+    }
+  }
+
+  /**
    * Check if specific cookie category is allowed
    * Core function for cookie usage validation
    */
   async canUseCookieCategory(
+    request: NextRequest,
     consentId: string,
     category: 'necessary' | 'analytics' | 'marketing' | 'functionality' | 'security'
   ): Promise<boolean> {
@@ -271,7 +342,7 @@ export class CookieConsentService {
 
       // Check if consent is still valid (not expired, not withdrawn)
       if (consent.withdrawal_timestamp) return false
-      if (new Date(consent.expiry_timestamp) < new Date()) return false
+      if (new Date(consent.expiry_timestamp) < getSpainDate()) return false
 
       // Check category permission
       const categoryField = `${category}_cookies` as keyof CookieConsent
@@ -336,15 +407,15 @@ export class CookieConsentService {
    * Get expired consents that need renewal
    * Used for automated consent renewal notifications
    */
-  async getExpiredConsents(days: number = 30): Promise<CookieConsent[]> {
+  async getExpiredConsents(request: NextRequest, days: number = 30): Promise<CookieConsent[]> {
     try {
-      const cutoffDate = new Date()
+      const cutoffDate = getSpainDate()
       cutoffDate.setDate(cutoffDate.getDate() - days)
 
-      const { data, error } = await this.supabase
+      const { data, error } = await await this.getSupabaseClient(request)
         .from('cookie_consents')
         .select('*')
-        .lt('expiry_timestamp', new Date().toISOString())
+        .lt('expiry_timestamp', getSpainTimestamp())
         .is('withdrawal_timestamp', null)
         .order('expiry_timestamp', { ascending: true })
 
@@ -361,16 +432,16 @@ export class CookieConsentService {
    * Get consents expiring soon for proactive renewal
    * AEPD best practice for consent management
    */
-  async getConsentsExpiringSoon(days: number = 30): Promise<CookieConsent[]> {
+  async getConsentsExpiringSoon(request: NextRequest, days: number = 30): Promise<CookieConsent[]> {
     try {
-      const warningDate = new Date()
+      const warningDate = getSpainDate()
       warningDate.setDate(warningDate.getDate() + days)
 
-      const { data, error } = await this.supabase
+      const { data, error } = await await this.getSupabaseClient(request)
         .from('cookie_consents')
         .select('*')
         .lt('expiry_timestamp', warningDate.toISOString())
-        .gte('expiry_timestamp', new Date().toISOString())
+        .gte('expiry_timestamp', getSpainTimestamp())
         .is('withdrawal_timestamp', null)
         .order('expiry_timestamp', { ascending: true })
 
@@ -387,7 +458,7 @@ export class CookieConsentService {
    * Get consent statistics for compliance dashboard
    * Used by admin interface for monitoring
    */
-  async getConsentStatistics(days: number = 30): Promise<{
+  async getConsentStatistics(request: NextRequest, days: number = 30): Promise<{
     totalConsents: number
     activeConsents: number
     withdrawnConsents: number
@@ -401,10 +472,10 @@ export class CookieConsentService {
     }
   }> {
     try {
-      const cutoffDate = new Date()
+      const cutoffDate = getSpainDate()
       cutoffDate.setDate(cutoffDate.getDate() - days)
 
-      const { data, error } = await this.supabase
+      const { data, error } = await await this.getSupabaseClient(request)
         .from('cookie_consents')
         .select('*')
         .gte('created_at', cutoffDate.toISOString())
@@ -416,12 +487,12 @@ export class CookieConsentService {
 
       // Calculate statistics
       const active = consents.filter(c =>
-        !c.withdrawal_timestamp && new Date(c.expiry_timestamp) > new Date()
+        !c.withdrawal_timestamp && new Date(c.expiry_timestamp) > getSpainDate()
       ).length
 
       const withdrawn = consents.filter(c => c.withdrawal_timestamp).length
       const expired = consents.filter(c =>
-        !c.withdrawal_timestamp && new Date(c.expiry_timestamp) <= new Date()
+        !c.withdrawal_timestamp && new Date(c.expiry_timestamp) <= getSpainDate()
       ).length
 
       // Consent by method
@@ -432,7 +503,7 @@ export class CookieConsentService {
 
       // Acceptance rates for active consents
       const activeConsents = consents.filter(c =>
-        !c.withdrawal_timestamp && new Date(c.expiry_timestamp) > new Date()
+        !c.withdrawal_timestamp && new Date(c.expiry_timestamp) > getSpainDate()
       )
 
       const acceptanceRates = {
@@ -472,6 +543,7 @@ export class CookieConsentService {
    * Maintains GDPR compliance audit log
    */
   private async logConsentActivity(
+    request: NextRequest,
     eventType: string,
     entityId: string,
     oldValues: any,
@@ -482,7 +554,7 @@ export class CookieConsentService {
     actorId?: string
   ): Promise<void> {
     try {
-      await this.supabase
+      await await this.getSupabaseClient(request)
         .from('legal_audit_logs')
         .insert({
           event_type: eventType,

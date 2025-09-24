@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
     const customers = customersResult.data || []
     const reservationsData = reservationsResult.data || []
 
-    let reservationsMap = new Map()
+    const reservationsMap = new Map()
     reservationsData.forEach(reservation => {
       const email = reservation.customerEmail
       if (!reservationsMap.has(email)) {

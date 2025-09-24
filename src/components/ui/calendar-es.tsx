@@ -29,31 +29,30 @@ function Calendar({
   return (
     <>
       <style scoped>{`
-        /* Input container - más sólido y mejor UX */
+        /* Input container - clean design */
         .react-date-picker {
           width: 100%;
-          border: 1px solid #ccc;
-          border-radius: 6px;
+          border: 1px solid hsl(var(--border));
+          border-radius: calc(var(--radius) - 2px);
           padding: 0.5rem 0.75rem;
           font-size: 0.875rem;
-          background: white !important;
+          background: hsl(var(--background));
           transition: all 0.2s;
           height: 2.25rem;
           display: flex;
           align-items: center;
-          opacity: 1 !important;
         }
 
         .react-date-picker:focus-within {
-          border-color: #2563eb;
-          outline: 2px solid #2563eb;
+          border-color: hsl(var(--ring));
+          outline: 2px solid hsl(var(--ring));
           outline-offset: 2px;
         }
 
-        /* Dark theme support - Obsidian */
+        /* Dark theme input support */
         .theme-obsidian .react-date-picker, .dark .react-date-picker {
-          background: rgb(30 41 59) !important;
-          border: 1px solid rgb(51 65 85) !important;
+          background: hsl(var(--background));
+          border: 1px solid hsl(var(--border));
         }
 
         .theme-obsidian .react-date-picker:focus-within, .dark .react-date-picker:focus-within {
@@ -147,21 +146,23 @@ function Calendar({
           color: hsl(var(--muted-foreground));
         }
 
-        /* Calendar popup - sólido */
+        /* Calendar popup - clean and simple */
         .react-calendar {
-          background: white !important;
-          border: 1px solid #ccc !important;
-          padding: 1rem !important;
-          border-radius: 8px !important;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
-          z-index: 1000 !important;
+          background: white;
+          border: 1px solid hsl(var(--border));
+          padding: 1rem;
+          border-radius: calc(var(--radius) - 2px);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          margin-top: 0.25rem;
+          width: 100%;
+          max-width: 320px;
         }
 
-        /* Dark theme support - Obsidian */
+        /* Dark theme support */
         .theme-obsidian .react-calendar, .dark .react-calendar {
-          background: rgb(30 41 59) !important;
-          border: 1px solid rgb(51 65 85) !important;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7) !important;
+          background: hsl(var(--background));
+          border: 1px solid hsl(var(--border));
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.25);
         }
 
         /* Navigation header */
@@ -370,6 +371,12 @@ function Calendar({
               <line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
           }
+          calendarAriaLabel="Abrir calendario"
+          calendarClassName="calendar-dropdown"
+          showLeadingZeros={true}
+          showNeighboringMonth={false}
+          minDetail="month"
+          maxDetail="month"
           {...props}
         />
       </div>

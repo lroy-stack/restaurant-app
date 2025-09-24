@@ -152,25 +152,26 @@ export async function DELETE(
       )
     }
 
-    // For GDPR compliance, we should:
-    // 1. Keep reservation records but anonymize customer data
-    // 2. Delete the customer record
-    // 3. Log the deletion for audit purposes
+    // ELIMINACIÓN COMPLETA - TODO EL REGISTRO DEL CLIENTE
 
-    // Anonymize reservations
+    // 1. Eliminar reservas completamente
     const { error: reservationError } = await supabase
       .from('reservations')
-      .update({
-        customerName: 'DELETED_USER',
-        customerEmail: 'deleted@gdpr.compliance',
-        customerPhone: null,
-        specialRequests: null,
-        updatedAt: new Date().toISOString()
-      })
+      .delete()
       .eq('customerEmail', customer.email)
 
     if (reservationError) {
-      console.error('Error anonymizing reservations:', reservationError)
+      console.error('Error eliminando reservas:', reservationError)
+    }
+
+    // 2. Eliminar políticas GDPR
+    const { error: gdprError } = await supabase
+      .from('cookie_consents')
+      .delete()
+      .eq('customer_id', (await params).id)
+
+    if (gdprError) {
+      console.error('Error eliminando políticas GDPR:', gdprError)
     }
 
     // Delete customer record
@@ -193,7 +194,7 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: 'Customer data deleted successfully (GDPR compliant)'
+      message: 'Cliente eliminado completamente de la base de datos'
     })
 
   } catch (error) {

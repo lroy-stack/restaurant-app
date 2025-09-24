@@ -1,13 +1,16 @@
 'use client'
 
-import { useState, useMemo, FormEvent, useEffect } from 'react'
+import { useState, useMemo, FormEvent, useEffect, useCallback, useRef } from 'react'
+import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Calendar } from '@/components/ui/calendar-es'
-import { CalendarIcon, Loader2 } from 'lucide-react'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Label } from '@/components/ui/label'
+import { CustomCalendar } from '@/components/ui/custom-calendar'
+import { CalendarIcon, Loader2, MapPin, Users, CheckCircle, Clock, TreePine, Crown, Building, Check, Utensils } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
@@ -16,7 +19,7 @@ import { cn } from '@/lib/utils'
 import { useRealtimeCustomers } from '@/hooks/useRealtimeCustomers'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { useTables } from '@/hooks/useTables'
-import { useReservations, type ReservationData } from '@/hooks/useReservations'
+import { useReservations, type ReservationData, type AvailabilityData } from '@/hooks/useReservations'
 
 // Components
 import { CustomerSearchInput } from './customer-search-input'
@@ -48,11 +51,13 @@ interface FormState {
   time: string
   partySize: number
   customerId?: string
-  tableId?: string
+  tableIds: string[] // ✅ FIXED: Soporte para múltiples mesas
+  preferredLocation?: string // ✅ ADDED: Zona preferida para filtrar mesas
   specialRequests?: string
 }
 
 interface ReservationFormProps {
+  mode?: 'create' | 'edit' // ✅ ADDED: Support mode prop from page.tsx
   preselectedCustomerId?: string
   onSuccess: () => void
   onCancel: () => void
@@ -67,11 +72,47 @@ const initialState: FormState = {
   time: '',
   partySize: 2,
   customerId: undefined,
-  tableId: undefined,
+  tableIds: [], // ✅ FIXED: Array vacío para múltiples mesas
+  preferredLocation: '', // ✅ ADDED: Sin zona preferida por defecto
   specialRequests: ''
 }
 
+// ✅ ADDED: Funciones utilitarias para mejorar UX
+const getMaxTablesForPartySize = (partySize: number): number => {
+  if (partySize <= 4) return 1 // Grupos pequeños: 1 mesa
+  if (partySize <= 8) return 2 // Grupos medianos: máximo 2 mesas
+  return 3 // Grupos grandes: máximo 3 mesas
+}
+
+const getLocationIcon = (locationKey: string) => {
+  switch (locationKey) {
+    case 'TERRACE_CAMPANARI':
+      return <TreePine className="h-4 w-4 text-green-600" />
+    case 'SALA_VIP':
+      return <Crown className="h-4 w-4 text-yellow-600" />
+    case 'SALA_PRINCIPAL':
+      return <Building className="h-4 w-4 text-blue-600" />
+    case 'TERRACE_JUSTICIA':
+      return <TreePine className="h-4 w-4 text-green-600" />
+    default:
+      return <MapPin className="h-4 w-4 text-gray-600" />
+  }
+}
+
+// ✅ DINÁMICO: Extraer zonas de las mesas disponibles desde la API
+const getAvailableZones = (recommendations: any[]) => {
+  if (!recommendations?.length) return []
+
+  const uniqueZones = [...new Set(recommendations.map(table => table.location))]
+  return uniqueZones.map(location => ({
+    id: location,
+    name: location.replace(/_/g, ' ').replace('TERRACE', 'Terraza').replace('SALA', 'Sala').replace('CAMPANARI', 'Campanari').replace('VIP', 'VIP').replace('PRINCIPAL', 'Principal').replace('JUSTICIA', 'Justicia'),
+    icon: getLocationIcon(location)
+  }))
+}
+
 export function ReservationForm({
+  mode = 'create', // ✅ ADDED: Default mode
   preselectedCustomerId,
   onSuccess,
   onCancel,
@@ -80,13 +121,22 @@ export function ReservationForm({
   const [formData, setFormData] = useState<FormState>(initialState)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>()
+  const [availability, setAvailability] = useState<AvailabilityData | null>(null) // ✅ ADDED: Estado para disponibilidad
+  const [selectedTables, setSelectedTables] = useState<any[]>([]) // ✅ ADDED: Mesas seleccionadas con detalles
+  const [totalCapacity, setTotalCapacity] = useState(0) // ✅ ADDED: Capacidad total en tiempo real
 
   // Hooks de datos
   const { customers } = useRealtimeCustomers()
-  const { timeSlots } = useBusinessHours(formData.date)
+  const {
+    timeSlots,
+    closedDays,
+    minAdvanceMinutes,
+    maxPartySize,
+    isDateDisabled,
+    getDisabledReason
+  } = useBusinessHours(formData.date)
   const { tables } = useTables()
-  const { createReservation, isLoading } = useReservations()
+  const { createReservation, checkAvailability, isLoading } = useReservations() // ✅ ADDED: checkAvailability
 
   // Pre-select customer si se proporciona (UC2)
   useEffect(() => {
@@ -135,16 +185,82 @@ export function ReservationForm({
     }
   }
 
-  const handleDateSelect = (date: Date | undefined) => {
-    setSelectedDate(date)
-    if (date) {
-      const dateString = format(date, 'yyyy-MM-dd')
-      setFormData(prev => ({
-        ...prev,
-        date: dateString
-      }))
+  // ✅ ADDED: Función para verificar disponibilidad (patrón del ProfessionalForm)
+  const handleCheckAvailability = async (
+    date: string,
+    time: string,
+    partySize: number
+  ): Promise<boolean> => {
+    try {
+      // Prevenir conversión automática de zona horaria - mismo patrón que la API
+      const [year, month, day] = date.split('-')
+      const [hour, minute] = time.split(':')
+      const dateTime = new Date(Date.UTC(
+        parseInt(year),
+        parseInt(month) - 1,
+        parseInt(day),
+        parseInt(hour),
+        parseInt(minute)
+      )).toISOString()
+
+      const result = await checkAvailability(dateTime, partySize, formData.preferredLocation)
+
+      if (result) {
+        setAvailability(result)
+        // ✅ RESET: Limpiar selección previa cuando cambia disponibilidad
+        setSelectedTables([])
+        setTotalCapacity(0)
+        setFormData(prev => ({ ...prev, tableIds: [] }))
+        return result.available
+      }
+      return false
+    } catch (error) {
+      console.error('Error checking availability:', error)
+      return false
     }
   }
+
+  // ✅ ADDED: Función para manejar selección de mesas con feedback inteligente
+  const handleTableToggle = (table: any) => {
+    const maxTablesAllowed = getMaxTablesForPartySize(formData.partySize)
+    const isSelected = selectedTables.find(t => t.id === table.id)
+
+    let newSelection: any[]
+    if (isSelected) {
+      // Deseleccionar mesa
+      newSelection = selectedTables.filter(t => t.id !== table.id)
+    } else {
+      // Validar límites antes de seleccionar
+      if (selectedTables.length >= maxTablesAllowed) {
+        const reason = formData.partySize <= 4
+          ? 'Para grupos pequeños (1-4 personas) solo necesitas 1 mesa'
+          : formData.partySize <= 8
+            ? 'Para grupos medianos (5-8 personas) máximo 2 mesas'
+            : 'Máximo 3 mesas por reserva (grupos grandes)'
+        toast.error(reason)
+        return
+      }
+      newSelection = [...selectedTables, table]
+    }
+
+    // Calcular capacidad total en tiempo real
+    const capacity = newSelection.reduce((sum, t) => sum + t.capacity, 0)
+
+    // Actualizar estados
+    setSelectedTables(newSelection)
+    setTotalCapacity(capacity)
+    setFormData(prev => ({ ...prev, tableIds: newSelection.map(t => t.id) }))
+
+    // ✅ FEEDBACK AUTOMÁTICO: Mostrar estado de capacidad
+    if (newSelection.length > 0) {
+      if (capacity >= formData.partySize) {
+        toast.success(`✅ Capacidad suficiente: ${capacity} asientos para ${formData.partySize} personas`)
+      } else {
+        toast.warning(`⚠️ Capacidad insuficiente: ${capacity} asientos, necesitas ${formData.partySize} personas`)
+      }
+    }
+  }
+
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -157,10 +273,16 @@ export function ReservationForm({
       return
     }
 
+    // ✅ FIXED: Validar que se haya seleccionado al menos una mesa
+    if (!formData.tableIds.length) {
+      console.error('No se ha seleccionado ninguna mesa')
+      return
+    }
+
     try {
       const reservationData: ReservationData = {
         dateTime: `${formData.date}T${formData.time}:00`,
-        tableId: formData.tableId || '',
+        tableIds: formData.tableIds?.length ? formData.tableIds : [], // 🔥 CRITICAL FIX: SIEMPRE array
         partySize: formData.partySize,
         firstName: formData.customerName.split(' ')[0] || '',
         lastName: formData.customerName.split(' ').slice(1).join(' ') || '',
@@ -226,11 +348,14 @@ export function ReservationForm({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Fecha</label>
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={handleDateSelect}
-                disabled={false}
+              <CustomCalendar
+                value={formData.date}
+                onChange={(date) => setFormData(prev => ({ ...prev, date }))}
+                placeholder="Seleccionar fecha"
+                closedDays={closedDays}
+                minAdvanceMinutes={minAdvanceMinutes}
+                isDateDisabled={isDateDisabled}
+                getDisabledReason={getDisabledReason}
                 className="h-9"
               />
             </div>
@@ -258,49 +383,206 @@ export function ReservationForm({
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Personas</label>
-              <Input
-                type="number"
-                min="1"
-                max="20"
-                value={formData.partySize}
-                onChange={(e) => setFormData(prev => ({...prev, partySize: parseInt(e.target.value) || 1}))}
-                required
-                className="h-9"
-              />
+              <Select
+                value={formData.partySize.toString()}
+                onValueChange={(value) => setFormData(prev => ({...prev, partySize: parseInt(value)}))}
+              >
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Seleccionar personas" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  <div className="max-h-48 overflow-y-auto">
+                    {Array.from({ length: maxPartySize }, (_, i) => i + 1).map((num) => (
+                      <SelectItem key={num} value={num.toString()}>
+                        {num} {num === 1 ? 'persona' : 'personas'}
+                      </SelectItem>
+                    ))}
+                  </div>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {/* Optional Table */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Mesa (opcional)</label>
-            <Select
-              value={formData.tableId || 'none'}
-              onValueChange={(tableId) => setFormData(prev => ({...prev, tableId: tableId === 'none' ? undefined : tableId}))}
-            >
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder="Sin mesa asignada" />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">
-                <SelectItem value="none">Sin mesa asignada</SelectItem>
-                <div className="max-h-48 overflow-y-auto">
-                  {tables.filter(table => table.isActive).map(table => {
-                    const locationLabel = {
-                      'TERRACE_CAMPANARI': 'T. Campanari',
-                      'TERRACE_JUSTICIA': 'T. Justicia',
-                      'SALA_PRINCIPAL': 'Sala Principal',
-                      'SALA_VIP': 'Sala VIP'
-                    }[table.location] || table.location
+          {/* ✅ NUEVA UI: Selección de Mesa con Zona y Grid Responsivo */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Utensils className="h-5 w-5" />
+                Selección de Mesa <span className="text-red-500">*</span>
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Elige la zona y las mesas para tu grupo
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+
+              {availability && availability.available && availability.recommendations?.length ? (
+                <>
+                  {/* ✅ MEJORADO: Selector de Zona Ergonómico */}
+                  {(() => {
+                    const availableZones = getAvailableZones(availability.recommendations)
+                    if (availableZones.length <= 1) return null
 
                     return (
-                      <SelectItem key={table.id} value={table.id}>
-                        Mesa {table.number} • {table.capacity}P • {locationLabel}
-                      </SelectItem>
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium text-gray-700">
+                          Filtrar por zona
+                        </Label>
+                        <div className="flex flex-wrap gap-2">
+                          {/* Botón "Todas las zonas" */}
+                          <Button
+                            type="button"
+                            variant={!formData.preferredLocation ? "default" : "outline"}
+                            size="sm"
+                            className="h-9 px-3"
+                            onClick={() => setFormData(prev => ({ ...prev, preferredLocation: '' }))}
+                          >
+                            <MapPin className="h-4 w-4 mr-2" />
+                            Todas
+                          </Button>
+
+                          {/* Botones de zona dinámicos */}
+                          {availableZones.map((zone) => (
+                            <Button
+                              key={zone.id}
+                              type="button"
+                              variant={formData.preferredLocation === zone.id ? "default" : "outline"}
+                              size="sm"
+                              className="h-9 px-3"
+                              onClick={() => setFormData(prev => ({ ...prev, preferredLocation: zone.id }))}
+                            >
+                              {zone.icon}
+                              <span className="ml-2 hidden sm:inline">{zone.name}</span>
+                              <span className="ml-2 sm:hidden">{zone.name.split(' ')[0]}</span>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
                     )
-                  })}
+                  })()}
+
+                  {/* Disponibilidad Summary */}
+                  <div className="flex items-center gap-2 p-4 bg-secondary/50 rounded-lg">
+                    <CheckCircle className="h-5 w-5 text-secondary-foreground" />
+                    <span className="text-secondary-foreground font-medium">
+                      {availability.recommendations.filter(table => !formData.preferredLocation || table.location === formData.preferredLocation).length} mesas disponibles para tu solicitud
+                    </span>
+                  </div>
+
+                  {/* Grid de Mesas - Mobile Friendly */}
+                  <div className="grid gap-2 grid-cols-4 md:grid-cols-4 lg:grid-cols-6">
+                    {availability.recommendations
+                      .filter(table => !formData.preferredLocation || table.location === formData.preferredLocation)
+                      .map((table) => {
+                        const isSelected = selectedTables.find(t => t.id === table.id)
+                        const maxTablesAllowed = getMaxTablesForPartySize(formData.partySize)
+
+                        return (
+                          <div
+                            key={table.id}
+                            className={cn(
+                              "relative p-2 sm:p-3 rounded-lg border cursor-pointer transition-all touch-manipulation",
+                              "hover:border-primary/50 active:scale-95 min-h-[60px] sm:min-h-[70px]",
+                              isSelected
+                                ? "border-primary bg-primary/5"
+                                : "border-gray-200",
+                              selectedTables.length >= maxTablesAllowed && !isSelected
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            )}
+                            onClick={() => {
+                              if (selectedTables.length >= maxTablesAllowed && !isSelected) {
+                                return // No permitir más selecciones
+                              }
+                              handleTableToggle(table)
+                            }}
+                          >
+                            {/* Checkbox Visual */}
+                            <div className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2">
+                              <div className={cn(
+                                "w-3 h-3 sm:w-4 sm:h-4 rounded border flex items-center justify-center",
+                                isSelected
+                                  ? "bg-primary border-primary"
+                                  : "border-gray-300",
+                                selectedTables.length >= maxTablesAllowed && !isSelected
+                                  ? "opacity-50"
+                                  : ""
+                              )}>
+                                {isSelected && (
+                                  <Check className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-white" />
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Contenido de la Mesa */}
+                            <div className="pr-5 sm:pr-6">
+                              <div className="text-center">
+                                <div className={cn(
+                                  "text-sm sm:text-lg font-bold mb-0.5 sm:mb-1 truncate",
+                                  isSelected ? "text-primary" : "text-gray-900"
+                                )}>
+                                  {table.number}
+                                </div>
+                                <div className="text-[10px] sm:text-xs text-gray-600">
+                                  {table.capacity} pers.
+                                </div>
+                                {table.priceMultiplier > 1 && (
+                                  <div className="mt-1">
+                                    <span className="text-xs text-yellow-600">⭐</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                  </div>
+
+                  {/* Feedback de Capacidad en Tiempo Real */}
+                  {selectedTables.length > 0 && (
+                    <div className="mt-4">
+                      {totalCapacity >= formData.partySize ? (
+                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <p className="text-sm text-green-700 flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            <strong>✅ Capacidad suficiente:</strong> {totalCapacity} asientos para {formData.partySize} personas.
+                            <span className="text-xs">({selectedTables.length} mesa{selectedTables.length !== 1 ? 's' : ''} seleccionada{selectedTables.length !== 1 ? 's' : ''})</span>
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                          <p className="text-sm text-amber-700 flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            <strong>⚠️ Capacidad insuficiente:</strong> {totalCapacity} asientos, necesitas {formData.partySize} personas.
+                            {totalCapacity < formData.partySize && " Selecciona más mesas."}
+                            <span className="text-xs">({selectedTables.length}/{getMaxTablesForPartySize(formData.partySize)} mesas)</span>
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="p-6 border rounded-md bg-muted/50 text-center">
+                  <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Selecciona fecha, hora y número de personas para ver mesas disponibles
+                  </p>
+                  {formData.date && formData.time && formData.partySize && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCheckAvailability(formData.date, formData.time, formData.partySize)}
+                    >
+                      <MapPin className="h-4 w-4 mr-2" />
+                      Verificar Disponibilidad
+                    </Button>
+                  )}
                 </div>
-              </SelectContent>
-            </Select>
-          </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Optional Notes */}
           <div className="space-y-2">

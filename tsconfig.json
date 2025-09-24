@@ -6,7 +6,7 @@
     "skipLibCheck": true,
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": false,
+    "exactOptionalPropertyTypes": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -24,6 +24,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/(public)/reservas/page.tsx", "src/app/(public)/reservas/page.tsx.backup", "src/app/(public)/menu/page.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/(public)/reservas/page.tsx", "src/app/(public)/reservas/page.tsx.backup", "src/app/(public)/menu/page.tsx", "src/app/page.tsx.backup"],
   "exclude": ["node_modules"]
 }

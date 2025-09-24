@@ -21,6 +21,13 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EnigmaLogo } from '@/components/ui/enigma-logo'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 
 const navigationItems = [
   {
@@ -209,11 +216,11 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
           {/* Cart Button - Task 5 PRP Implementation */}
           {cartCount > 0 && (
             <button onClick={toggleCart}>
-              <div className="relative w-10 h-10 rounded-lg flex items-center justify-center bg-green-500/20 text-green-700 hover:bg-green-500/30 transition-all duration-300 group hover:scale-105 active:scale-98">
+              <div className="relative w-10 h-10 rounded-lg flex items-center justify-center bg-secondary/30 text-secondary-foreground hover:bg-secondary/50 transition-all duration-300 group hover:scale-105 active:scale-98">
                 <ShoppingCart className="w-4 h-4" strokeWidth={2} />
 
                 {/* Cart count badge */}
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center bg-red-500 hover:bg-red-500 text-white border-0 min-w-[1.25rem]">
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center bg-destructive hover:bg-destructive text-destructive-foreground border-0 min-w-[1.25rem]">
                   {cartCount > 99 ? '99+' : cartCount}
                 </Badge>
 
@@ -274,7 +281,7 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
       )}>
         <button
           className={cn(
-            'w-14 h-14 rounded-lg flex items-center justify-center',
+            'w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center',
             'backdrop-blur-2xl border',
             'transition-all duration-300',
             'hover:scale-105 active:scale-95',
@@ -288,49 +295,44 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
         >
           <div className="transition-all duration-200">
             {isMobileMenuOpen ? (
-              <X className="w-6 h-6" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
             ) : (
-              <Menu className="w-6 h-6 text-gray-800" />
+              <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
             )}
           </div>
         </button>
       </div>
 
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
-            onClick={() => setIsMobileMenuOpen(false)}
-          />
-
-          {/* Menu Panel */}
-          <div className="fixed top-20 left-4 right-4 sm:left-6 sm:right-6 md:left-auto md:right-6 md:max-w-sm z-50 lg:hidden">
-            <div
-              className="backdrop-blur-2xl rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 border shadow-2xl w-full bg-white/90 border-white/50 text-gray-900"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)',
-                boxShadow: '0 20px 60px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.6)'
-              }}
-            >
-              {/* Logo */}
-              <div className="flex items-center justify-center mb-4 sm:mb-5 md:mb-6">
-                <Link href="/">
-                  <div className="transition-all duration-300 ring-2 ring-white/30 rounded-full p-3">
-                    <EnigmaLogo className="w-10 h-10" variant="primary" />
-                  </div>
+      {/* Adaptive Mobile Menu - Sheet Implementation */}
+      <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+        <SheetContent
+          side="right"
+          className="w-full sm:w-[400px] md:w-[450px] p-0 border-l border-border bg-card/95"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)',
+            backdropFilter: 'blur(20px)'
+          }}
+        >
+          <div className="flex flex-col h-full">
+            <SheetHeader className="p-4 border-b border-border bg-muted/10">
+              <div className="flex items-center gap-3">
+                <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
+                  <EnigmaLogo className="w-8 h-8" variant="primary" />
                 </Link>
+                <div className="flex-1 text-center">
+                  <SheetTitle className="enigma-brand-main text-base font-bold text-primary">
+                    Enigma Cocina Con Alma
+                  </SheetTitle>
+                  <SheetDescription className="text-xs text-muted-foreground">
+                    Auténtico casco antiguo de Calpe
+                  </SheetDescription>
+                </div>
               </div>
+            </SheetHeader>
 
-              {/* Brand Name */}
-              <div className="text-center mb-6">
-                <h2 className="enigma-brand-main text-lg font-bold text-primary">Enigma Cocina Con Alma</h2>
-                <p className="text-sm text-gray-600 mt-1">Auténtico casco antiguo de Calpe</p>
-              </div>
-
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
               {/* Navigation Items */}
-              <div className="space-y-1 sm:space-y-1.5 md:space-y-2 mb-4 sm:mb-5 md:mb-6">
+              <div className="space-y-2 mb-6">
                 {navigationItems.map((item) => {
                   const isActive = pathname === item.href
                   const Icon = item.icon
@@ -339,28 +341,29 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
                     <Link
                       key={item.href}
                       href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
                       className={cn(
-                        'flex items-center space-x-3 sm:space-x-3.5 md:space-x-4 p-3 sm:p-3.5 md:p-4 rounded-xl transition-all duration-200',
-                        'min-h-[48px] sm:min-h-[52px] md:min-h-[56px]',
+                        'flex items-center gap-3 p-3 sm:p-4 rounded-xl transition-all duration-200',
+                        'min-h-[52px] touch-manipulation',
                         'hover:scale-[1.02] active:scale-[0.98]',
                         isActive
-                          ? 'bg-primary/25 text-primary shadow-sm hover:bg-primary/30'
-                          : 'text-gray-800 hover:text-primary hover:bg-white/30'
+                          ? 'bg-primary/20 text-primary shadow-sm hover:bg-primary/30'
+                          : 'text-foreground hover:text-primary hover:bg-muted/50'
                       )}
                     >
                       <div className={cn(
-                        'w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl flex items-center justify-center',
+                        'w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center',
                         'backdrop-blur-sm transition-all duration-200',
                         isActive
-                          ? 'bg-primary text-white shadow-lg'
-                          : 'bg-white/20 text-gray-600 hover:bg-white/30 hover:text-primary'
+                          ? 'bg-primary text-primary-foreground shadow-lg'
+                          : 'bg-muted/40 text-muted-foreground hover:bg-muted/60 hover:text-primary'
                       )}>
-                        <Icon className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" />
+                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
                       <div className="flex-1">
                         <h3 className="enigma-brand-body font-semibold text-sm sm:text-base">{item.name}</h3>
                         {item.description && (
-                          <p className="text-xs sm:text-sm mt-1 text-gray-500">{item.description}</p>
+                          <p className="text-xs sm:text-sm mt-1 text-muted-foreground">{item.description}</p>
                         )}
                       </div>
                       {isActive && (
@@ -374,27 +377,27 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
                 {cartCount > 0 && (
                   <button
                     onClick={toggleCart}
-                    className="flex items-center space-x-3 sm:space-x-3.5 md:space-x-4 p-3 sm:p-3.5 md:p-4 rounded-xl transition-all duration-200 min-h-[48px] sm:min-h-[52px] md:min-h-[56px] hover:scale-[1.02] active:scale-[0.98] text-green-700 hover:text-green-800 hover:bg-green-50/50 w-full"
+                    className="flex items-center gap-3 p-3 sm:p-4 rounded-xl transition-all duration-200 min-h-[52px] touch-manipulation hover:scale-[1.02] active:scale-[0.98] text-secondary-foreground hover:text-secondary-foreground hover:bg-secondary/20 w-full"
                   >
-                    <div className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl flex items-center justify-center bg-green-500/20 text-green-700 hover:bg-green-500/30 transition-all duration-200 relative">
-                      <ShoppingCart className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" />
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center bg-secondary/30 text-secondary-foreground hover:bg-secondary/50 transition-all duration-200 relative">
+                      <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
 
                       {/* Cart count badge */}
-                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center bg-red-500 hover:bg-red-500 text-white border-0 min-w-[1.25rem]">
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center bg-destructive hover:bg-destructive text-destructive-foreground border-0 min-w-[1.25rem]">
                         {cartCount > 99 ? '99+' : cartCount}
                       </Badge>
                     </div>
                     <div className="flex-1">
                       <h3 className="enigma-brand-body font-semibold text-sm sm:text-base">Carrito</h3>
-                      <p className="text-xs sm:text-sm mt-1 text-gray-500">{cartCount} productos seleccionados</p>
+                      <p className="text-xs sm:text-sm mt-1 text-muted-foreground">{cartCount} productos seleccionados</p>
                     </div>
                   </button>
                 )}
               </div>
 
               {/* Contact Info */}
-              <div className="border-t border-gray-200/50 pt-4 mb-4">
-                <div className="space-y-2 text-sm text-gray-600">
+              <div className="border-t border-border pt-4 mb-4">
+                <div className="space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-3">
                     <Phone className="h-4 w-4 text-primary" />
                     <a href="tel:+34672796006" className="hover:text-primary transition-colors">
@@ -411,11 +414,13 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Action Buttons */}
+            {/* Action Buttons - Fixed at bottom */}
+            <div className="p-4 sm:p-6 border-t border-border bg-card/50">
               <div className="space-y-2">
-                <Link href="/reservas" className="block">
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-white">
+                <Link href="/reservas" className="block" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                     <Calendar className="w-4 h-4 mr-2" />
                     Reservar Mesa
                   </Button>
@@ -426,7 +431,7 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
                   rel="noopener noreferrer"
                   className="block"
                 >
-                  <Button variant="outline" className="w-full border-green-500 text-green-600 hover:bg-green-50">
+                  <Button variant="outline" className="w-full border-secondary text-secondary-foreground hover:bg-secondary/20">
                     <MessageCircle className="w-4 h-4 mr-2" />
                     WhatsApp
                   </Button>
@@ -434,8 +439,8 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
               </div>
             </div>
           </div>
-        </>
-      )}
+        </SheetContent>
+      </Sheet>
     </>
   )
 }

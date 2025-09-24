@@ -407,3 +407,12 @@ export default {
   CreateAuditLogSchema,
   LEGAL_CONSTANTS
 }
+
+// ============================================
+// MISSING TYPE EXPORTS (FIX GDPR IMPORTS)
+// ============================================
+
+// Export type aliases for lowercase imports in GDPR route
+export type GdprRequestType = z.infer<typeof GDPRRequestType>
+export type GdprRequestStatus = z.infer<typeof GDPRRequestStatus>
+export type CreateGdprRequestSchema = z.infer<typeof CreateGDPRRequestSchema>

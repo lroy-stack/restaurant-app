@@ -13,6 +13,13 @@ interface TableData {
   currentStatus?: 'available' | 'reserved' | 'occupied' | 'maintenance' | 'temporally_closed'
   statusNotes?: string
   estimatedFreeTime?: string
+  // 🔥 NUEVO: Añadir campo para mostrar información de reserva
+  currentReservation?: {
+    customerName: string
+    partySize: number
+    time: string
+    status: string
+  } | null
 }
 
 interface TableStore {
@@ -196,9 +203,9 @@ export const useTableStore = create<TableStore>()(
                 ? {
                     ...table,
                     currentStatus: status as TableData['currentStatus'],
-                    ...(notes && { statusNotes: notes }),
-                    ...(estimatedFreeTime !== 'none' && estimatedFreeTime && { estimatedFreeTime })
-                  }
+                    statusNotes: notes || table.statusNotes,
+                    estimatedFreeTime: estimatedFreeTime === 'none' ? undefined : (estimatedFreeTime || table.estimatedFreeTime)
+                  } as TableData
                 : table
             )
           }))

@@ -1,0 +1,622 @@
+{
+  "config": {
+    "configFile": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/playwright.config.ts",
+    "rootDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/global-setup.ts",
+    "globalTeardown": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/global-teardown.ts",
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 4
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "playwright-report/results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "playwright-report/results.xml"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "Microsoft Edge",
+        "name": "Microsoft Edge",
+        "testDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "accessibility",
+        "name": "accessibility",
+        "testDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "performance",
+        "name": "performance",
+        "testDir": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.0",
+    "workers": 4,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "calendar-transparency.spec.ts",
+      "file": "calendar-transparency.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Calendar Transparency Debug",
+          "file": "calendar-transparency.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should login and inspect calendar UI in reservations dashboard",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 7681,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1')\nExpected string: \u001b[32m\"Panel de Administración\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1')\nExpected string: \u001b[32m\"Panel de Administración\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1')\u001b[22m\n\n    at /Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts:9:38",
+                        "location": {
+                          "file": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts",
+                          "column": 38,
+                          "line": 9
+                        },
+                        "snippet": "   7 |\n   8 |     // Wait for page to load\n>  9 |     await expect(page.locator('h1')).toContainText('Panel de Administración')\n     |                                      ^\n  10 |\n  11 |     // Fill in admin credentials\n  12 |     await page.fill('input[type=\"email\"]', 'admin@enigmaconalma.com')"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts",
+                            "column": 38,
+                            "line": 9
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1')\nExpected string: \u001b[32m\"Panel de Administración\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1')\u001b[22m\n\n\n   7 |\n   8 |     // Wait for page to load\n>  9 |     await expect(page.locator('h1')).toContainText('Panel de Administración')\n     |                                      ^\n  10 |\n  11 |     // Fill in admin credentials\n  12 |     await page.fill('input[type=\"email\"]', 'admin@enigmaconalma.com')\n    at /Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts:9:38"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-13T19:41:15.349Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results/calendar-transparency-Cale-b7298-I-in-reservations-dashboard-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results/calendar-transparency-Cale-b7298-I-in-reservations-dashboard-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results/calendar-transparency-Cale-b7298-I-in-reservations-dashboard-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts",
+                        "column": 38,
+                        "line": 9
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "f8afc62a658d49729b0e-4e88d723bc30f54b1b8f",
+              "file": "calendar-transparency.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "should login and inspect calendar UI in reservations dashboard",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 10717,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1')\nExpected string: \u001b[32m\"Panel de Administración\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1')\nExpected string: \u001b[32m\"Panel de Administración\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1')\u001b[22m\n\n    at /Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts:9:38",
+                        "location": {
+                          "file": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts",
+                          "column": 38,
+                          "line": 9
+                        },
+                        "snippet": "   7 |\n   8 |     // Wait for page to load\n>  9 |     await expect(page.locator('h1')).toContainText('Panel de Administración')\n     |                                      ^\n  10 |\n  11 |     // Fill in admin credentials\n  12 |     await page.fill('input[type=\"email\"]', 'admin@enigmaconalma.com')"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts",
+                            "column": 38,
+                            "line": 9
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1')\nExpected string: \u001b[32m\"Panel de Administración\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1')\u001b[22m\n\n\n   7 |\n   8 |     // Wait for page to load\n>  9 |     await expect(page.locator('h1')).toContainText('Panel de Administración')\n     |                                      ^\n  10 |\n  11 |     // Fill in admin credentials\n  12 |     await page.fill('input[type=\"email\"]', 'admin@enigmaconalma.com')\n    at /Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts:9:38"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-13T19:41:15.343Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results/calendar-transparency-Cale-b7298-I-in-reservations-dashboard-firefox/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results/calendar-transparency-Cale-b7298-I-in-reservations-dashboard-firefox/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results/calendar-transparency-Cale-b7298-I-in-reservations-dashboard-firefox/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts",
+                        "column": 38,
+                        "line": 9
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "f8afc62a658d49729b0e-86220edf5adc8943ecb7",
+              "file": "calendar-transparency.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "should login and inspect calendar UI in reservations dashboard",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 8883,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1')\nExpected string: \u001b[32m\"Panel de Administración\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1')\nExpected string: \u001b[32m\"Panel de Administración\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1')\u001b[22m\n\n    at /Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts:9:38",
+                        "location": {
+                          "file": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts",
+                          "column": 38,
+                          "line": 9
+                        },
+                        "snippet": "   7 |\n   8 |     // Wait for page to load\n>  9 |     await expect(page.locator('h1')).toContainText('Panel de Administración')\n     |                                      ^\n  10 |\n  11 |     // Fill in admin credentials\n  12 |     await page.fill('input[type=\"email\"]', 'admin@enigmaconalma.com')"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts",
+                            "column": 38,
+                            "line": 9
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1')\nExpected string: \u001b[32m\"Panel de Administración\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1')\u001b[22m\n\n\n   7 |\n   8 |     // Wait for page to load\n>  9 |     await expect(page.locator('h1')).toContainText('Panel de Administración')\n     |                                      ^\n  10 |\n  11 |     // Fill in admin credentials\n  12 |     await page.fill('input[type=\"email\"]', 'admin@enigmaconalma.com')\n    at /Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts:9:38"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-13T19:41:15.354Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results/calendar-transparency-Cale-b7298-I-in-reservations-dashboard-webkit/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results/calendar-transparency-Cale-b7298-I-in-reservations-dashboard-webkit/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results/calendar-transparency-Cale-b7298-I-in-reservations-dashboard-webkit/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts",
+                        "column": 38,
+                        "line": 9
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "f8afc62a658d49729b0e-75ddf5816c3ee7e2fe74",
+              "file": "calendar-transparency.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "should login and inspect calendar UI in reservations dashboard",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 8715,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1')\nExpected string: \u001b[32m\"Panel de Administración\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1')\nExpected string: \u001b[32m\"Panel de Administración\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1')\u001b[22m\n\n    at /Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts:9:38",
+                        "location": {
+                          "file": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts",
+                          "column": 38,
+                          "line": 9
+                        },
+                        "snippet": "   7 |\n   8 |     // Wait for page to load\n>  9 |     await expect(page.locator('h1')).toContainText('Panel de Administración')\n     |                                      ^\n  10 |\n  11 |     // Fill in admin credentials\n  12 |     await page.fill('input[type=\"email\"]', 'admin@enigmaconalma.com')"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts",
+                            "column": 38,
+                            "line": 9
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1')\nExpected string: \u001b[32m\"Panel de Administración\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1')\u001b[22m\n\n\n   7 |\n   8 |     // Wait for page to load\n>  9 |     await expect(page.locator('h1')).toContainText('Panel de Administración')\n     |                                      ^\n  10 |\n  11 |     // Fill in admin credentials\n  12 |     await page.fill('input[type=\"email\"]', 'admin@enigmaconalma.com')\n    at /Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts:9:38"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-13T19:41:15.370Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results/calendar-transparency-Cale-b7298-I-in-reservations-dashboard-Mobile-Chrome/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results/calendar-transparency-Cale-b7298-I-in-reservations-dashboard-Mobile-Chrome/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results/calendar-transparency-Cale-b7298-I-in-reservations-dashboard-Mobile-Chrome/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts",
+                        "column": 38,
+                        "line": 9
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "f8afc62a658d49729b0e-0c6eec7dabbf718535cc",
+              "file": "calendar-transparency.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "should login and inspect calendar UI in reservations dashboard",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 6000,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1')\nExpected string: \u001b[32m\"Panel de Administración\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1')\nExpected string: \u001b[32m\"Panel de Administración\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1')\u001b[22m\n\n    at /Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts:9:38",
+                        "location": {
+                          "file": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts",
+                          "column": 38,
+                          "line": 9
+                        },
+                        "snippet": "   7 |\n   8 |     // Wait for page to load\n>  9 |     await expect(page.locator('h1')).toContainText('Panel de Administración')\n     |                                      ^\n  10 |\n  11 |     // Fill in admin credentials\n  12 |     await page.fill('input[type=\"email\"]', 'admin@enigmaconalma.com')"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts",
+                            "column": 38,
+                            "line": 9
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1')\nExpected string: \u001b[32m\"Panel de Administración\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1')\u001b[22m\n\n\n   7 |\n   8 |     // Wait for page to load\n>  9 |     await expect(page.locator('h1')).toContainText('Panel de Administración')\n     |                                      ^\n  10 |\n  11 |     // Fill in admin credentials\n  12 |     await page.fill('input[type=\"email\"]', 'admin@enigmaconalma.com')\n    at /Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts:9:38"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-13T19:41:26.790Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results/calendar-transparency-Cale-b7298-I-in-reservations-dashboard-Mobile-Safari/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results/calendar-transparency-Cale-b7298-I-in-reservations-dashboard-Mobile-Safari/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/test-results/calendar-transparency-Cale-b7298-I-in-reservations-dashboard-Mobile-Safari/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/lr0y/local-ai-packaged/enigma-next/enigma-app/tests/calendar-transparency.spec.ts",
+                        "column": 38,
+                        "line": 9
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "f8afc62a658d49729b0e-15d8d676d321c54d1f84",
+              "file": "calendar-transparency.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "should login and inspect calendar UI in reservations dashboard",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Microsoft Edge",
+                  "projectName": "Microsoft Edge",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 3,
+                      "error": {
+                        "message": "Error: browserType.launch: Chromium distribution 'msedge' is not found at /Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge\nRun \"npx playwright install msedge\"",
+                        "stack": "Error: browserType.launch: Chromium distribution 'msedge' is not found at /Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge\nRun \"npx playwright install msedge\""
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Chromium distribution 'msedge' is not found at /Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge\nRun \"npx playwright install msedge\""
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-13T19:41:27.312Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "f8afc62a658d49729b0e-5a8c22d8f999b8afb020",
+              "file": "calendar-transparency.spec.ts",
+              "line": 4,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-09-13T19:41:11.465Z",
+    "duration": 22051.652,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 6,
+    "flaky": 0
+  }
+}

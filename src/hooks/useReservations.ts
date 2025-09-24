@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 
 export interface ReservationData {
   dateTime: string // ISO string format from ProfessionalForm
-  tableId: string
+  tableIds: string[] // ✅ NEW: Array of table IDs
   partySize: number
   firstName: string
   lastName: string
@@ -79,8 +79,12 @@ export const useReservations = () => {
       }
 
       const data = await response.json()
-      
+      console.log('🔍 API RESPONSE RAW:', JSON.stringify(data, null, 2))
+
       if (data.success && data.data) {
+        console.log('✅ API Success, transforming tables...')
+        console.log('📋 Raw tables count:', data.data.tables?.length)
+
         // Transform API response (API now properly filters by isActive)
         const availableTables = data.data.tables
           .filter((table: any) => table.available) // Only filter by availability - API handles isActive
@@ -141,7 +145,7 @@ export const useReservations = () => {
         date: date,
         time: timeOnly,
         partySize: data.partySize,
-        tableId: data.tableId,
+        tableIds: data.tableIds ? data.tableIds : (data.tableId ? [data.tableId] : []), // ✅ FIXED: Support both tableIds array AND tableId fallback
         specialRequests: data.specialRequests || null,
         preOrderItems: data.preOrderItems || [],
         preOrderTotal: data.preOrderTotal || 0,
@@ -152,10 +156,13 @@ export const useReservations = () => {
         dataProcessingConsent: data.dataProcessingConsent, // Always true at this point
         emailConsent: data.emailConsent,
         marketingConsent: data.marketingConsent,
-        preferredLanguage: data.preferredLanguage || 'ES', // FIXED: Use form language preference
-        // 🚀 CRITICAL FIX: Generate verification token for reservation management
-        verification_token: `vt_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`
+        preferredLanguage: data.preferredLanguage || 'ES' // FIXED: Use form language preference
       }
+
+      // 🔧 DEBUG: Log exact payload being sent
+      console.log('🚀 FRONTEND->API PAYLOAD:', JSON.stringify(apiData, null, 2))
+      console.log('🔍 tableIds type:', typeof apiData.tableIds, 'value:', apiData.tableIds)
+      console.log('🔍 Original data.tableIds:', data.tableIds, 'data.tableId:', data.tableId)
       
       const response = await fetch('/api/reservations', {
         method: 'POST',

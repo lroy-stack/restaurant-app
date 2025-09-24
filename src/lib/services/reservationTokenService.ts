@@ -5,89 +5,128 @@ export interface TokenValidationResult {
   reservation?: any
   customer?: any
   error?: string
+  errorType?: 'invalid' | 'expired' | 'not_found' | 'network' | 'too_close'
 }
 
+/**
+ * CLIENT-SIDE Token Service
+ * Para operaciones que se ejecutan en el cliente (páginas, hooks)
+ */
 export class ReservationTokenService {
+
   static async validateToken(token: string): Promise<TokenValidationResult> {
     try {
-      // 🚀 SECURITY FIX: Query reservation_tokens table with join to reservations
-      const { data: tokenData, error } = await supabase
-        .schema('restaurante')
-        .from('reservation_tokens')
-        .select(`
-          *,
-          reservations!reservation_id(
-            *,
-            customers!customerId(*),
-            tables!tableId(*)
-          )
-        `)
-        .eq('token', token)
-        .eq('is_active', true)
-        .single()
-
-      if (error || !tokenData) {
-        return { valid: false, error: 'Token no encontrado' }
-      }
-
-      // Validate token expiry and active status
-      const now = new Date()
-      const expiryDate = new Date(tokenData.expires)
-
-      if (!tokenData.is_active) {
-        return { valid: false, error: 'Token inactivo' }
-      }
-
-      if (now > expiryDate) {
-        return { valid: false, error: 'Token expirado' }
-      }
-
-      const reservation = tokenData.reservations
-
-      // Check if reservation is cancelled or completed
-      if (['CANCELLED', 'COMPLETED'].includes(reservation.status)) {
-        return { valid: false, error: 'Reserva finalizada' }
-      }
-
-      // Validate reservation is not too close to start time (2h buffer)
-      const reservationDateTime = new Date(reservation.time)
-      const timeDiff = reservationDateTime.getTime() - now.getTime()
-      const hoursUntilReservation = timeDiff / (1000 * 60 * 60)
-
-      if (hoursUntilReservation < 2 && hoursUntilReservation > 0) {
+      // 🔒 SECURITY: Validate token format first
+      if (!token || token.length < 10) {
         return {
           valid: false,
-          error: 'No se pueden realizar cambios 2 horas antes de la reserva'
+          error: 'Token inválido',
+          errorType: 'invalid'
         }
       }
 
-      // Token is valid - extract customer info from reservation
-      const customer = {
-        firstName: reservation.customerName?.split(' ')[0] || '',
-        lastName: reservation.customerName?.split(' ').slice(1).join(' ') || '',
-        email: reservation.customerEmail,
-        phone: reservation.customerPhone
+      console.log('🔍 Token validation started', { tokenLength: token.length, token: token.substring(0, 10) + '...' })
+
+      // 🚀 SECURE SOLUTION: Use dedicated API endpoint to avoid RLS issues
+      const response = await fetch('/api/reservations/token/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token })
+      })
+
+      console.log('🔍 API response status:', response.status)
+
+      if (!response.ok) {
+        const errorData = await response.json()
+
+        // 404 = token eliminado/no existe = comportamiento esperado
+        if (response.status === 404) {
+          console.log('ℹ️ Token not found (expected if token was used/deleted)')
+        } else {
+          // Otros errores sí son críticos
+          console.error('🚨 Token validation failed:', { status: response.status, error: errorData })
+        }
+
+        return {
+          valid: false,
+          error: errorData.error || 'Token no encontrado',
+          errorType: errorData.errorType || 'not_found'
+        }
       }
 
-      return {
-        valid: true,
-        reservation: {
-          ...reservation,
-          date: new Date(reservation.date).toISOString().split('T')[0],
-          time: new Date(reservation.time).toLocaleTimeString('es-ES', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-          }),
-          preOrderItems: [], // TODO: Load from reservation_items table if needed
-          preOrderTotal: 0 // TODO: Calculate from reservation_items
-        },
-        customer
+      const result = await response.json()
+
+      if (!result.valid) {
+        console.log('⚠️ Token validation returned invalid', result)
+        return result
       }
+
+      console.log('✅ Token validated successfully', {
+        reservationId: result.reservation?.id,
+        customerEmail: result.customer?.email,
+        date: result.reservation?.date,
+        time: result.reservation?.time
+      })
+
+      return result
     } catch (error) {
-      console.error('Token validation error:', error)
-      return { valid: false, error: 'Error de validación' }
+      console.error('🚨 Token validation failed:', error)
+      return {
+        valid: false,
+        error: 'Error de conexión',
+        errorType: 'network'
+      }
     }
+  }
+
+
+  /**
+   * ❌ CANCEL RESERVATION WITH TOKEN INVALIDATION
+   * Usar endpoint dedicado para evitar problemas de RLS
+   */
+  static async cancelReservationWithToken(
+    reservationId: string,
+    token: string,
+    reason?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log('❌ Cancelling reservation with token:', reservationId);
+
+      // 🚀 SECURE SOLUTION: Use dedicated API endpoint
+      const response = await fetch('/api/reservations/token/cancel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token, reason })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        console.error('❌ Error cancelling reservation:', result);
+        return { success: false, error: result.error || 'Error al cancelar reserva' };
+      }
+
+      console.log('✅ Reservation cancelled successfully');
+      return { success: true };
+
+    } catch (error) {
+      console.error('🚨 Error cancelling reservation:', error);
+      return { success: false, error: 'Error interno' };
+    }
+  }
+
+  /**
+   * 🔧 GET MANAGEMENT URL FOR RESERVATION
+   * Genera URL completa con detección de entorno
+   */
+  static getManagementUrl(token: string): string {
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const baseUrl = isDevelopment ? 'http://localhost:3001' : 'https://enigmaconalma.com';
+    return `${baseUrl}/mi-reserva?token=${token}`;
   }
 
   static async updateReservation(
@@ -107,26 +146,46 @@ export class ReservationTokenService {
         return { success: false, error: 'Token no válido para esta reserva' }
       }
 
-      // Mark token as used
-      await supabase
-        .schema('restaurante')
-        .from('reservation_tokens')
-        .update({ used_at: new Date().toISOString() })
-        .eq('token', token)
+      // Mark token as used with direct fetch
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-      // Update reservation
-      const { error } = await supabase
-        .schema('restaurante')
-        .from('reservations')
-        .update({
-          ...updates,
-          updatedAt: new Date().toISOString()
-        })
-        .eq('id', reservationId)
-        // 🚀 SECURITY: Token validation handled separately via reservation_tokens table
+      await fetch(
+        `${supabaseUrl}/rest/v1/reservation_tokens?token=eq.${token}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Accept-Profile': 'restaurante',
+            'Content-Profile': 'restaurante',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}`,
+            'apikey': supabaseKey
+          },
+          body: JSON.stringify({ used_at: new Date().toISOString() })
+        }
+      )
 
-      if (error) {
-        console.error('Update reservation error:', error)
+      // Update reservation with direct fetch
+      const updateResponse = await fetch(
+        `${supabaseUrl}/rest/v1/reservations?id=eq.${reservationId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Accept-Profile': 'restaurante',
+            'Content-Profile': 'restaurante',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}`,
+            'apikey': supabaseKey
+          },
+          body: JSON.stringify({
+            ...updates,
+            updatedAt: new Date().toISOString()
+          })
+        }
+      )
+
+      if (!updateResponse.ok) {
+        console.error('Update reservation error:', updateResponse.status)
         return { success: false, error: 'Error al actualizar reserva' }
       }
 
@@ -149,26 +208,67 @@ export class ReservationTokenService {
         return { success: false, error: validation.error }
       }
 
-      // Update reservation status to cancelled
-      const { error } = await supabase
-        .schema('restaurante')
-        .from('reservations')
-        .update({
-          status: 'CANCELLED',
-          specialRequests: reason ? `${validation.reservation.specialRequests || ''}\n\nCancelada: ${reason}`.trim() : validation.reservation.specialRequests,
-          updatedAt: new Date().toISOString()
-        })
-        .eq('id', reservationId)
-        // 🚀 SECURITY: Token validation handled separately via reservation_tokens table
+      // Update reservation status to cancelled with direct fetch
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-      if (error) {
-        console.error('Cancel reservation error:', error)
+      const cancelResponse = await fetch(
+        `${supabaseUrl}/rest/v1/reservations?id=eq.${reservationId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Accept-Profile': 'restaurante',
+            'Content-Profile': 'restaurante',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}`,
+            'apikey': supabaseKey
+          },
+          body: JSON.stringify({
+            status: 'CANCELLED',
+            specialRequests: reason ? `${validation.reservation.specialRequests || ''}\n\nCancelada: ${reason}`.trim() : validation.reservation.specialRequests,
+            updatedAt: new Date().toISOString()
+          })
+        }
+      )
+
+      if (!cancelResponse.ok) {
+        console.error('Cancel reservation error:', cancelResponse.status)
         return { success: false, error: 'Error al cancelar reserva' }
       }
 
       return { success: true }
     } catch (error) {
       console.error('Cancel reservation error:', error)
+      return { success: false, error: 'Error interno' }
+    }
+  }
+
+  /**
+   * INVALIDATE TOKEN
+   * Elimina completamente el token de la base de datos
+   */
+  static async invalidateToken(token: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log('🔒 Deleting token via secure API:', token.substring(0, 8) + '...')
+
+      // 🔐 SECURITY FIX: Use server-side API endpoint instead of direct client call
+      const response = await fetch('/api/reservations/token/delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token })
+      })
+
+      if (!response.ok) {
+        console.error('❌ Error deleting token:', response.status)
+        return { success: false, error: 'Error al eliminar token' }
+      }
+
+      console.log('✅ Token deleted successfully')
+      return { success: true }
+    } catch (error) {
+      console.error('❌ Error deleting token:', error)
       return { success: false, error: 'Error interno' }
     }
   }

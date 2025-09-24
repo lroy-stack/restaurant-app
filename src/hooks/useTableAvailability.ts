@@ -9,6 +9,7 @@ interface Table {
   qr_code?: string
   is_active: boolean
   status: 'available' | 'reserved' | 'unavailable'
+  type?: 'individual' | 'combination' // 🆕 Support table combinations
 }
 
 interface UseTableAvailabilityResult {
@@ -19,9 +20,10 @@ interface UseTableAvailabilityResult {
 }
 
 export function useTableAvailability(
-  date: string, 
-  time: string, 
-  partySize: number
+  date: string,
+  time: string,
+  partySize: number,
+  zone?: string // 🆕 Add zone parameter for filtering
 ): UseTableAvailabilityResult {
   const [tables, setTables] = useState<Table[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -37,43 +39,18 @@ export function useTableAvailability(
     setError(null)
 
     try {
-      // Primero intentar conexión directa con Supabase usando esquema restaurante
-      const { data: availableTables, error: dbError } = await supabase.rpc('check_table_availability', {
-        p_date: date,
-        p_time: time,
-        p_party_size: partySize
-      })
-
-      if (!dbError && availableTables) {
-        console.log('✅ Direct Supabase connection successful')
-        // Transform database response to expected format
-        const transformedTables = availableTables
-          .filter((table: any) => table.is_active !== false) // CRITICAL: Only active tables
-          .map((table: any) => ({
-            id: table.table_id || table.id,
-            number: table.table_number?.toString() || table.number,
-            capacity: table.capacity,
-            location: table.zone || table.location,
-            qr_code: table.qr_code,
-            is_active: table.is_active ?? true,
-            status: table.available ? 'available' : (table.status || 'unavailable')
-          }))
-        
-        setTables(transformedTables)
-        return
-      }
-
-      // Fallback to API route if direct connection fails
-      console.log('⚠️ Direct Supabase failed, trying API route')
+      // 🚀 USE CENTRALIZED API: Clean API that returns individual available tables
+      console.log('🎯 [HOOK] Using centralized availability API for:', { date, time, partySize, zone })
       const response = await fetch('/api/tables/availability', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json' 
         },
-        body: JSON.stringify({ 
-          date, 
-          time, 
-          partySize 
+        body: JSON.stringify({
+          date,
+          time,
+          partySize,
+          ...(zone && { tableZone: zone }) // 🆕 Include zone if provided
         })
       })
 
@@ -84,7 +61,7 @@ export function useTableAvailability(
       const data = await response.json()
       
       if (data.success && Array.isArray(data.data?.tables)) {
-        // Transform API response to expected format
+        // 🚀 Transform API response to component format
         const transformedTables = data.data.tables.map((table: any) => ({
           id: table.tableId || table.id,
           number: table.tableNumber?.toString() || table.number,
@@ -92,7 +69,8 @@ export function useTableAvailability(
           location: table.zone || table.location,
           qr_code: table.qr_code,
           is_active: table.is_active ?? true,
-          status: table.available ? 'available' : (table.status || 'unavailable')
+          status: table.available ? 'available' : (table.status || 'unavailable'),
+          type: table.type || 'individual' // 🆕 Support combination vs individual
         }))
         
         setTables(transformedTables)
@@ -115,7 +93,7 @@ export function useTableAvailability(
 
   useEffect(() => {
     fetchAvailability()
-  }, [date, time, partySize])
+  }, [date, time, partySize, zone]) // 🚀 CRITICAL FIX: Include zone in dependencies
 
   return { 
     tables, 

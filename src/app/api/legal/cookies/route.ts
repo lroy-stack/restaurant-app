@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { cookieConsentService } from '@/lib/services/legal/cookieConsentService'
 import { ConsentMethod, CreateCookieConsentSchema } from '@/types/legal'
 import { z } from 'zod'
+import { getSpainTimestamp, getSpainExpiryDate } from '@/lib/utils/timestamps'
 
 // ============================================
 // GET - Retrieve consent records
@@ -37,19 +38,22 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Get consents by filters
-    const filters: any = {}
-    if (ipAddress) filters.ipAddress = ipAddress
-    if (userId) filters.userId = userId
-    if (sessionId) filters.sessionId = sessionId
-    if (!includeExpired) filters.includeExpired = false
+    // Get consents using available methods - PRIORITY: IP verification first
+    let consent: any = null
 
-    const consents = await cookieConsentService.getConsentsByFilters(filters)
+    if (ipAddress) {
+      // CRITICAL: Check by IP first for first-visit detection
+      consent = await cookieConsentService.getActiveConsentByIP(request, ipAddress)
+    } else if (userId) {
+      consent = await cookieConsentService.getActiveConsentByCustomer(request, userId)
+    } else if (sessionId) {
+      consent = await cookieConsentService.getActiveConsentBySession(request, sessionId)
+    }
 
     return NextResponse.json({
       success: true,
-      consents,
-      count: consents.length
+      consent,
+      found: !!consent
     })
 
   } catch (error) {
@@ -73,58 +77,115 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-    // Validate request data
-    const validationResult = CreateCookieConsentSchema.safeParse(body)
-    if (!validationResult.success) {
+    console.log('🔍 Raw body received:', JSON.stringify(body, null, 2))
+
+    // 🚀 CRITICAL FIX: Map frontend fields to backend schema
+    const mappedBody = {
+      customer_id: body.userId || null,
+      session_id: body.sessionId || null,
+      consent_method: body.consentMethod,
+      necessary_cookies: true, // REQUIRED: Always true per AEPD
+      analytics_cookies: body.analyticsConsent || false,
+      marketing_cookies: body.marketingConsent || false,
+      functionality_cookies: body.functionalConsent || false,
+      security_cookies: false, // Default per AEPD
+      page_url: body.pageUrl || '/reservas',
+      referrer: body.referrer || null,
+      policy_version: 'v1.0',
+      user_agent: body.userAgent
+      // IP and expiry_timestamp will be added below
+    }
+
+    console.log('🔍 Mapped body (before completion):', JSON.stringify(mappedBody, null, 2))
+
+    // Validate mapped data
+    const validationResult = CreateCookieConsentSchema.safeParse(mappedBody)
+    // Get IP address from request headers (GDPR compliance)
+    const getClientIP = (request: NextRequest): string => {
+      // Standard proxy headers in order of preference
+      const xForwardedFor = request.headers.get('x-forwarded-for')
+      const xRealIP = request.headers.get('x-real-ip')
+      const cfConnectingIP = request.headers.get('cf-connecting-ip') // Cloudflare
+      const xClientIP = request.headers.get('x-client-ip')
+      const xForwarded = request.headers.get('x-forwarded')
+      const forwardedFor = request.headers.get('forwarded-for')
+      const forwarded = request.headers.get('forwarded')
+
+      console.log('🔍 All IP headers:', {
+        'x-forwarded-for': xForwardedFor,
+        'x-real-ip': xRealIP,
+        'cf-connecting-ip': cfConnectingIP,
+        'x-client-ip': xClientIP,
+        'x-forwarded': xForwarded,
+        'forwarded-for': forwardedFor,
+        'forwarded': forwarded
+      })
+
+      // x-forwarded-for can contain multiple IPs, take the first (original client)
+      if (xForwardedFor) {
+        const firstIP = xForwardedFor.split(',')[0].trim()
+        if (firstIP && firstIP !== '127.0.0.1' && firstIP !== '::1') {
+          return firstIP
+        }
+      }
+
+      // Check other headers
+      if (cfConnectingIP && cfConnectingIP !== '127.0.0.1') return cfConnectingIP
+      if (xRealIP && xRealIP !== '127.0.0.1') return xRealIP
+      if (xClientIP && xClientIP !== '127.0.0.1') return xClientIP
+
+      // Fallback for development
+      return '127.0.0.1'
+    }
+
+    const ipAddress = getClientIP(request)
+    console.log('🎯 Final IP address:', ipAddress)
+
+    // AEPD 2025 compliance: 24-month maximum duration (Spain timezone)
+    const expiresAt = getSpainExpiryDate(24 * 30) // 24 months in days
+
+    // Complete the mapped data with calculated fields
+    const completeData = {
+      ...mappedBody,
+      consent_id: `cookie_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      ip_address: ipAddress,
+      user_agent: mappedBody.user_agent || request.headers.get('user-agent') || 'Unknown',
+      expiry_timestamp: expiresAt.toISOString().replace('Z', '+02:00'),
+      page_url: mappedBody.page_url || request.headers.get('referer') || '/reservas',
+      referrer: mappedBody.referrer || request.headers.get('referer') || ''
+    }
+
+    console.log('🔍 DEBUG - Complete data before validation:', JSON.stringify(completeData, null, 2))
+
+    // Validate complete data
+    const finalValidation = CreateCookieConsentSchema.safeParse(completeData)
+    if (!finalValidation.success) {
       return NextResponse.json(
         {
           success: false,
           error: 'Validation failed',
-          details: validationResult.error.issues
+          details: finalValidation.error.issues
         },
         { status: 400 }
       )
     }
 
-    const {
-      userId,
-      sessionId,
-      consentMethod,
-      analyticsConsent,
-      marketingConsent,
-      functionalConsent,
-      userAgent,
-      language
-    } = validationResult.data
+    const result = await cookieConsentService.createConsent(
+      request,
+      completeData,
+      completeData.user_agent,
+      completeData.ip_address
+    )
 
-    // Get IP address from request headers
-    const ipAddress = request.headers.get('x-forwarded-for') ||
-                     request.headers.get('x-real-ip') ||
-                     '127.0.0.1'
-
-    // AEPD 2025 compliance: 24-month maximum duration
-    const expiresAt = new Date()
-    expiresAt.setMonth(expiresAt.getMonth() + 24)
-
-    // Record consent with audit trail
-    const consent = await cookieConsentService.recordConsent({
-      userId,
-      sessionId,
-      ipAddress,
-      consentMethod,
-      analyticsConsent,
-      marketingConsent,
-      functionalConsent,
-      userAgent: userAgent || request.headers.get('user-agent') || 'Unknown',
-      language: language || 'es',
-      expiresAt
-    })
+    if (!result.success) {
+      return NextResponse.json(result, { status: 500 })
+    }
 
     return NextResponse.json({
       success: true,
-      consent,
+      consent: result.data,
       message: 'Consent recorded successfully',
-      expiresAt: consent.expiresAt
+      expiresAt: result.data.expiry_timestamp
     }, { status: 201 })
 
   } catch (error) {
@@ -172,7 +233,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Get existing consent for audit trail
-    const existingConsent = await cookieConsentService.getConsentById(consentId)
+    const existingConsent = await cookieConsentService.getConsentById(request, consentId)
     if (!existingConsent) {
       return NextResponse.json(
         { success: false, error: 'Consent record not found' },
@@ -180,31 +241,28 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Update consent with new timestamp
-    const updatedConsent = await cookieConsentService.updateConsent(consentId, {
-      ...updateData,
-      updatedAt: new Date()
-    })
+    // Get IP and user agent for audit
+    const ipAddress = request.headers.get('x-forwarded-for') ||
+                     request.headers.get('x-real-ip') ||
+                     '127.0.0.1'
+    const userAgent = request.headers.get('user-agent') || 'Unknown'
 
-    // Log audit event for consent modification
-    await cookieConsentService.logConsentChange({
+    // Update consent with audit trail
+    const result = await cookieConsentService.updateConsent(
+      request,
       consentId,
-      action: 'update',
-      ipAddress: request.headers.get('x-forwarded-for') ||
-                 request.headers.get('x-real-ip') ||
-                 '127.0.0.1',
-      userAgent: request.headers.get('user-agent') || 'Unknown',
-      changes: updateData,
-      previousState: {
-        analyticsConsent: existingConsent.analyticsConsent,
-        marketingConsent: existingConsent.marketingConsent,
-        functionalConsent: existingConsent.functionalConsent
-      }
-    })
+      updateData,
+      ipAddress,
+      userAgent
+    )
+
+    if (!result.success) {
+      return NextResponse.json(result, { status: 500 })
+    }
 
     return NextResponse.json({
       success: true,
-      consent: updatedConsent,
+      consent: result.data,
       message: 'Consent updated successfully'
     })
 
@@ -243,49 +301,36 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    let withdrawnConsents: any[] = []
-
-    if (consentId) {
-      // Withdraw specific consent
-      const consent = await cookieConsentService.withdrawConsent(consentId)
-      if (consent) {
-        withdrawnConsents.push(consent)
-      }
-    } else {
-      // Withdraw all consents for user/session
-      const filters = userId ? { userId } : { sessionId }
-      withdrawnConsents = await cookieConsentService.withdrawAllConsents(filters)
-    }
-
-    if (withdrawnConsents.length === 0) {
+    if (!consentId) {
       return NextResponse.json(
-        { success: false, error: 'No consent records found to withdraw' },
-        { status: 404 }
+        { success: false, error: 'consentId is required for withdrawal' },
+        { status: 400 }
       )
     }
 
-    // Log audit events for consent withdrawal
-    for (const consent of withdrawnConsents) {
-      await cookieConsentService.logConsentChange({
-        consentId: consent.id,
-        action: 'withdraw',
-        ipAddress: request.headers.get('x-forwarded-for') ||
-                   request.headers.get('x-real-ip') ||
-                   '127.0.0.1',
-        userAgent: request.headers.get('user-agent') || 'Unknown',
-        changes: { isActive: false },
-        previousState: {
-          analyticsConsent: consent.analyticsConsent,
-          marketingConsent: consent.marketingConsent,
-          functionalConsent: consent.functionalConsent
-        }
-      })
+    // Get IP and user agent for audit
+    const ipAddress = request.headers.get('x-forwarded-for') ||
+                     request.headers.get('x-real-ip') ||
+                     '127.0.0.1'
+    const userAgent = request.headers.get('user-agent') || 'Unknown'
+
+    // Withdraw specific consent
+    const result = await cookieConsentService.withdrawConsent(
+      request,
+      consentId,
+      'api', // withdrawal method
+      ipAddress,
+      userAgent
+    )
+
+    if (!result.success) {
+      return NextResponse.json(result, { status: result.error === 'Consent record not found' ? 404 : 500 })
     }
 
     return NextResponse.json({
       success: true,
-      message: `${withdrawnConsents.length} consent record(s) withdrawn successfully`,
-      withdrawnConsents: withdrawnConsents.length
+      message: 'Consent withdrawn successfully',
+      consent: result.data
     })
 
   } catch (error) {

@@ -317,13 +317,6 @@ export default function MenuPage() {
         <div className="text-center">
           <EnigmaLogo className="h-12 w-12 mx-auto mb-4 animate-spin" variant="primary" />
           <p className="text-lg">{language === 'en' ? 'Loading menu...' : 'Cargando carta...'}</p>
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mt-4 text-sm text-gray-500">
-              <p>Loading: {loading.toString()}</p>
-              <p>Error: {error || 'none'}</p>
-              <p>Menu: {menu ? 'loaded' : 'null'}</p>
-            </div>
-          )}
         </div>
       </div>
     )
@@ -646,7 +639,7 @@ export default function MenuPage() {
       </section>
 
       {/* Menu Section Toggle */}
-      <section className="py-4 bg-background">
+      <section className="py-6">
         <div className="container mx-auto px-4">
           <MenuSectionToggle
             sections={menuSections}
@@ -697,7 +690,7 @@ export default function MenuPage() {
                       const allergens = getAdvancedAllergenObjects(item)
 
                       return (
-                        <Card key={item.id} className="group h-full flex flex-col overflow-hidden hover:shadow-lg transition-all duration-200 border-border/50 hover:border-primary/20">
+                        <Card key={item.id} className="relative group h-full flex flex-col overflow-hidden hover:shadow-lg transition-all duration-200 border-border/50 hover:border-primary/20">
                           {/* CARD HEADER - Status Badges & Price */}
                           <div className="flex items-start justify-between p-2 sm:p-4 pb-2 sm:pb-3 border-b border-border/50">
                             <div className="flex gap-1.5 flex-wrap">
@@ -708,10 +701,14 @@ export default function MenuPage() {
                               )}
                             </div>
                             <div className="text-right flex-shrink-0">
-                              <div className="text-sm sm:text-lg font-bold text-primary">€{item.price}</div>
-                              {category.type === 'WINE' && item.alcoholContent && (
-                                <div className="text-xs text-muted-foreground">{item.alcoholContent}% vol.</div>
-                              )}
+                              <div className="flex items-baseline gap-2 justify-end">
+                                <div className="text-sm sm:text-lg font-bold text-primary">€{item.price}</div>
+                                {category.type === 'WINE' && item.glassPrice && (
+                                  <div className="text-xs text-muted-foreground">
+                                    / €{item.glassPrice} {language === 'en' ? 'glass' : 'copa'}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
 
@@ -820,6 +817,16 @@ export default function MenuPage() {
                               </div>
                             </div>
                           </CardContent>
+
+                          {/* Alcohol Badge - BOTTOM LEFT CORNER */}
+                          {category.type === 'WINE' && item.alcoholContent && (
+                            <div className="absolute bottom-2 left-2">
+                              <div className="px-2 py-1 bg-primary/10 rounded-md flex items-center gap-1">
+                                <Wine className="w-3 h-3 text-primary" />
+                                <span className="text-xs font-medium text-primary">{item.alcoholContent}% Vol.</span>
+                              </div>
+                            </div>
+                          )}
                         </Card>
                       )
                     })}

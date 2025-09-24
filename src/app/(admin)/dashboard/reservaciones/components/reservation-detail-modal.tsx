@@ -15,8 +15,29 @@ import {
   CheckCircle,
   Star,
   Edit,
-  X
+  X,
+  Utensils,
+  Wine,
+  Coffee,
+  AlertTriangle
 } from 'lucide-react'
+
+interface MenuItem {
+  id: string
+  name: string
+  price: number
+  menu_categories: {
+    name: string
+    type: string
+  }
+}
+
+interface ReservationItem {
+  id: string
+  quantity: number
+  notes?: string
+  menu_items: MenuItem
+}
 
 interface Reservation {
   id: string
@@ -29,13 +50,15 @@ interface Reservation {
   status: 'PENDING' | 'CONFIRMED' | 'SEATED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW'
   specialRequests?: string
   hasPreOrder: boolean
-  tableId: string
+  table_ids: string[] // ✅ NEW: Array of table IDs
+  tableId?: string // Legacy compatibility
+  reservation_items: ReservationItem[]
   tables: {
     id: string
     number: string
     capacity: number
     location: 'TERRACE_CAMPANARI' | 'SALA_VIP' | 'TERRACE_JUSTICIA' | 'SALA_PRINCIPAL'
-  } | null
+  }[] | null // ✅ NEW: Array of tables
   createdAt: string
   updatedAt: string
 }
@@ -63,33 +86,102 @@ const locationLabels = {
   SALA_PRINCIPAL: 'Sala Principal'
 }
 
-function formatDateTime(date: string, time: string) {
-  const reservationDate = new Date(date)
-  const reservationTime = new Date(`${date}T${time}`)
-
-  const today = new Date()
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-
-  let dateLabel = reservationDate.toLocaleDateString('es-ES', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-
-  if (reservationDate.toDateString() === today.toDateString()) {
-    dateLabel = 'Hoy'
-  } else if (reservationDate.toDateString() === tomorrow.toDateString()) {
-    dateLabel = 'Mañana'
+// 🆕 CLEAN MULTI-TABLE DISPLAY: Show multiple tables cleanly
+function formatTableDisplay(reservation: Reservation): string {
+  if (reservation.tables && reservation.tables.length > 0) {
+    if (reservation.tables.length === 1) {
+      return reservation.tables[0].number
+    } else {
+      // Multiple tables: "Mesa T1 + T2 + T3"
+      return reservation.tables.map(t => t.number).join(' + ')
+    }
   }
 
-  const timeLabel = reservationTime.toLocaleTimeString('es-ES', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+  // Fallback
+  return 'N/A'
+}
 
-  return { dateLabel, timeLabel }
+// 🆕 CLEAN CAPACITY CALCULATION: Sum capacities from table array
+function calculateTotalCapacity(reservation: Reservation): number {
+  if (reservation.tables && reservation.tables.length > 0) {
+    return reservation.tables.reduce((total, table) => total + table.capacity, 0)
+  }
+
+  // Fallback
+  return 0
+}
+
+// 🚀 CRITICAL FIX: Handle full timestamp format from backend
+function createMadridDate(): Date {
+  const nowUtc = new Date()
+  // Add 2 hours to get Madrid time
+  return new Date(nowUtc.getTime() + (2 * 60 * 60 * 1000))
+}
+
+function createReservationMadridDate(timestampStr: string): Date {
+  try {
+    // Backend sends timestamps like "2025-09-19 17:30:00" (without timezone)
+    // These represent Madrid local time already stored correctly
+    const cleanTimestamp = timestampStr.replace(' ', 'T')
+    const date = new Date(cleanTimestamp)
+
+    // If the date is valid, return it (it's already in Madrid local time)
+    if (!isNaN(date.getTime())) {
+      return date
+    }
+
+    // Fallback: try direct parsing
+    return new Date(timestampStr)
+  } catch (error) {
+    console.error('Error creating Madrid date:', error, { timestampStr })
+    return new Date() // Fallback
+  }
+}
+
+function isSameDateMadrid(date1: Date, date2: Date): boolean {
+  try {
+    return date1.toDateString() === date2.toDateString()
+  } catch (error) {
+    console.error('Error comparing dates:', error)
+    return false
+  }
+}
+
+// 🚀 FIXED: formatDateTime working with backend timestamp format
+function formatDateTime(date: string, time: string) {
+  try {
+    // Both date and time are full timestamps from backend: "2025-09-19 17:30:00"
+    // Use the time timestamp as it's the actual reservation datetime
+    const reservationDateTime = createReservationMadridDate(time)
+
+    const todayMadrid = createMadridDate()
+    const tomorrowMadrid = createMadridDate()
+    tomorrowMadrid.setDate(tomorrowMadrid.getDate() + 1)
+
+    let dateLabel = reservationDateTime.toLocaleDateString('es-ES', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+
+    if (isSameDateMadrid(reservationDateTime, todayMadrid)) {
+      dateLabel = 'Hoy'
+    } else if (isSameDateMadrid(reservationDateTime, tomorrowMadrid)) {
+      dateLabel = 'Mañana'
+    }
+
+    const timeLabel = reservationDateTime.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    })
+
+    return { dateLabel, timeLabel }
+  } catch (error) {
+    console.error('Error formatting datetime:', error, { date, time })
+    return { dateLabel: 'Fecha inválida', timeLabel: 'Hora inválida' }
+  }
 }
 
 export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }: ReservationDetailModalProps) {
@@ -138,7 +230,7 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
               <div>
                 <p className="text-sm font-medium text-foreground">{dateLabel}</p>
                 <p className="text-xs text-gray-500">
-                  {new Date(reservation.date).toLocaleDateString('es-ES')}
+                  {createReservationMadridDate(reservation.date).toLocaleDateString('es-ES')}
                 </p>
               </div>
             </div>
@@ -164,18 +256,21 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
               </div>
             </div>
 
-            {reservation.tables && (
+            {reservation.tables && reservation.tables.length > 0 && (
               <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg">
                 <MapPin className="w-5 h-5 text-green-600" />
                 <div>
                   <p className="text-sm font-medium text-foreground">
-                    Mesa {reservation.tables.number}
+                    {reservation.tables.length === 1 ? 'Mesa' : 'Mesas'} {formatTableDisplay(reservation)}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {locationLabels[reservation.tables.location]}
+                    {reservation.tables.length === 1
+                      ? locationLabels[reservation.tables[0].location]
+                      : `${reservation.tables.length} mesas en ${[...new Set(reservation.tables.map(t => locationLabels[t.location]))].join(', ')}`
+                    }
                   </p>
                   <p className="text-xs text-gray-500">
-                    Capacidad: {reservation.tables.capacity} personas
+                    Capacidad total: {calculateTotalCapacity(reservation)} personas
                   </p>
                 </div>
               </div>
@@ -217,7 +312,7 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
           {(reservation.specialRequests || reservation.hasPreOrder) && (
             <>
               <div className="border-t" />
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h3 className="text-lg font-medium text-foreground">Información Adicional</h3>
 
                 {reservation.specialRequests && (
@@ -230,12 +325,107 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
                   </div>
                 )}
 
-                {reservation.hasPreOrder && (
-                  <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                {reservation.hasPreOrder && reservation.reservation_items && reservation.reservation_items.length > 0 && (
+                  <div className="bg-green-50 rounded-lg p-4 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Pre-orden Realizada</p>
+                        <p className="text-xs text-gray-500">
+                          {reservation.reservation_items.length} producto{reservation.reservation_items.length !== 1 ? 's' : ''} seleccionado{reservation.reservation_items.length !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Pre-order Items List */}
+                    <div className="space-y-2 mt-3">
+                      <h4 className="text-sm font-medium text-gray-800 mb-2">Productos Pre-ordenados:</h4>
+                      <div className="space-y-2">
+                        {reservation.reservation_items.map((item) => {
+                          const total = item.quantity * item.menu_items.price
+                          const categoryType = item.menu_items?.menu_categories?.type || 'DISH'
+
+                          return (
+                            <div key={item.id} className="flex items-start gap-3 p-3 bg-white rounded-md border border-green-200">
+                              {/* Category Icon */}
+                              <div className="flex-shrink-0 mt-0.5">
+                                {categoryType === 'WINE' ? (
+                                  <Wine className="w-4 h-4 text-red-600" />
+                                ) : categoryType === 'BEVERAGE' ? (
+                                  <Coffee className="w-4 h-4 text-blue-600" />
+                                ) : (
+                                  <Utensils className="w-4 h-4 text-green-600" />
+                                )}
+                              </div>
+
+                              {/* Item Details */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <h5 className="text-sm font-medium text-gray-900 line-clamp-2">
+                                      {item.menu_items.name}
+                                    </h5>
+                                    <p className="text-xs text-gray-500 mt-0.5">
+                                      {item.menu_items.menu_categories.name} • {categoryType.toLowerCase()}
+                                    </p>
+                                    {item.notes && (
+                                      <p className="text-xs text-orange-600 mt-1 italic">
+                                        📝 {item.notes}
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  {/* Quantity & Price */}
+                                  <div className="text-right ml-3 flex-shrink-0">
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {item.quantity}x €{item.menu_items.price.toFixed(2)}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      Total: €{total.toFixed(2)}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+
+                      {/* Pre-order Summary */}
+                      <div className="mt-3 pt-3 border-t border-green-200">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-medium text-gray-800">
+                            Total Pre-orden:
+                          </span>
+                          <span className="font-bold text-green-700">
+                            €{reservation.reservation_items.reduce((sum, item) =>
+                              sum + (item.quantity * item.menu_items.price), 0
+                            ).toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs text-gray-500 mt-1">
+                          <span>
+                            {reservation.reservation_items.reduce((sum, item) => sum + item.quantity, 0)} productos totales
+                          </span>
+                          <span>
+                            Promedio: €{(
+                              reservation.reservation_items.reduce((sum, item) =>
+                                sum + (item.quantity * item.menu_items.price), 0
+                              ) / reservation.reservation_items.reduce((sum, item) => sum + item.quantity, 0)
+                            ).toFixed(2)} por producto
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {reservation.hasPreOrder && (!reservation.reservation_items || reservation.reservation_items.length === 0) && (
+                  <div className="flex items-center gap-3 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <AlertTriangle className="w-5 h-5 text-yellow-600" />
                     <div>
-                      <p className="text-sm font-medium text-foreground">Pre-orden Realizada</p>
-                      <p className="text-xs text-gray-500">El cliente ha realizado una pre-orden</p>
+                      <p className="text-sm font-medium text-foreground">Pre-orden Detectada</p>
+                      <p className="text-xs text-yellow-700">No se pudieron cargar los detalles de la pre-orden</p>
                     </div>
                   </div>
                 )}
@@ -248,11 +438,11 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
           <div className="space-y-2 text-xs text-gray-500">
             <p>
               <strong>Creado:</strong>{' '}
-              {new Date(reservation.createdAt).toLocaleString('es-ES')}
+              {createReservationMadridDate(reservation.createdAt).toLocaleString('es-ES')}
             </p>
             <p>
               <strong>Actualizado:</strong>{' '}
-              {new Date(reservation.updatedAt).toLocaleString('es-ES')}
+              {createReservationMadridDate(reservation.updatedAt).toLocaleString('es-ES')}
             </p>
           </div>
 

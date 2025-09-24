@@ -33,8 +33,9 @@ interface Reservation {
   status: 'PENDING' | 'CONFIRMED' | 'SEATED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW'
   specialRequests?: string
   hasPreOrder: boolean
-  tableId: string
-  tables: Table | null
+  table_ids: string[] // ✅ NEW: Array of table IDs
+  tableId?: string // Legacy compatibility
+  tables: Table[] | null // ✅ NEW: Array of tables
   createdAt: string
   updatedAt: string
 }
@@ -201,11 +202,14 @@ export function ReservationList({
                     <Users className="w-4 h-4 text-gray-400" />
                     <span>{reservation.partySize} personas</span>
                   </div>
-                  {reservation.tables && (
+                  {reservation.tables && reservation.tables.length > 0 && (
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-gray-400" />
                       <span>
-                        Mesa {reservation.tables.number} - {locationLabels[reservation.tables.location]}
+                        {reservation.tables.length === 1
+                          ? `Mesa ${reservation.tables[0].number} - ${locationLabels[reservation.tables[0].location]}`
+                          : `${reservation.tables.length} mesas - ${reservation.tables.map(t => t.number).join(', ')}`
+                        }
                       </span>
                     </div>
                   )}

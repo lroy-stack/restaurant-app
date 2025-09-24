@@ -4,6 +4,23 @@ import { useEffect, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
+interface MenuItem {
+  id: string
+  name: string
+  price: number
+  menu_categories: {
+    name: string
+    type: string
+  }
+}
+
+interface ReservationItem {
+  id: string
+  quantity: number
+  notes?: string
+  menu_items: MenuItem
+}
+
 interface Reservation {
   id: string
   customerName: string
@@ -16,6 +33,7 @@ interface Reservation {
   specialRequests?: string
   hasPreOrder: boolean
   tableId: string
+  reservation_items: ReservationItem[]
   tables: {
     id: string
     number: string
@@ -115,10 +133,10 @@ export function useRealtimeReservations(filters: RealtimeFilters = {}): UseRealt
     additionalData?: any
   ): Promise<boolean> => {
     try {
-      const response = await fetch(`/api/reservations`, {
+      const response = await fetch(`/api/reservations/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reservationId: id, status, ...additionalData })
+        body: JSON.stringify({ status, ...additionalData })
       })
 
       if (response.ok) {
@@ -148,10 +166,10 @@ export function useRealtimeReservations(filters: RealtimeFilters = {}): UseRealt
 
   const updateReservation = async (id: string, data: any): Promise<boolean> => {
     try {
-      const response = await fetch(`/api/reservations`, {
+      const response = await fetch(`/api/reservations/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reservationId: id, ...data })
+        body: JSON.stringify(data)
       })
 
       if (response.ok) {

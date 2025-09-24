@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   turbopack: {
     root: '/Users/lr0y/local-ai-packaged/enigma-next',

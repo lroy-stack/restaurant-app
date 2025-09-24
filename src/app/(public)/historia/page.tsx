@@ -1,23 +1,18 @@
-import type { Metadata } from "next";
+'use client'
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Award, Users, MapPin, Star } from "lucide-react";
 import { EnigmaLogo } from "@/components/ui/enigma-logo";
 import Link from "next/link";
-
-export const metadata: Metadata = {
-  title: "Nuestra Historia - Enigma Cocina Con Alma",
-  description: "Descubre la historia de Enigma Cocina Con Alma, donde cada plato es una historia de tradición, pasión y sabores únicos en el auténtico casco antiguo de Calpe.",
-  keywords: ["historia restaurante Calpe", "Enigma Cocina Con Alma historia", "casco antiguo Calpe", "restaurante familiar", "tradición culinaria"],
-  openGraph: {
-    title: "Nuestra Historia - Enigma Cocina Con Alma",
-    description: "La historia de tradición, pasión y sabores únicos en el auténtico casco antiguo de Calpe",
-    url: "https://enigmaconalma.com/historia",
-  },
-};
+import { useRestaurant } from '@/hooks/use-restaurant';
 
 export default function HistoriaPage() {
+  const { restaurant, loading, error, getFormattedRating, getLocationDescription } = useRestaurant()
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Cargando...</div>
+  if (error) return <div>Error: {error}</div>
   return (
     <>
       {/* Hero Section with Real Restaurant Photo */}
@@ -39,21 +34,21 @@ export default function HistoriaPage() {
           </Badge>
           
           <h1 className="enigma-hero-title">
-            Enigma Cocina Con Alma
+            Tradición y Pasión
           </h1>
-          
+
           <p className="enigma-hero-subtitle">
-            Cada plato es una historia de tradición, pasión y sabores únicos en el auténtico casco antiguo de Calpe
+            {restaurant?.description}
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 text-sm sm:text-base text-white/90 mb-8">
             <div className="flex items-center gap-2">
               <Award className="h-4 w-4 text-yellow-400" />
-              <span className="font-medium">Restaurante Recomendado</span>
+              <span className="font-medium">{restaurant?.awards}</span>
             </div>
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-white" />
-              <span>Casco Antiguo de Calpe</span>
+              <span>{getLocationDescription()}</span>
             </div>
           </div>
         </div>
@@ -69,21 +64,10 @@ export default function HistoriaPage() {
               </h2>
               <div className="prose prose-lg max-w-none">
                 <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-4 sm:mb-6">
-                  En el corazón del auténtico casco antiguo de Calpe, donde las piedras centenarias 
-                  susurran historias de generaciones pasadas, nace Enigma Cocina Con Alma. Un proyecto 
-                  gastronómico que va más allá de simplemente servir comida: es una experiencia que 
-                  conecta tradiciones atlánticas y mediterráneas.
-                </p>
-                <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-4 sm:mb-6">
-                  Entre callejones históricos rodeados de plantas, hemos creado un espacio donde cada 
-                  detalle tiene significado. Nuestro ambiente auténtico y acogedor refleja la esencia 
-                  de lo que somos: un lugar donde la cocina se convierte en arte y cada plato cuenta 
-                  una historia única.
+                  {restaurant?.description}
                 </p>
                 <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                  Ubicados en Carrer Justicia 6A, somos más que un restaurante. Somos un refugio 
-                  culinario donde la tradición se encuentra con la innovación, y donde cada visita 
-                  se convierte en un recuerdo inolvidable.
+                  {restaurant?.ambiente}
                 </p>
               </div>
             </div>
@@ -102,10 +86,10 @@ export default function HistoriaPage() {
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                     ))}
-                    <span className="text-sm text-muted-foreground ml-2">4.8/5 Google</span>
+                    <span className="text-sm text-muted-foreground ml-2">{getFormattedRating()}/5 Google</span>
                   </div>
                   <Badge variant="secondary" className="mb-4">
-                    Restaurante Recomendado
+                    {restaurant?.awards}
                   </Badge>
                 </div>
               </CardContent>
@@ -222,15 +206,15 @@ export default function HistoriaPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                 <div className="flex items-center justify-center gap-2">
                   <MapPin className="h-4 w-4 text-primary" />
-                  <span>Carrer Justicia 6A, 03710 Calpe</span>
+                  <span>{restaurant?.address}</span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
                   <span className="h-4 w-4 text-primary">📞</span>
-                  <a href="tel:+34672796006" className="hover:text-primary">+34 672 79 60 06</a>
+                  <a href={`tel:${restaurant?.phone?.replace(/\s/g, '')}`} className="hover:text-primary">{restaurant?.phone}</a>
                 </div>
                 <div className="flex items-center justify-center gap-2">
                   <span className="h-4 w-4 text-primary">✉️</span>
-                  <a href="mailto:reservas@enigmaconalma.com" className="hover:text-primary">reservas@enigmaconalma.com</a>
+                  <a href={`mailto:${restaurant?.email}`} className="hover:text-primary">{restaurant?.email}</a>
                 </div>
               </div>
             </div>

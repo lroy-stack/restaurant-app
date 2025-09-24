@@ -16,6 +16,25 @@ export interface RestaurantInfo {
   location_type: string
   awards: string
   hero_title: string
+  // Dynamic Historia sections
+  historia_location_title: string
+  historia_location_content: string
+  historia_quote: string
+  vive_historia_title: string
+  vive_historia_content: string
+  // Dynamic Galería sections
+  galeria_experiencia_title: string
+  galeria_ambiente_title: string
+  galeria_ambiente_content: string
+  galeria_cocina_title: string
+  galeria_cocina_content: string
+  // Dynamic Contacto sections
+  contacto_final_title: string
+  contacto_final_content: string
+  // Social Media URLs
+  instagram_url: string
+  facebook_url: string
+  whatsapp_number: string
 }
 
 export interface RestaurantData {
@@ -58,10 +77,29 @@ export function useRestaurant() {
           email: 'reservas@enigmaconalma.com',
           google_rating: 4.8,
           monthly_customers: 230,
-          hours_operation: 'Mar-Dom: 18:00 - 23:00',
+          hours_operation: 'Lun-Sab: 18:30 - 23:00',
           location_type: 'casco_antiguo',
           awards: 'Restaurante Recomendado',
-          hero_title: 'Enigma Cocina Con Alma'
+          hero_title: 'Enigma Cocina Con Alma',
+          // Dynamic Historia sections
+          historia_location_title: 'Un Lugar Con Historia',
+          historia_location_content: 'El casco antiguo de Calpe es un testimonio vivo de siglos de historia mediterránea.',
+          historia_quote: 'Entre callejones históricos rodeados de plantas, descubre un ambiente auténtico y acogedor.',
+          vive_historia_title: 'Vive Nuestra Historia',
+          vive_historia_content: 'Te invitamos a ser parte de nuestra historia. Reserva tu mesa y descubre por qué somos el restaurante recomendado en el auténtico casco antiguo de Calpe.',
+          // Dynamic Galería sections
+          galeria_experiencia_title: 'Una Experiencia Visual Única',
+          galeria_ambiente_title: 'Ambiente Histórico',
+          galeria_ambiente_content: 'Nuestro restaurante se encuentra en el corazón del auténtico casco antiguo de Calpe, donde cada piedra cuenta una historia y cada rincón respira tradición mediterránea.',
+          galeria_cocina_title: 'Cocina Con Alma',
+          galeria_cocina_content: 'Cada plato es una obra de arte culinaria que fusiona tradiciones atlánticas y mediterráneas con técnicas modernas y presentación innovadora.',
+          // Dynamic Contacto sections
+          contacto_final_title: 'Te Esperamos en Enigma',
+          contacto_final_content: 'Entre callejones históricos rodeados de plantas, descubre un ambiente auténtico y acogedor donde cada plato es una historia de tradición, pasión y sabores únicos.',
+          // Social Media URLs
+          instagram_url: 'https://www.instagram.com/enigmaconalma/',
+          facebook_url: 'https://www.facebook.com/enigma.restaurante.calpe/',
+          whatsapp_number: '+34 672 79 60 06'
         }
         setRestaurant(fallbackData)
       }

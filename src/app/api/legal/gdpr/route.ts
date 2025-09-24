@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GDPRRequestType, GDPRRequestStatus, CreateGDPRRequestSchema } from '@/types/legal'
 import { z } from 'zod'
-import { supabase } from '@/lib/supabase'
+import { createServiceClient } from '@/utils/supabase/server'
 
 // ============================================
 // GET - Retrieve GDPR requests
@@ -165,7 +165,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Log audit event
-    await supabase
+    const supabaseAudit = await createServiceClient()
+    await supabaseAudit
       .from('legal_audit_logs')
       .insert({
         entityType: 'gdpr_request',
@@ -287,7 +288,8 @@ export async function PUT(request: NextRequest) {
     }
 
     // Log audit event
-    await supabase
+    const supabaseAuditUpdate = await createServiceClient()
+    await supabaseAuditUpdate
       .from('legal_audit_logs')
       .insert({
         entityType: 'gdpr_request',

@@ -85,10 +85,10 @@ export async function GET(request: NextRequest) {
         .from('customers')
         .select('*', { count: 'exact', head: true }),
       
-      // Total menu items (estimate from category count * 20)
+      // Total menu items (real count from menu_items table)
       supabase
         .schema('restaurante')
-        .from('menu_categories')
+        .from('menu_items')
         .select('*', { count: 'exact', head: true }),
       
       // Today's reservations
@@ -150,8 +150,8 @@ export async function GET(request: NextRequest) {
 
     const metrics = {
       totalReservations: totalReservations || 0,
-      totalCustomers: totalCustomers || 0,
-      totalMenuItems: (totalMenuItems || 0) * 20, // Estimate based on categories
+      totalUsers: totalCustomers || 0,
+      totalMenuItems: totalMenuItems || 0, // Real count from menu_items table
       todayReservations: todayReservations || 0,
       confirmedReservations: confirmedReservations || 0,
       totalTables: totalTables || 0,

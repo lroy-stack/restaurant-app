@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+'use client'
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,19 +20,99 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { EnigmaLogo } from "@/components/ui/enigma-logo";
+import dynamic from 'next/dynamic'
+import { useRestaurant } from '@/hooks/use-restaurant'
+import { useBusinessHours } from '@/hooks/useBusinessHours'
 
-export const metadata: Metadata = {
-  title: "Contacto - Enigma Cocina Con Alma",
-  description: "Contacta con Enigma Cocina Con Alma en Calpe. Carrer Justicia 6A, 03710 Calpe, Alicante. Teléfono: +34 672 79 60 06. Email: reservas@enigmaconalma.com",
-  keywords: ["contacto restaurante Calpe", "Enigma Cocina Con Alma contacto", "reservas restaurante", "Carrer Justicia Calpe", "teléfono restaurante"],
-  openGraph: {
-    title: "Contacto - Enigma Cocina Con Alma",
-    description: "Encuéntranos en el casco antiguo de Calpe. Carrer Justicia 6A",
-    url: "https://enigmaconalma.com/contacto",
-  },
-};
+// Dynamic import for browser-only map component
+const RestaurantMap = dynamic(() => import('@/components/maps/RestaurantMap').then(mod => ({ default: mod.RestaurantMap })), {
+  loading: () => (
+    <div className="aspect-video bg-gradient-to-br from-primary/5 to-secondary/5 rounded-lg flex items-center justify-center">
+      <p className="text-muted-foreground">Cargando mapa...</p>
+    </div>
+  ),
+  ssr: false,
+})
 
 export default function ContactoPage() {
+  const { restaurant, loading, error } = useRestaurant()
+  const { businessHours, loading: hoursLoading } = useBusinessHours()
+
+  // Enhanced business hours formatting with current status
+  const getBusinessHoursData = () => {
+    if (!businessHours || businessHours.length === 0) {
+      return {
+        schedule: restaurant?.hours_operation || "Consultar horarios",
+        isCurrentlyOpen: false,
+        nextOpenTime: null,
+        scheduleDetails: []
+      }
+    }
+
+    const daysMap = {
+      0: 'Domingo',
+      1: 'Lunes',
+      2: 'Martes',
+      3: 'Miércoles',
+      4: 'Jueves',
+      5: 'Viernes',
+      6: 'Sábado'
+    }
+
+    // Filter valid days only (0-6) and sort
+    const validHours = businessHours.filter(h => h.day_of_week >= 0 && h.day_of_week <= 6)
+    const openDays = validHours.filter(h => h.is_open).sort((a, b) => a.day_of_week - b.day_of_week)
+    const closedDays = validHours.filter(h => !h.is_open).map(h => daysMap[h.day_of_week as keyof typeof daysMap]).filter(Boolean)
+
+    // Check current status
+    const now = new Date()
+    const currentDay = now.getDay()
+    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+
+    const todayHours = validHours.find(h => h.day_of_week === currentDay)
+    const isCurrentlyOpen = todayHours?.is_open &&
+      currentTime >= (todayHours.open_time || '00:00') &&
+      currentTime <= (todayHours.close_time || '23:59')
+
+    // Create detailed schedule
+    const scheduleDetails = validHours.map(h => ({
+      day: daysMap[h.day_of_week as keyof typeof daysMap],
+      isOpen: h.is_open,
+      hours: h.is_open ? `${h.open_time} - ${h.close_time}` : 'Cerrado',
+      isToday: h.day_of_week === currentDay
+    }))
+
+    // Format main schedule text
+    let schedule = ""
+    if (openDays.length === 0) {
+      schedule = "Cerrado temporalmente"
+    } else if (openDays.length === 1) {
+      const dayName = daysMap[openDays[0].day_of_week as keyof typeof daysMap]
+      schedule = `${dayName}: ${openDays[0].open_time} - ${openDays[0].close_time}`
+    } else if (openDays.length > 1) {
+      const firstDayName = daysMap[openDays[0].day_of_week as keyof typeof daysMap]
+      const lastDayName = daysMap[openDays[openDays.length - 1].day_of_week as keyof typeof daysMap]
+
+      if (firstDayName && lastDayName) {
+        schedule = `${firstDayName}-${lastDayName}: ${openDays[0].open_time} - ${openDays[0].close_time}`
+      }
+    }
+
+    if (closedDays.length > 0) {
+      schedule = `${schedule} • ${closedDays.join(', ')}: Cerrado`
+    }
+
+    return {
+      schedule,
+      isCurrentlyOpen,
+      scheduleDetails
+    }
+  }
+
+  const businessHoursData = getBusinessHoursData()
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Cargando...</div>
+  if (error) return <div>Error: {error}</div>
   return (
     <>
       {/* Hero Section with Real Restaurant Photo */}
@@ -94,12 +175,11 @@ export default function ContactoPage() {
                         <div className="flex-1">
                           <h3 className="enigma-brand-body font-semibold mb-1">Dirección</h3>
                           <p className="text-muted-foreground">
-                            Carrer Justicia 6A<br />
-                            03710 Calpe, Alicante<br />
+                            {restaurant?.address}<br />
                             España
                           </p>
                           <p className="text-sm text-primary mt-2 italic">
-                            En el auténtico casco antiguo
+                            {restaurant?.ambiente}
                           </p>
                         </div>
                       </div>
@@ -114,11 +194,11 @@ export default function ContactoPage() {
                         </div>
                         <div className="flex-1">
                           <h3 className="enigma-brand-body font-semibold mb-1">Teléfono</h3>
-                          <a 
-                            href="tel:+34672796006" 
+                          <a
+                            href={`tel:${restaurant?.phone?.replace(/\s/g, '')}`}
                             className="enigma-brand-body text-muted-foreground hover:text-primary transition-colors text-lg font-medium"
                           >
-                            +34 672 79 60 06
+                            {restaurant?.phone}
                           </a>
                           <p className="text-sm text-muted-foreground mt-1">
                             Para reservas y consultas
@@ -136,11 +216,11 @@ export default function ContactoPage() {
                         </div>
                         <div className="flex-1">
                           <h3 className="enigma-brand-body font-semibold mb-1">Email</h3>
-                          <a 
-                            href="mailto:reservas@enigmaconalma.com" 
+                          <a
+                            href={`mailto:${restaurant?.email}`}
                             className="enigma-brand-body text-muted-foreground hover:text-primary transition-colors font-medium"
                           >
-                            reservas@enigmaconalma.com
+                            {restaurant?.email}
                           </a>
                           <p className="text-sm text-muted-foreground mt-1">
                             Respuesta en 24 horas
@@ -153,23 +233,55 @@ export default function ContactoPage() {
                   <Card className="p-4 sm:p-6 hover:shadow-md transition-shadow">
                     <CardContent className="p-4 sm:p-6 pt-0">
                       <div className="flex items-start gap-3 sm:gap-4">
-                        <div className="mt-1">
+                        <div className="mt-1 flex-shrink-0">
                           <Clock className="h-5 w-5 text-primary" />
                         </div>
-                        <div className="flex-1">
-                          <h3 className="enigma-brand-body font-semibold mb-2">Horarios</h3>
-                          <div className="space-y-1 text-muted-foreground">
-                            <div className="flex justify-between">
-                              <span>Martes - Domingo:</span>
-                              <span className="enigma-brand-body font-medium">18:00 - 24:00</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Lunes:</span>
-                              <span className="enigma-brand-body text-red-600 font-medium">Cerrado</span>
-                            </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                            <h3 className="enigma-brand-body font-semibold text-base sm:text-lg">Horarios</h3>
+                            {!hoursLoading && (
+                              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                                businessHoursData.isCurrentlyOpen
+                                  ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+                                  : 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400'
+                              }`}>
+                                <div className={`w-2 h-2 rounded-full ${
+                                  businessHoursData.isCurrentlyOpen ? 'bg-green-500' : 'bg-red-500'
+                                }`} />
+                                {businessHoursData.isCurrentlyOpen ? 'Abierto' : 'Cerrado'}
+                              </div>
+                            )}
                           </div>
-                          <p className="text-sm text-primary mt-2">
-                            Recomendamos reservar con antelación
+
+                          <div className="space-y-2">
+                            <div className="text-sm sm:text-base font-medium text-foreground">
+                              {hoursLoading ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="animate-pulse h-4 bg-muted rounded w-32"></div>
+                                </div>
+                              ) : (
+                                businessHoursData.schedule
+                              )}
+                            </div>
+
+                            {!hoursLoading && businessHoursData.scheduleDetails.length > 0 && (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs sm:text-sm text-muted-foreground">
+                                {businessHoursData.scheduleDetails.map((detail, index) => (
+                                  <div key={index} className={`flex justify-between py-1 px-2 rounded ${
+                                    detail.isToday ? 'bg-primary/10 text-primary font-medium' : ''
+                                  }`}>
+                                    <span className="min-w-0 truncate">{detail.day}</span>
+                                    <span className="ml-2 flex-shrink-0 font-mono text-xs">
+                                      {detail.hours}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          <p className="text-xs sm:text-sm text-primary mt-3 font-medium">
+                            💡 Recomendamos reservar con antelación
                           </p>
                         </div>
                       </div>
@@ -336,28 +448,32 @@ export default function ContactoPage() {
             </Card>
           </div>
 
-          {/* Map Placeholder */}
+          {/* Interactive Map */}
           <Card className="p-4 sm:p-6 bg-gradient-to-br from-primary/5 to-secondary/5 border-none shadow-lg">
             <CardContent className="p-4 sm:p-6 pt-0">
               <div className="text-center">
-                <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg flex items-center justify-center mb-4">
-                  <div className="text-center">
-                    <Navigation className="h-12 w-12 text-primary mx-auto mb-2" />
-                    <p className="text-muted-foreground">Mapa Interactivo</p>
-                    <p className="text-sm text-muted-foreground">
-                      Carrer Justicia 6A, 03710 Calpe, Alicante
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
-                    <Navigation className="mr-2 h-4 w-4" />
-                    Abrir en Google Maps
-                  </Button>
-                  <Button variant="outline" className="border-secondary text-secondary hover:bg-secondary hover:text-white">
-                    <MapPin className="mr-2 h-4 w-4" />
-                    Ver Direcciones
-                  </Button>
+                <RestaurantMap />
+                <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant?.address || 'Carrer Justicia 6A, 03710 Calpe, Alicante')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
+                      <Navigation className="mr-2 h-4 w-4" />
+                      Abrir en Google Maps
+                    </Button>
+                  </a>
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(restaurant?.address || 'Carrer Justicia 6A, 03710 Calpe, Alicante')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="outline" className="border-secondary text-secondary hover:bg-secondary hover:text-white">
+                      <MapPin className="mr-2 h-4 w-4" />
+                      Ver Direcciones
+                    </Button>
+                  </a>
                 </div>
               </div>
             </CardContent>

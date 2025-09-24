@@ -1,26 +1,36 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { 
-  CalendarDays, 
-  Users, 
-  UtensilsCrossed, 
+import {
+  CalendarDays,
+  Users,
+  UtensilsCrossed,
   MapPin,
-  TrendingUp,
   Clock,
-  CheckCircle,
-  AlertCircle,
   RefreshCw
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics'
+import { useRealtimeReservations } from '@/hooks/useRealtimeReservations'
+import { QuickStats } from '../reservaciones/components/quick-stats'
 import { toast } from 'sonner'
 
 export default function DashboardPage() {
   const { metrics, loading, error, refetch } = useDashboardMetrics()
+  const {
+    reservations,
+    loading: reservationsLoading,
+    error: reservationsError,
+    refetch: refetchReservations
+  } = useRealtimeReservations({})
+
+  // Removed useSystemStatus - widget eliminated
 
   const handleRefresh = async () => {
-    await refetch()
+    await Promise.all([
+      refetch(),
+      refetchReservations()
+    ])
     toast.success('Dashboard actualizado')
   }
 
@@ -131,7 +141,7 @@ export default function DashboardPage() {
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              usuarios registrados
+              clientes registrados
             </p>
           </CardContent>
         </Card>
@@ -161,116 +171,280 @@ export default function DashboardPage() {
       {/* Quick Actions & Recent Activity - REAL DATA */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Próximas Reservas</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <div>
+              <CardTitle>Próximas Reservas</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {reservations?.filter(r => r.status === 'CONFIRMED' || r.status === 'PENDING').length || 0} reservas activas
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => window.location.href = '/dashboard/reservaciones'}
+            >
+              Ver todas
+            </Button>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {loading ? (
                 // Loading skeleton
-                [...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-center space-x-4">
-                    <div className="h-4 w-4 bg-gray-200 rounded animate-pulse" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
-                      <div className="h-3 w-32 bg-gray-200 rounded animate-pulse" />
+                [...Array(4)].map((_, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-6 w-6 bg-gray-200 rounded animate-pulse" />
+                      <div className="space-y-2">
+                        <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+                        <div className="h-3 w-48 bg-gray-200 rounded animate-pulse" />
+                      </div>
                     </div>
+                    <div className="h-6 w-16 bg-gray-200 rounded animate-pulse" />
                   </div>
                 ))
-              ) : metrics?.recentReservations && metrics.recentReservations.length > 0 ? (
-                metrics.recentReservations.map((reservation) => (
-                  <div key={reservation.id} className="flex items-center space-x-4">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        Mesa {reservation.tableNumber} - {new Date(reservation.time).toLocaleTimeString('es-ES', { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {reservation.customerName}, {reservation.partySize} personas
-                      </p>
-                    </div>
-                  </div>
-                ))
+              ) : reservations && reservations.length > 0 ? (
+                reservations
+                  .filter(reservation => reservation.status === 'CONFIRMED' || reservation.status === 'PENDING')
+                  .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+                  .slice(0, 4)
+                  .map((reservation) => {
+                    try {
+                      const reservationDateTime = new Date(reservation.time) // time ya contiene fecha+hora completa
+                      const now = new Date()
+
+                      if (isNaN(reservationDateTime.getTime())) {
+                        throw new Error('Invalid date')
+                      }
+
+                      const timeUntil = reservationDateTime.getTime() - now.getTime()
+                      const hoursUntil = Math.floor(timeUntil / (1000 * 60 * 60))
+                      const minutesUntil = Math.floor((timeUntil % (1000 * 60 * 60)) / (1000 * 60))
+
+                      const isToday = reservationDateTime.toDateString() === now.toDateString()
+                      const isSoon = timeUntil <= 2 * 60 * 60 * 1000 && timeUntil > 0
+                      const isPast = timeUntil < 0
+
+                      let timeDisplay = ''
+                      if (isPast) {
+                        timeDisplay = 'AHORA'
+                      } else if (isSoon) {
+                        timeDisplay = `${hoursUntil}h ${minutesUntil}m`
+                      } else if (isToday) {
+                        timeDisplay = reservationDateTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false })
+                      } else {
+                        timeDisplay = reservationDateTime.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })
+                      }
+
+                      return (
+                        <div key={reservation.id} className={`flex items-center justify-between p-3 border rounded-lg transition-colors ${
+                          isPast ? 'bg-destructive/10 border-destructive/20' :
+                          isSoon ? 'bg-accent/10 border-accent/20' : 'bg-card'
+                        }`}>
+                          <div className="flex items-center space-x-3">
+                            <div className={`p-1.5 rounded-full ${
+                              reservation.status === 'CONFIRMED' ? 'bg-primary/10' : 'bg-accent/10'
+                            }`}>
+                              <Clock className={`h-3 w-3 ${
+                                reservation.status === 'CONFIRMED' ? 'text-primary' : 'text-accent'
+                              }`} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center space-x-2">
+                                <p className="text-sm font-medium truncate">
+                                  {reservation.customerName}
+                                </p>
+                                <span className={`px-2 py-0.5 text-xs rounded-full ${
+                                  reservation.status === 'CONFIRMED'
+                                    ? 'bg-primary/10 text-primary border border-primary/20'
+                                    : 'bg-accent/10 text-accent border border-accent/20'
+                                }`}>
+                                  {reservation.status === 'CONFIRMED' ? 'Confirmada' : 'Pendiente'}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-3 mt-1">
+                                <p className="text-xs text-muted-foreground">
+                                  Mesa {reservation.tables?.number || reservation.tableId}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {reservation.partySize}p
+                                </p>
+                                {reservation.tables?.location && (
+                                  <p className="text-xs text-muted-foreground">
+                                    {reservation.tables.location.replace('_', ' ').toLowerCase()}
+                                  </p>
+                                )}
+                              </div>
+                              {reservation.specialRequests && (
+                                <p className="text-xs text-muted-foreground mt-1 truncate">
+                                  📝 {reservation.specialRequests}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className={`text-sm font-medium ${
+                              isPast ? 'text-destructive' :
+                              isSoon ? 'text-accent' : 'text-foreground'
+                            }`}>
+                              {timeDisplay}
+                            </p>
+                            {reservation.hasPreOrder && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                🍽️ Pre-orden
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    } catch (error) {
+                      return null
+                    }
+                  })
               ) : (
                 <div className="text-center py-8">
                   <Clock className="h-8 w-8 text-gray-300 mx-auto mb-2" />
                   <p className="text-sm text-muted-foreground">
                     No hay reservas próximas
                   </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-3"
+                    onClick={() => window.location.href = '/dashboard/reservaciones/nueva'}
+                  >
+                    Nueva Reserva
+                  </Button>
                 </div>
               )}
             </div>
+
+            {/* Quick Stats */}
+            {reservations && reservations.length > 0 && (
+              <div className="mt-4 pt-4 border-t">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground">Hoy</p>
+                    <p className="text-sm font-medium">
+                      {reservations.filter(r =>
+                        new Date(r.date).toDateString() === new Date().toDateString() &&
+                        (r.status === 'CONFIRMED' || r.status === 'PENDING')
+                      ).length}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground">Pendientes</p>
+                    <p className="text-sm font-medium text-accent">
+                      {reservations.filter(r => r.status === 'PENDING').length}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground">Comensales</p>
+                    <p className="text-sm font-medium">
+                      {reservations
+                        .filter(r =>
+                          new Date(r.date).toDateString() === new Date().toDateString() &&
+                          (r.status === 'CONFIRMED' || r.status === 'PENDING')
+                        )
+                        .reduce((sum, r) => sum + r.partySize, 0)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Estado del Sistema</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    Autenticación Activa
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Supabase Auth funcionando
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    Base de Datos
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    PostgreSQL operativa
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    Backup Sistema
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Última copia: Hoy 03:00
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Widget de Sistema eliminado - era inútil */}
       </div>
 
-      {/* Restaurant Status Overview */}
+      {/* Restaurant Operations - Quick Access */}
       <Card>
         <CardHeader>
-          <CardTitle>Resumen de Operaciones</CardTitle>
+          <CardTitle>Accesos Rápidos</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Gestión operativa del restaurante
+          </p>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-4">
-              <UtensilsCrossed className="h-8 w-8 mx-auto text-orange-500 mb-2" />
-              <h3 className="font-semibold">Cocina</h3>
-              <p className="text-sm text-muted-foreground">5 platos en preparación</p>
-            </div>
-            <div className="text-center p-4">
-              <Users className="h-8 w-8 mx-auto text-blue-500 mb-2" />
-              <h3 className="font-semibold">Staff</h3>
-              <p className="text-sm text-muted-foreground">8 empleados activos</p>
-            </div>
-            <div className="text-center p-4">
-              <MapPin className="h-8 w-8 mx-auto text-green-500 mb-2" />
-              <h3 className="font-semibold">Servicio</h3>
-              <p className="text-sm text-muted-foreground">Todo funcionando bien</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Reservaciones */}
+            <Button
+              variant="outline"
+              className="h-auto p-6 flex flex-col items-center space-y-3 hover:bg-primary/5 hover:border-primary/20 transition-all duration-200"
+              onClick={() => window.location.href = '/dashboard/reservaciones'}
+            >
+              <CalendarDays className="h-8 w-8 text-primary" />
+              <div className="text-center">
+                <h3 className="font-semibold text-foreground">Reservaciones</h3>
+                <p className="text-xs text-muted-foreground">
+                  Gestionar reservas y disponibilidad
+                </p>
+              </div>
+            </Button>
+
+            {/* Mesas */}
+            <Button
+              variant="outline"
+              className="h-auto p-6 flex flex-col items-center space-y-3 hover:bg-accent/5 hover:border-accent/20 transition-all duration-200"
+              onClick={() => window.location.href = '/dashboard/mesas'}
+            >
+              <MapPin className="h-8 w-8 text-accent" />
+              <div className="text-center">
+                <h3 className="font-semibold text-foreground">Mesas</h3>
+                <p className="text-xs text-muted-foreground">
+                  Estado y disposición de mesas
+                </p>
+              </div>
+            </Button>
+
+            {/* Menú */}
+            <Button
+              variant="outline"
+              className="h-auto p-6 flex flex-col items-center space-y-3 hover:bg-orange-500/5 hover:border-orange-500/20 transition-all duration-200"
+              onClick={() => window.location.href = '/dashboard/menu'}
+            >
+              <UtensilsCrossed className="h-8 w-8 text-orange-500" />
+              <div className="text-center">
+                <h3 className="font-semibold text-foreground">Menú</h3>
+                <p className="text-xs text-muted-foreground">
+                  Gestión de platos y categorías
+                </p>
+              </div>
+            </Button>
+          </div>
+
+          {/* Secondary Actions Row */}
+          <div className="mt-6 pt-4 border-t">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="justify-start space-x-2 hover:bg-muted/50"
+                onClick={() => window.location.href = '/dashboard/clientes'}
+              >
+                <Users className="h-4 w-4" />
+                <span>Clientes</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="justify-start space-x-2 hover:bg-muted/50"
+                onClick={() => window.location.href = '/dashboard/analytics'}
+              >
+                <RefreshCw className="h-4 w-4" />
+                <span>Analytics</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="justify-start space-x-2 hover:bg-muted/50 col-span-2 md:col-span-1"
+                onClick={() => window.location.href = '/dashboard/configuracion'}
+              >
+                <Clock className="h-4 w-4" />
+                <span>Configuración</span>
+              </Button>
             </div>
           </div>
         </CardContent>

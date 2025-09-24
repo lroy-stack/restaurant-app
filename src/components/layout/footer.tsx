@@ -1,10 +1,56 @@
+"use client"
+
 import Link from "next/link"
-import { Phone, MapPin, Clock, Mail, Instagram, Facebook } from "lucide-react"
+import { Phone, MapPin, Clock, Mail, Instagram, Facebook, MessageCircle, Loader2, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { EnigmaLogo } from "@/components/ui/enigma-logo"
+import { useRestaurant } from "@/hooks/use-restaurant"
+import { useState } from "react"
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
+  const { restaurant, loading } = useRestaurant()
+  const [email, setEmail] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email || !email.includes('@')) return
+
+    setIsLoading(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          source: 'footer',
+          doubleOptIn: false
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setIsSuccess(true)
+        setEmail('')
+        setTimeout(() => setIsSuccess(false), 3000)
+      } else {
+        setError(data.error || 'Error al suscribirse')
+      }
+    } catch (error) {
+      console.error('Newsletter subscription error:', error)
+      setError('Error de conexión. Inténtalo de nuevo.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const footerLinks = {
     restaurant: {
@@ -40,28 +86,58 @@ export function Footer() {
   return (
     <footer className="bg-card border-t">
       {/* Newsletter Section */}
-      <div className="border-b bg-primary text-primary-foreground">
-        <div className="container mx-auto px-4 py-12">
+      <div
+        className="border-b relative"
+        style={{
+          backgroundImage: 'url(https://ik.imagekit.io/insomnialz/feeling.jpg?updatedAt=1754141886874)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="absolute inset-0 bg-black/60"></div>
+        <div className="container mx-auto px-4 py-12 relative z-10">
           <div className="text-center max-w-2xl mx-auto">
-            <h3 className="enigma-card-title">
+            <h3 className="text-xl sm:text-2xl font-semibold mb-4 text-white" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)', fontFamily: 'var(--font-crimson), var(--font-source-serif), serif' }}>
               Mantente al día con nuestro newsletter
             </h3>
-            <p className="text-primary-foreground/80 mb-6">
+            <p className="text-white/80 mb-6">
               Descubre nuestros platos especiales, eventos exclusivos y ofertas únicas directamente en tu email.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+            <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
               <input
                 type="email"
                 placeholder="Tu email"
-                className="flex-1 px-4 py-2 rounded-lg bg-white text-gray-900 placeholder:text-gray-500"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                className="flex-1 px-4 py-2 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 disabled:opacity-50"
+                required
               />
-              <Button 
-                variant="secondary" 
-                className="bg-white text-primary hover:bg-gray-100"
+              <Button
+                type="submit"
+                variant="secondary"
+                disabled={isLoading || !email}
+                className="bg-white text-primary hover:bg-gray-100 disabled:opacity-50"
               >
-                Suscribirse
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : isSuccess ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  'Suscribirse'
+                )}
               </Button>
-            </div>
+            </form>
+            {error && (
+              <p className="text-red-200 text-sm mt-2 text-center">
+                {error}
+              </p>
+            )}
+            {isSuccess && (
+              <p className="text-green-200 text-sm mt-2 text-center">
+                ¡Te has suscrito correctamente! Gracias por unirte.
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -73,44 +149,94 @@ export function Footer() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <EnigmaLogo className="h-6 w-6" variant="primary" />
-              <span className="enigma-brand-main text-lg font-semibold">Enigma Cocina Con Alma</span>
+              <span className="enigma-brand-main text-lg font-semibold">
+                {restaurant?.name || 'Enigma Cocina Con Alma'}
+              </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Cocina atlántico-mediterránea con alma en el auténtico casco antiguo de Calpe.
+              {restaurant?.description || 'Cocina atlántico-mediterránea con alma en el auténtico casco antiguo de Calpe.'}
             </p>
-            
-            {/* Contact Info */}
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>Carrer Justicia 6A, 03710 Calpe, Alicante</span>
-              </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Phone className="h-4 w-4" />
-                <a href="tel:+34672796006" className="hover:text-primary">
-                  +34 672 79 60 06
-                </a>
-              </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>Mar-Dom: 18:00 - 23:00</span>
-              </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Mail className="h-4 w-4" />
-                <a href="mailto:reservas@enigmaconalma.com" className="hover:text-primary">
-                  reservas@enigmaconalma.com
-                </a>
-              </div>
-            </div>
 
-            {/* Social Media */}
+            {/* Contact Info - Dynamic from DB */}
+            {!loading && restaurant && (
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  <span>{restaurant.address}</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Phone className="h-4 w-4" />
+                  <a href={`tel:${restaurant.phone.replace(/\s+/g, '')}`} className="hover:text-primary">
+                    {restaurant.phone}
+                  </a>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>{restaurant.hours_operation}</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <a href={`mailto:${restaurant.email}`} className="hover:text-primary">
+                    {restaurant.email}
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* Loading fallback */}
+            {loading && (
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  <span>Carrer Justicia 6A, 03710 Calpe, Alicante</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Phone className="h-4 w-4" />
+                  <a href="tel:+34672796006" className="hover:text-primary">
+                    +34 672 79 60 06
+                  </a>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>Mar-Dom: 18:00 - 23:00</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <a href="mailto:reservas@enigmaconalma.com" className="hover:text-primary">
+                    reservas@enigmaconalma.com
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* Social Media - Dynamic with WhatsApp */}
             <div className="flex gap-3">
-              <Button size="icon" variant="outline" className="h-9 w-9">
-                <Instagram className="h-4 w-4" />
-              </Button>
-              <Button size="icon" variant="outline" className="h-9 w-9">
-                <Facebook className="h-4 w-4" />
-              </Button>
+              {restaurant?.instagram_url && (
+                <Button size="icon" variant="outline" className="h-9 w-9" asChild>
+                  <a href={restaurant.instagram_url} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                    <Instagram className="h-4 w-4" />
+                  </a>
+                </Button>
+              )}
+              {restaurant?.facebook_url && (
+                <Button size="icon" variant="outline" className="h-9 w-9" asChild>
+                  <a href={restaurant.facebook_url} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                    <Facebook className="h-4 w-4" />
+                  </a>
+                </Button>
+              )}
+              {restaurant?.whatsapp_number && (
+                <Button size="icon" variant="outline" className="h-9 w-9" asChild>
+                  <a
+                    href={`https://wa.me/${restaurant.whatsapp_number.replace(/[^\d]/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="WhatsApp"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                  </a>
+                </Button>
+              )}
             </div>
           </div>
 

@@ -575,8 +575,3 @@ function DefaultGDPRRightsContent() {
   )
 }
 
-// ============================================
-// EXPORTS
-// ============================================
-
-// Only default export and generateMetadata are valid for Next.js pages

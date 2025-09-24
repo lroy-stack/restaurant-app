@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Star, Award, Users, Utensils } from "lucide-react"
 import { EnigmaLogo } from "@/components/ui/enigma-logo"
+import { useMediaLibrary } from "@/hooks/use-media-library"
+import { useRestaurant } from "@/hooks/use-restaurant"
 
 interface TrustSignal {
   icon: React.ElementType
@@ -12,38 +14,61 @@ interface TrustSignal {
   label: string
 }
 
-const trustSignals: TrustSignal[] = [
-  {
-    icon: Star,
-    value: "4.8/5",
-    label: "Google"
-  },
-  {
-    icon: Award, 
-    value: "Restaurante Recomendado",
-    label: "Costa Blanca"
-  },
-  {
-    icon: Users,
-    value: "230+",
-    label: "clientes satisfechos/mes"
-  }
-]
-
 interface HeroSectionProps {
   className?: string
 }
 
 export function HeroSection({ className }: HeroSectionProps) {
+  const { restaurant, loading: restaurantLoading } = useRestaurant()
+  const { getHeroImage, buildImageUrl, loading: mediaLoading } = useMediaLibrary({ type: 'hero' })
+
+  // Get dynamic hero image
+  const heroImage = getHeroImage('home')
+
+  // Dynamic trust signals based on restaurant data
+  const trustSignals: TrustSignal[] = [
+    {
+      icon: Star,
+      value: restaurant?.google_rating ? `${restaurant.google_rating}/5` : "4.8/5",
+      label: "Google"
+    },
+    {
+      icon: Award,
+      value: restaurant?.awards || "Restaurante Recomendado",
+      label: "Costa Blanca"
+    },
+    {
+      icon: Users,
+      value: restaurant?.monthly_customers ? `${restaurant.monthly_customers}+` : "230+",
+      label: "clientes satisfechos/mes"
+    }
+  ]
+
+  // Show loading state
+  if (restaurantLoading || mediaLoading) {
+    return (
+      <section className={`relative min-h-screen flex items-center justify-center overflow-hidden -mt-16 pt-16 ${className}`}>
+        <div className="absolute inset-0 z-0 bg-gradient-to-br from-primary/20 to-secondary/20" />
+        <div className="relative z-20 text-center">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-64 mx-auto mb-4"></div>
+            <div className="h-4 bg-muted rounded w-48 mx-auto"></div>
+          </div>
+        </div>
+      </section>
+    )
+  }
   return (
     <section className={`relative min-h-screen flex items-center justify-center overflow-hidden -mt-16 pt-16 ${className}`}>
-      {/* Background with optimized overlay for better contrast */}
+      {/* Background with dynamic image */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/40 z-10" />
-        <div 
-          className="w-full h-full bg-cover bg-center bg-no-repeat" 
+        <div
+          className="w-full h-full bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: 'url(https://ik.imagekit.io/insomnialz/compressed/enigma_night.png?updatedAt=1754141731421)'
+            backgroundImage: heroImage
+              ? `url(${buildImageUrl(heroImage)})`
+              : 'url(https://ik.imagekit.io/insomnialz/compressed/enigma_night.png?updatedAt=1754141731421)'
           }}
         />
       </div>
@@ -66,18 +91,18 @@ export function HeroSection({ className }: HeroSectionProps) {
         <Badge variant="outline" className="mb-6 text-white border-white/50 bg-black/60 backdrop-blur-sm">
           🏛️ Restaurante en el Auténtico Casco Antiguo de Calpe
         </Badge>
-        
-        {/* Enhanced Typography with Atlantic-Mediterranean Messaging */}
+
+        {/* Dynamic content from restaurant data */}
         <h1 className="enigma-hero-title">
-          Enigma Cocina Con Alma
+          {restaurant?.hero_title || restaurant?.name || "Enigma Cocina Con Alma"}
         </h1>
-        
+
         <p className="enigma-hero-subtitle opacity-90">
-          Cada plato es una historia de tradición, pasión y sabores únicos en el auténtico casco antiguo de Calpe
+          {restaurant?.description || "Cada plato es una historia de tradición, pasión y sabores únicos en el auténtico casco antiguo de Calpe"}
         </p>
-        
+
         <div className="enigma-hero-description mb-6 sm:mb-8 opacity-80">
-          <p>Entre callejones históricos rodeados de plantas, descubre un ambiente auténtico y acogedor donde cada plato cuenta una historia.</p>
+          <p>{restaurant?.ambiente || "Entre callejones históricos rodeados de plantas, descubre un ambiente auténtico y acogedor donde cada plato cuenta una historia."}</p>
         </div>
 
         {/* Enhanced CTA Buttons with Urgency Messaging */}

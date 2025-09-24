@@ -84,10 +84,65 @@ export async function upsertCustomer(
     const existingCustomers = await searchResponse.json()
     const existingCustomer = existingCustomers?.[0] || null
     
-    // 4. IF EXISTS: Return existing customer ID
+    // 4. IF EXISTS: Update customer with new data if it has more complete information
     if (existingCustomer) {
       console.log(`✅ Existing customer found: ${existingCustomer.firstName} ${existingCustomer.lastName} (${existingCustomer.email})`)
-      
+
+      // Check if existing customer has generic data that should be updated
+      const hasGenericData = existingCustomer.firstName === 'Usuario' && existingCustomer.lastName === 'Newsletter'
+      const hasMoreCompleteData = data.firstName !== 'Usuario' && data.lastName !== 'Newsletter'
+
+      if (hasGenericData && hasMoreCompleteData) {
+        console.log(`🔄 Updating customer with complete data: ${data.firstName} ${data.lastName}`)
+
+        const updateData = {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phone: data.phone,
+          language: data.language,
+          // Update consent data if provided
+          dataProcessingConsent: data.dataProcessingConsent,
+          emailConsent: data.emailConsent,
+          marketingConsent: data.marketingConsent,
+          consentDate: data.dataProcessingConsent ? new Date().toISOString() : existingCustomer.consentDate,
+          consentIpAddress: auditContext?.ipAddress || data.consentIpAddress || existingCustomer.consentIpAddress,
+          consentUserAgent: auditContext?.userAgent || data.consentUserAgent || existingCustomer.consentUserAgent,
+          consentMethod: data.consentMethod,
+          updatedAt: new Date().toISOString()
+        }
+
+        const updateResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/customers?id=eq.${existingCustomer.id}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Accept-Profile': 'restaurante',
+              'Content-Profile': 'restaurante',
+              'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+              'apikey': SUPABASE_SERVICE_KEY,
+              'Prefer': 'return=representation'
+            },
+            body: JSON.stringify(updateData)
+          }
+        )
+
+        if (updateResponse.ok) {
+          const updatedCustomers = await updateResponse.json()
+          const updatedCustomer = updatedCustomers[0]
+          console.log(`✅ Customer updated successfully: ${updatedCustomer.firstName} ${updatedCustomer.lastName}`)
+
+          return {
+            customerId: updatedCustomer.id,
+            isNewCustomer: false,
+            customer: updatedCustomer
+          }
+        } else {
+          console.error('❌ Failed to update customer, using existing data')
+        }
+      }
+
       return {
         customerId: existingCustomer.id,
         isNewCustomer: false,

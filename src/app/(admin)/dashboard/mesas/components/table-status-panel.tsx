@@ -21,6 +21,26 @@ import {
   Timer
 } from 'lucide-react'
 
+// 🚀 CRITICAL FIX: Format reservation time with Madrid timezone
+const formatReservationTime = (timeString: string): string => {
+  try {
+    const date = new Date(timeString)
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date string:', timeString)
+      return 'Hora inválida'
+    }
+    // Format with Madrid timezone to display correct local time
+    return date.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Madrid'
+    })
+  } catch (error) {
+    console.error('Error formatting time:', error, timeString)
+    return 'Error hora'
+  }
+}
+
 // REAL Enigma zones with responsive labels
 const ENIGMA_ZONES = {
   'TERRACE_CAMPANARI': 'Terraza Campanari',
@@ -206,10 +226,7 @@ function TableStatusCard({
           <div className="p-2 bg-background/50 rounded-lg border">
             <p className="text-sm font-medium break-words">{table.currentReservation.customerName}</p>
             <p className="text-xs text-muted-foreground">
-              {table.currentReservation.partySize} personas • {new Date(table.currentReservation.time).toLocaleTimeString('es-ES', {
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
+              {table.currentReservation.partySize} personas • {formatReservationTime(table.currentReservation.time)}
             </p>
           </div>
         )}

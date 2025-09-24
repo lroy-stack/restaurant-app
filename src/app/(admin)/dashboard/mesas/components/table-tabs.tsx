@@ -12,14 +12,20 @@ import { ReactFloorPlan } from './floor-plan/ReactFloorPlan'
 
 interface TableData {
   id: string
-  number: string  
+  number: string
   capacity: number
   location: 'TERRACE_CAMPANARI' | 'SALA_PRINCIPAL' | 'SALA_VIP' | 'TERRACE_JUSTICIA'
   qrCode: string
   isActive: boolean
   restaurantId: string
-  currentStatus?: 'available' | 'reserved' | 'occupied' | 'maintenance'
-  currentReservation?: any
+  currentStatus?: 'available' | 'reserved' | 'occupied' | 'maintenance' | 'temporally_closed'
+  // 🔥 ACTUALIZADO: Tipo específico para currentReservation
+  currentReservation?: {
+    customerName: string
+    partySize: number
+    time: string
+    status: string
+  } | null
 }
 
 interface TableTabsProps {

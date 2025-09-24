@@ -1,0 +1,325 @@
+// Reservation Confirmation Email Template
+// CRITICAL: ALL content DYNAMIC via props - customer data, reservation details, etc.
+// Following PRP pattern + Badezeit structure + Enigma branding
+
+import {
+  Section,
+  Heading,
+  Text,
+  Button,
+  Row,
+  Column,
+  Container
+} from '@react-email/components'
+import * as React from 'react'
+import { EmailBase } from './email-base'
+import { EmailTemplateData } from '../types/emailTypes'
+import { formatCurrency } from '../utils/emailValidation'
+import { emailColors, emailTextStyles, emailLayoutStyles } from '../styles/emailColors'
+
+// FIXED: Helper function to format table info properly - SHOWS REAL TABLE DATA
+const formatTableInfo = (tableNumber: string, tableLocation: string) => {
+  // CRITICAL FIX: Only show "Por asignar" if BOTH are missing/null
+  if (!tableNumber && !tableLocation) {
+    return 'Mesa por asignar'
+  }
+
+  const locationLabels = {
+    'TERRACE_CAMPANARI': 'Terraza Campanari',
+    'SALA_VIP': 'Sala VIP',
+    'TERRACE_JUSTICIA': 'Terraza Justicia',
+    'SALA_PRINCIPAL': 'Sala Principal'
+  }
+
+  const locationName = locationLabels[tableLocation as keyof typeof locationLabels] || tableLocation
+  return tableNumber ? `Mesa ${tableNumber} - ${locationName}` : `${locationName} (mesa por confirmar)`
+}
+
+export interface ReservationConfirmationEmailProps extends EmailTemplateData {}
+
+export const ReservationConfirmationEmail = ({
+  customerName,
+  customerEmail,
+  reservationId,
+  reservationDate,
+  reservationTime,
+  partySize,
+  tableLocation,
+  tableNumber,
+  specialRequests,
+  tokenUrl,
+  preOrderItems = [],
+  preOrderTotal = 0,
+  restaurantName,
+  restaurantEmail,
+  restaurantPhone,
+  reservationStatus,
+  urls,
+  branding
+}: ReservationConfirmationEmailProps) => {
+  const preview = `Hemos recibido tu solicitud de reserva para ${partySize} persona${partySize > 1 ? 's' : ''} el ${reservationDate}`
+
+  return (
+    <EmailBase
+      preview={preview}
+      restaurantName={restaurantName}
+      restaurantEmail={restaurantEmail}
+      restaurantPhone={restaurantPhone}
+    >
+      {/* Greeting - DYNAMIC customer name */}
+      <Heading style={h1}>
+        ¡Gracias por elegirnos, {customerName}!
+      </Heading>
+
+      <Text style={paragraph}>
+        Hemos recibido tu solicitud de reserva para <strong>{restaurantName}</strong>.
+        Nuestro equipo la revisará y te confirmaremos la disponibilidad pronto.
+      </Text>
+
+      {/* IMPROVED: Reservation Details Box - Responsive layout with Row/Column */}
+      <Section style={detailsBox}>
+        <Row>
+          <Column>
+            <Heading as="h2" style={h2}>Detalles de tu Solicitud</Heading>
+          </Column>
+        </Row>
+
+        <Row style={detailRow}>
+          <Column style={{width: '40%'}}>
+            <Text style={detailLabel}>Fecha:</Text>
+          </Column>
+          <Column style={{width: '60%'}}>
+            <Text style={detailValue}>{reservationDate}</Text>
+          </Column>
+        </Row>
+
+        <Row style={detailRow}>
+          <Column style={{width: '40%'}}>
+            <Text style={detailLabel}>Hora:</Text>
+          </Column>
+          <Column style={{width: '60%'}}>
+            <Text style={detailValue}>{reservationTime}</Text>
+          </Column>
+        </Row>
+
+        <Row style={detailRow}>
+          <Column style={{width: '40%'}}>
+            <Text style={detailLabel}>Comensales:</Text>
+          </Column>
+          <Column style={{width: '60%'}}>
+            <Text style={detailValue}>{partySize} persona{partySize > 1 ? 's' : ''}</Text>
+          </Column>
+        </Row>
+
+        <Row style={detailRow}>
+          <Column style={{width: '40%'}}>
+            <Text style={detailLabel}>Tu mesa:</Text>
+          </Column>
+          <Column style={{width: '60%'}}>
+            <Text style={detailValue}>{formatTableInfo(tableNumber, tableLocation)}</Text>
+          </Column>
+        </Row>
+
+        <Row style={detailRow}>
+          <Column style={{width: '40%'}}>
+            <Text style={detailLabel}>Código reserva:</Text>
+          </Column>
+          <Column style={{width: '60%'}}>
+            <Text style={detailValue}>{reservationId}</Text>
+          </Column>
+        </Row>
+
+        {specialRequests && (
+          <Row style={detailRow}>
+            <Column style={{width: '40%'}}>
+              <Text style={detailLabel}>Solicitudes especiales:</Text>
+            </Column>
+            <Column style={{width: '60%'}}>
+              <Text style={detailValue}>{specialRequests}</Text>
+            </Column>
+          </Row>
+        )}
+      </Section>
+
+      {/* IMPROVED: Pre-order Items - Better responsive layout */}
+      {preOrderItems.length > 0 && (
+        <Section style={preOrderBox}>
+          <Row>
+            <Column>
+              <Heading as="h2" style={h2}>Tu Pre-pedido</Heading>
+            </Column>
+          </Row>
+
+          {preOrderItems.map((item, index) => (
+            <Row key={item.id} style={preOrderRow}>
+              <Column style={{width: '70%', verticalAlign: 'top'}}>
+                <Text style={itemName}>
+                  {item.quantity}x {item.name}
+                </Text>
+                {item.notes && (
+                  <Text style={itemNotes}>Nota: {item.notes}</Text>
+                )}
+              </Column>
+              <Column style={{width: '30%', textAlign: 'right', verticalAlign: 'top'}}>
+                <Text style={itemPrice}>
+                  {formatCurrency(item.price * item.quantity)}
+                </Text>
+              </Column>
+            </Row>
+          ))}
+
+          <Row style={totalRow}>
+            <Column style={{textAlign: 'right'}}>
+              <Text style={totalText}>
+                <strong>Total del pre-pedido: {formatCurrency(preOrderTotal)}</strong>
+              </Text>
+            </Column>
+          </Row>
+        </Section>
+      )}
+
+      {/* Important Information */}
+      <Section style={infoBox}>
+        <Heading as="h3" style={h3}>¿Qué sigue ahora?</Heading>
+        <Text style={paragraph}>
+          • <strong>Revisión:</strong> Nuestro equipo revisará tu solicitud en las próximas horas<br/>
+          • <strong>Confirmación:</strong> Te enviaremos otro email cuando confirmemos tu reserva<br/>
+          • <strong>Gestión:</strong> Puedes modificar o cancelar usando el enlace de abajo<br/>
+          • <strong>Contacto:</strong> Si tienes dudas urgentes, llámanos directamente
+        </Text>
+      </Section>
+
+      {/* IMPROVED: Action Buttons - Better responsive layout */}
+      <Section style={buttonContainer}>
+        <Row>
+          <Column style={{textAlign: 'center'}}>
+            {tokenUrl && (
+              <Button style={primaryButton} href={tokenUrl}>
+                Gestionar mi Reserva
+              </Button>
+            )}
+          </Column>
+        </Row>
+
+        <Row>
+          <Column style={{textAlign: 'center'}}>
+            <Button style={secondaryButton} href={urls?.menu || 'https://enigmaconalma.com/menu'}>
+              Ver Nuestra Carta
+            </Button>
+          </Column>
+        </Row>
+      </Section>
+
+      {/* Closing */}
+      <Text style={paragraph}>
+        Gracias por confiar en {restaurantName}. Te contactaremos pronto con la confirmación.
+      </Text>
+    </EmailBase>
+  )
+}
+
+// FIXED: Email-compatible styles using centralized color system
+const h1 = emailTextStyles.h1
+const h2 = emailTextStyles.h2
+const h3 = emailTextStyles.h3
+const paragraph = emailTextStyles.paragraph
+
+const detailsBox = emailLayoutStyles.detailsBox
+
+const detailRow = {
+  margin: '0 0 12px'
+}
+
+const detailColumn = {
+  width: '100%'
+}
+
+const detailLabel = {
+  color: emailColors.mutedForeground,
+  fontSize: '13px',
+  fontWeight: '600',
+  margin: '0 0 6px',
+  fontFamily: 'Inter, system-ui, sans-serif',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.05em'
+}
+
+const detailValue = {
+  color: emailColors.foreground,
+  fontSize: '17px',
+  fontWeight: '600',
+  margin: '0 0 16px',
+  fontFamily: 'Inter, system-ui, sans-serif'
+}
+
+const preOrderBox = emailLayoutStyles.preOrderBox
+
+const preOrderRow = {
+  borderBottom: `1px solid ${emailColors.border}`,
+  padding: '8px 0'
+}
+
+const preOrderItemColumn = {
+  width: '70%'
+}
+
+const priceColumn = {
+  width: '30%',
+  textAlign: 'right' as const
+}
+
+const itemName = {
+  fontSize: '15px',
+  fontWeight: '600',
+  margin: '0',
+  fontFamily: 'Inter, system-ui, sans-serif',
+  color: emailColors.foreground
+}
+
+const itemNotes = {
+  fontSize: '13px',
+  color: emailColors.mutedForeground,
+  margin: '6px 0 0',
+  fontStyle: 'italic',
+  fontFamily: 'Crimson Text, Georgia, serif'
+}
+
+const itemPrice = {
+  fontSize: '15px',
+  fontWeight: '700',
+  margin: '0',
+  textAlign: 'right' as const,
+  fontFamily: 'Inter, system-ui, sans-serif',
+  color: emailColors.foreground
+}
+
+const totalRow = {
+  borderTop: `2px solid ${emailColors.secondaryBorder}`,
+  padding: '12px 0 0',
+  margin: '12px 0 0'
+}
+
+const totalColumn = {
+  width: '100%',
+  textAlign: 'right' as const
+}
+
+const totalText = {
+  fontSize: '18px',
+  margin: '0',
+  fontFamily: 'Inter, system-ui, sans-serif',
+  color: emailColors.foreground
+}
+
+const infoBox = emailLayoutStyles.infoBox
+
+const buttonContainer = {
+  textAlign: 'center' as const,
+  margin: '32px 0'
+}
+
+const primaryButton = emailLayoutStyles.buttonPrimary
+
+const secondaryButton = emailLayoutStyles.buttonSecondary
+
+export default ReservationConfirmationEmail

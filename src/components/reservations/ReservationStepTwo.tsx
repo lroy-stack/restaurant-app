@@ -43,13 +43,13 @@ interface ReservationStepTwoProps {
 const getLocationIcon = (locationKey: string) => {
   switch (locationKey) {
     case 'TERRACE_CAMPANARI':
-      return <TreePine className="h-5 w-5 text-green-600" />
+      return <TreePine className="h-5 w-5 text-secondary-foreground" />
     case 'SALA_VIP':
-      return <Crown className="h-5 w-5 text-yellow-600" />
+      return <Crown className="h-5 w-5 text-accent-foreground" />
     case 'SALA_PRINCIPAL':
-      return <Building className="h-5 w-5 text-blue-600" />
+      return <Building className="h-5 w-5 text-primary" />
     default:
-      return <MapPin className="h-5 w-5 text-gray-600" />
+      return <MapPin className="h-5 w-5 text-muted-foreground" />
   }
 }
 
@@ -272,19 +272,19 @@ export default function ReservationStepTwo({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
             {t.title}
           </CardTitle>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-xs sm:text-sm text-muted-foreground">
             {formatDate(selectedDate)} • {selectedTime} • {partySize} {partySize === 1 ? 'persona' : 'personas'}
           </div>
         </CardHeader>
         <CardContent>
           {/* Availability Summary */}
-          <div className="flex items-center gap-2 p-4 bg-green-50 rounded-lg mb-6">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <span className="text-green-800">
+          <div className="flex items-center gap-2 p-4 bg-secondary/50 rounded-lg mb-6">
+            <CheckCircle className="h-5 w-5 text-secondary-foreground" />
+            <span className="text-secondary-foreground font-medium">
               {availability.totalTables} {t.tablesAvailable}
             </span>
           </div>
@@ -292,58 +292,60 @@ export default function ReservationStepTwo({
           {/* Modern Card Grid - Mobile-first Responsive */}
           {availability.recommendations?.length > 0 && (
             <div className="mb-6">
-              <h3 className="font-semibold mb-4 text-lg">{t.recommendedTables}</h3>
+              <h3 className="font-semibold mb-4 text-sm sm:text-base">{t.recommendedTables}</h3>
               
-              {/* Responsive Grid: 1 column mobile → 2 tablet → 3 desktop */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Responsive Grid: 4 columns mobile → 4 tablet → 6 desktop */}
+              <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-6 gap-2">
                 {availability.recommendations.map((table) => (
                   <div
                     key={table.id}
                     className={cn(
-                      "relative p-3 border rounded-lg cursor-pointer transition-all duration-200",
-                      "hover:shadow-sm min-h-[70px]", // Más compacta
-                      "active:scale-[0.98] touch-manipulation", // Touch feedback
+                      "relative p-2 sm:p-3 border rounded-lg cursor-pointer transition-all duration-200",
+                      "hover:shadow-sm min-h-[60px] sm:min-h-[70px]", // Más compacta responsive
+                      "active:scale-[0.95] touch-manipulation", // Touch feedback
                       selectedTable?.id === table.id
-                        ? "border-primary bg-primary/10 shadow-lg ring-2 ring-primary/20"
+                        ? "border-primary bg-primary/10 shadow-lg ring-1 sm:ring-2 ring-primary/20"
                         : "border-gray-200 hover:border-primary/30 bg-white"
                     )}
                     onClick={() => handleTableSelect(table)}
                   >
                     {/* Selection Indicator */}
-                    <div className="absolute top-3 right-3">
+                    <div className="absolute top-2 right-2">
                       <div className={cn(
-                        "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
+                        "w-4 h-4 sm:w-6 sm:h-6 rounded-full border border-2 flex items-center justify-center transition-colors",
                         selectedTable?.id === table.id
                           ? "bg-primary border-primary"
                           : "border-gray-300"
                       )}>
                         {selectedTable?.id === table.id && (
-                          <Check className="h-3 w-3 text-white" />
+                          <Check className="h-2 w-2 sm:h-3 sm:w-3 text-white" />
                         )}
                       </div>
                     </div>
-                    
+
                     {/* Card Content */}
-                    <div className="pr-8"> {/* Right padding for selection indicator */}
+                    <div className="pr-6 sm:pr-8"> {/* Right padding for selection indicator */}
                       {/* Location Icon + Table Number - COMPACTO */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="p-1.5 rounded bg-gray-100">
-                          {getLocationIcon(table.location)}
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                        <div className="p-1 sm:p-1.5 rounded bg-gray-100 w-fit">
+                          <div className="scale-75 sm:scale-100">
+                            {getLocationIcon(table.location)}
+                          </div>
                         </div>
-                        <div>
-                          <div className="font-bold text-base text-gray-900">
+                        <div className="min-w-0">
+                          <div className="font-bold text-sm sm:text-base text-gray-900 truncate">
                             {table.number}
                           </div>
                           <div className="text-xs text-gray-600 flex items-center gap-1">
-                            <Users className="h-3 w-3" />
-                            {table.capacity}
+                            <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                            <span className="text-[10px] sm:text-xs">{table.capacity}</span>
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Premium Badge */}
                       {table.priceMultiplier > 1 && (
-                        <Badge variant="outline" className="text-yellow-700 border-yellow-300 bg-yellow-50">
+                        <Badge variant="outline" className="text-[10px] sm:text-xs text-yellow-700 border-yellow-300 bg-yellow-50 px-1 sm:px-2 py-0 sm:py-1">
                           Premium
                         </Badge>
                       )}
@@ -369,11 +371,11 @@ export default function ReservationStepTwo({
       {selectedTable && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Utensils className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Utensils className="h-4 w-4 sm:h-5 sm:w-5" />
               {t.preOrderTitle}
             </CardTitle>
-            <p className="text-muted-foreground">{t.preOrderSubtitle}</p>
+            <p className="text-sm sm:text-base text-muted-foreground">{t.preOrderSubtitle}</p>
           </CardHeader>
           <CardContent>
             {isLoadingMenu ? (
@@ -474,8 +476,8 @@ export default function ReservationStepTwo({
 
             {/* Pre-order Summary */}
             {watchedPreOrderItems.length > 0 && (
-              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <h3 className="font-medium text-green-900 mb-3">{t.preOrderSummary}</h3>
+              <div className="mt-6 p-4 bg-accent/10 border border-accent/20 rounded-lg">
+                <h3 className="font-medium text-accent-foreground mb-3">{t.preOrderSummary}</h3>
                 <div className="space-y-2">
                   {watchedPreOrderItems.map((item: any) => (
                     <div key={`${item.id}-summary`} className="flex items-center justify-between text-sm">

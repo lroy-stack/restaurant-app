@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -35,10 +35,32 @@ import {
   MessageSquare,
   Edit,
   Eye,
-  Timer
+  Timer,
+  Wine,
+  Utensils
 } from 'lucide-react'
 import { EditReservationModal } from './edit-reservation-modal'
 import { ReservationDetailModal } from './reservation-detail-modal'
+import { CancellationModal } from './cancellation-modal'
+import { CustomEmailComposer } from '@/components/email/custom-email-composer'
+import { useCustomerProfile } from '@/hooks/useCustomerProfile'
+
+interface MenuItem {
+  id: string
+  name: string
+  price: number
+  menu_categories: {
+    name: string
+    type: string
+  }
+}
+
+interface ReservationItem {
+  id: string
+  quantity: number
+  notes?: string
+  menu_items: MenuItem
+}
 
 interface Reservation {
   id: string
@@ -51,11 +73,15 @@ interface Reservation {
   status: 'PENDING' | 'CONFIRMED' | 'SEATED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW'
   specialRequests?: string
   hasPreOrder: boolean
-  tableId: string
+  table_ids: string[] // ✅ NEW: Array of table IDs
+  tableId?: string // Legacy compatibility
+  reservation_items: ReservationItem[]
   tables: {
+    id: string
     number: string
+    capacity: number
     location: 'TERRACE_CAMPANARI' | 'SALA_VIP' | 'TERRACE_JUSTICIA' | 'SALA_PRINCIPAL'
-  } | null
+  }[] | null // ✅ NEW: Array of tables
 }
 
 interface CompactReservationListProps {
@@ -63,7 +89,7 @@ interface CompactReservationListProps {
   loading: boolean
   selectedIds?: string[]
   onSelectionChange?: (ids: string[]) => void
-  onStatusUpdate?: (id: string, status: string) => void
+  onStatusUpdate?: (id: string, status: string, additionalData?: any) => void
   onReservationUpdate?: (id: string, data: any) => Promise<boolean>
   bulkMode?: boolean
 }
@@ -102,85 +128,148 @@ const locationShort = {
   SALA_PRINCIPAL: 'S.Prin'
 }
 
-// Format date helper - PRESERVE EXISTING LOGIC
-function formatDateCompact(dateStr: string, timeStr: string) {
-  const date = new Date(dateStr)
-  const today = new Date()
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
+// 🚀 ESTABLISHED PROJECT PATTERNS: Following existing formatDateTime pattern
+function formatReservationDateTime(dateStr: string, timeStr: string) {
+  try {
+    const date = new Date(dateStr)
+    const time = new Date(timeStr)
 
-  const isToday = date.toDateString() === today.toDateString()
-  const isTomorrow = date.toDateString() === tomorrow.toDateString()
-
-  if (isToday) return `Hoy ${timeStr.substring(0, 5)}`
-  if (isTomorrow) return `Mañ ${timeStr.substring(0, 5)}`
-
-  return `${date.getDate()}/${date.getMonth() + 1} ${timeStr.substring(0, 5)}`
-}
-
-// Urgency badge logic - PRESERVE EXISTING LOGIC
-function getUrgencyBadge(reservation: Reservation) {
-  const now = new Date()
-  const reservationDateTime = new Date(`${reservation.date}T${reservation.time}`)
-  const hoursUntil = (reservationDateTime.getTime() - now.getTime()) / (1000 * 60 * 60)
-
-  if (hoursUntil <= 2 && hoursUntil > 0) {
-    return { text: 'URGENTE', variant: 'destructive' as const, icon: Timer }
-  } else if (hoursUntil <= 6 && hoursUntil > 2) {
-    return { text: 'PRONTO', variant: 'secondary' as const, icon: Clock }
-  }
-
-  return null
-}
-
-// Group reservations by urgency - PRESERVE EXISTING LOGIC
-function groupReservationsByUrgency(reservations: Reservation[]) {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-
-  const groups = {
-    PASADAS: [] as Reservation[],
-    HOY: [] as Reservation[],
-    MAÑANA: [] as Reservation[],
-    PRÓXIMOS_DÍAS: [] as Reservation[]
-  }
-
-  reservations.forEach(reservation => {
-    const reservationDate = new Date(reservation.date)
-    reservationDate.setHours(0, 0, 0, 0)
-
-    if (reservationDate.getTime() < today.getTime()) {
-      groups.PASADAS.push(reservation)
-    } else if (reservationDate.getTime() === today.getTime()) {
-      groups.HOY.push(reservation)
-    } else if (reservationDate.getTime() === tomorrow.getTime()) {
-      groups.MAÑANA.push(reservation)
-    } else {
-      groups.PRÓXIMOS_DÍAS.push(reservation)
+    if (isNaN(date.getTime()) || isNaN(time.getTime())) {
+      return {
+        date: 'Fecha inválida',
+        time: 'Hora inválida'
+      }
     }
-  })
 
-  // Sort each group by time - PRESERVE EXISTING LOGIC
-  groups.PASADAS.sort((a, b) =>
-    new Date(`${b.date}T${b.time}`).getTime() - new Date(`${a.date}T${a.time}`).getTime()
-  )
+    const today = new Date()
+    const tomorrow = new Date()
+    tomorrow.setDate(today.getDate() + 1)
 
-  groups.HOY.sort((a, b) =>
-    new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime()
-  )
+    // Format date with today/tomorrow logic
+    let dateFormatted: string
+    if (date.toDateString() === today.toDateString()) {
+      dateFormatted = 'Hoy'
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      dateFormatted = 'Mañana'
+    } else {
+      dateFormatted = date.toLocaleDateString('es-ES', {
+        day: 'numeric',
+        month: 'short'
+      })
+    }
 
-  groups.MAÑANA.sort((a, b) =>
-    new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime()
-  )
+    // Format time using established pattern
+    const timeFormatted = time.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
 
-  groups.PRÓXIMOS_DÍAS.sort((a, b) =>
-    new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime()
-  )
+    return {
+      date: dateFormatted,
+      time: timeFormatted
+    }
+  } catch (error) {
+    return {
+      date: 'Error fecha',
+      time: 'Error hora'
+    }
+  }
+}
 
-  return groups
+// Urgency badge logic - Using established patterns
+function getUrgencyBadge(reservation: Reservation) {
+  try {
+    const now = new Date()
+    const reservationDateTime = new Date(reservation.time)
+    const hoursUntil = (reservationDateTime.getTime() - now.getTime()) / (1000 * 60 * 60)
+
+    if (hoursUntil <= 2 && hoursUntil > 0) {
+      return { text: 'URGENTE', variant: 'destructive' as const, icon: Timer }
+    } else if (hoursUntil <= 6 && hoursUntil > 2) {
+      return { text: 'PRONTO', variant: 'secondary' as const, icon: Clock }
+    }
+
+    return null
+  } catch (error) {
+    return null
+  }
+}
+
+// 🆕 CLEAN MULTI-TABLE DISPLAY: Show multiple tables cleanly
+function formatTableDisplay(reservation: Reservation): string {
+  if (reservation.tables && reservation.tables.length > 0) {
+    if (reservation.tables.length === 1) {
+      return reservation.tables[0].number
+    } else {
+      // Multiple tables: "T1+T2+T3"
+      return reservation.tables.map(t => t.number).join('+')
+    }
+  }
+
+  // Fallback
+  return 'N/A'
+}
+
+// Group reservations by urgency - Using established patterns
+function groupReservationsByUrgency(reservations: Reservation[]) {
+  try {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
+    const groups = {
+      PASADAS: [] as Reservation[],
+      HOY: [] as Reservation[],
+      MAÑANA: [] as Reservation[],
+      PRÓXIMOS_DÍAS: [] as Reservation[]
+    }
+
+    reservations.forEach(reservation => {
+      try {
+        const reservationDate = new Date(reservation.date)
+        reservationDate.setHours(0, 0, 0, 0)
+
+        if (reservationDate.getTime() < today.getTime()) {
+          groups.PASADAS.push(reservation)
+        } else if (reservationDate.getTime() === today.getTime()) {
+          groups.HOY.push(reservation)
+        } else if (reservationDate.getTime() === tomorrow.getTime()) {
+          groups.MAÑANA.push(reservation)
+        } else {
+          groups.PRÓXIMOS_DÍAS.push(reservation)
+        }
+      } catch (error) {
+        groups.PRÓXIMOS_DÍAS.push(reservation)
+      }
+    })
+
+    // Sort each group by time
+    const sortReservations = (a: Reservation, b: Reservation): number => {
+      try {
+        const aDateTime = new Date(a.time)
+        const bDateTime = new Date(b.time)
+        return aDateTime.getTime() - bDateTime.getTime()
+      } catch (error) {
+        return 0
+      }
+    }
+
+    groups.PASADAS.sort((a, b) => sortReservations(b, a)) // Reverse for past dates
+    groups.HOY.sort(sortReservations)
+    groups.MAÑANA.sort(sortReservations)
+    groups.PRÓXIMOS_DÍAS.sort(sortReservations)
+
+    return groups
+  } catch (error) {
+    return {
+      PASADAS: [],
+      HOY: [],
+      MAÑANA: [],
+      PRÓXIMOS_DÍAS: reservations
+    }
+  }
 }
 
 // Actions dropdown component
@@ -193,75 +282,123 @@ function ReservationActions({
   reservation: Reservation
   onEdit: () => void
   onViewDetails: () => void
-  onStatusUpdate?: (id: string, status: string) => void
+  onStatusUpdate?: (id: string, status: string, additionalData?: any) => void
 }) {
-  const handleStatusChange = (newStatus: string) => {
-    onStatusUpdate?.(reservation.id, newStatus)
+  const [showCancellationModal, setShowCancellationModal] = useState(false)
+
+
+  const getPredefinedTemplates = async () => {
+    try {
+      const response = await fetch('/api/emails/custom?templates=predefined')
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        return result.templates
+      }
+      return []
+    } catch (error) {
+      console.error('❌ Error fetching templates:', error)
+      return []
+    }
+  }
+
+  const handleStatusChange = (newStatus: string, additionalData?: any) => {
+    onStatusUpdate?.(reservation.id, newStatus, additionalData)
+  }
+
+  const handleCancellation = (data: { notes: string; restaurantMessage?: string }) => {
+    onStatusUpdate?.(reservation.id, 'CANCELLED', data)
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-          <MoreVertical className="h-4 w-4" />
-          <span className="sr-only">Acciones</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={onEdit}>
-          <Edit className="w-4 h-4 mr-2 text-blue-600" />
-          Editar Reserva
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onViewDetails}>
-          <Eye className="w-4 h-4 mr-2 text-purple-600" />
-          Ver Detalles
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-
-        {/* Status Actions - PRESERVE EXISTING LOGIC */}
-        {reservation.status === 'PENDING' && (
-          <DropdownMenuItem onClick={() => handleStatusChange('CONFIRMED')}>
-            <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
-            Confirmar
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <MoreVertical className="h-4 w-4" />
+            <span className="sr-only">Acciones</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem onClick={onEdit}>
+            <Edit className="w-4 h-4 mr-2 text-blue-600" />
+            Editar Reserva
           </DropdownMenuItem>
-        )}
-        {reservation.status === 'CONFIRMED' && (
-          <DropdownMenuItem onClick={() => handleStatusChange('SEATED')}>
-            <Users className="w-4 h-4 mr-2 text-blue-600" />
-            Sentar en Mesa
+          <DropdownMenuItem onClick={onViewDetails}>
+            <Eye className="w-4 h-4 mr-2 text-purple-600" />
+            Ver Detalles
           </DropdownMenuItem>
-        )}
-        {reservation.status === 'SEATED' && (
-          <DropdownMenuItem onClick={() => handleStatusChange('COMPLETED')}>
-            <CheckCircle className="w-4 h-4 mr-2 text-gray-600" />
-            Completar
+          <DropdownMenuSeparator />
+
+          {/* Status Actions - PRESERVE EXISTING LOGIC */}
+          {reservation.status === 'PENDING' && (
+            <DropdownMenuItem onClick={() => handleStatusChange('CONFIRMED')}>
+              <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
+              Confirmar
+            </DropdownMenuItem>
+          )}
+          {reservation.status === 'CONFIRMED' && (
+            <DropdownMenuItem onClick={() => handleStatusChange('SEATED')}>
+              <Users className="w-4 h-4 mr-2 text-blue-600" />
+              Sentar en Mesa
+            </DropdownMenuItem>
+          )}
+          {reservation.status === 'SEATED' && (
+            <DropdownMenuItem onClick={() => handleStatusChange('COMPLETED')}>
+              <CheckCircle className="w-4 h-4 mr-2 text-gray-600" />
+              Completar
+            </DropdownMenuItem>
+          )}
+
+          <DropdownMenuSeparator />
+
+          {/* Contact Actions */}
+          <DropdownMenuItem>
+            <Phone className="w-4 h-4 mr-2" />
+            Llamar
           </DropdownMenuItem>
-        )}
+          <CustomEmailComposer
+            customerId={reservation.id} // Using reservation ID as fallback
+            customerName={reservation.customerName}
+            customerEmail={reservation.customerEmail}
+            hasEmailConsent={true} // Assume consent since they made a reservation
+            onGetPredefinedTemplates={getPredefinedTemplates}
+            trigger={
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <Mail className="w-4 h-4 mr-2" />
+                Enviar Email
+              </DropdownMenuItem>
+            }
+          />
 
-        <DropdownMenuSeparator />
+          <DropdownMenuSeparator />
 
-        {/* Contact Actions */}
-        <DropdownMenuItem>
-          <Phone className="w-4 h-4 mr-2" />
-          Llamar
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Mail className="w-4 h-4 mr-2" />
-          Email
-        </DropdownMenuItem>
+          {/* Danger Actions */}
+          <DropdownMenuItem
+            onClick={() => setShowCancellationModal(true)}
+            className="text-red-600"
+          >
+            <XCircle className="w-4 h-4 mr-2" />
+            Cancelar
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => handleStatusChange('NO_SHOW')}
+            className="text-orange-600"
+          >
+            <AlertCircle className="w-4 h-4 mr-2" />
+            No Show
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-        <DropdownMenuSeparator />
-
-        {/* Danger Actions */}
-        <DropdownMenuItem
-          onClick={() => handleStatusChange('CANCELLED')}
-          className="text-red-600"
-        >
-          <XCircle className="w-4 h-4 mr-2" />
-          Cancelar
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      <CancellationModal
+        open={showCancellationModal}
+        onOpenChange={setShowCancellationModal}
+        reservationId={reservation.id}
+        customerName={reservation.customerName}
+        onConfirm={handleCancellation}
+      />
+    </>
   )
 }
 
@@ -421,6 +558,7 @@ export function CompactReservationList({
                       <TableHead className="hidden sm:table-cell">Estado</TableHead>
                       <TableHead>Mesa</TableHead>
                       <TableHead>Fecha</TableHead>
+                      <TableHead>Hora</TableHead>
                       <TableHead className="hidden md:table-cell">Contacto</TableHead>
                       <TableHead className="w-16"></TableHead>
                     </TableRow>
@@ -431,119 +569,204 @@ export function CompactReservationList({
                       const statusStyle = statusStyles[reservation.status]
 
                       return (
-                        <TableRow key={reservation.id} className="group">
-                          {/* Bulk Selection */}
-                          {bulkMode && (
+                        <React.Fragment key={reservation.id}>
+                          <TableRow className="group">
+                            {/* Bulk Selection */}
+                            {bulkMode && (
+                              <TableCell>
+                                <Checkbox
+                                  checked={selectedIds.includes(reservation.id)}
+                                  onCheckedChange={(checked) => handleItemSelection(reservation.id, !!checked)}
+                                />
+                              </TableCell>
+                            )}
+
+                            {/* Status Emoji */}
                             <TableCell>
-                              <Checkbox
-                                checked={selectedIds.includes(reservation.id)}
-                                onCheckedChange={(checked) => handleItemSelection(reservation.id, !!checked)}
+                              <span className="text-lg" title={statusLabels[reservation.status]}>
+                                {statusStyle.emoji}
+                              </span>
+                            </TableCell>
+
+                            {/* Customer Info */}
+                            <TableCell>
+                              <div className="space-y-1.5">
+                                <div className="font-medium text-foreground flex items-center gap-1">
+                                  {reservation.customerName}
+                                  {reservation.customerEmail.includes('vip') && (
+                                    <Star className="h-3 w-3 text-yellow-500" />
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Users className="h-3 w-3" />
+                                  <span>{reservation.partySize}p</span>
+                                  {urgencyBadge && (
+                                    <Badge variant={urgencyBadge.variant} className="text-xs px-1">
+                                      {urgencyBadge.text}
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                {/* Badges - DESKTOP ONLY */}
+                                <div className="hidden md:flex items-center gap-1 flex-wrap">
+                                  {/* Pre-Order Badge */}
+                                  {reservation.hasPreOrder && reservation.reservation_items?.length > 0 && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="text-xs px-2 py-0.5 bg-secondary text-secondary-foreground border-border hover:bg-secondary/90"
+                                      title={`Pre-pedido: ${reservation.reservation_items.length} items`}
+                                    >
+                                      <Utensils className="h-3 w-3 mr-1" />
+                                      Pre-pedido
+                                      <span className="ml-1 font-semibold">
+                                        {reservation.reservation_items.length}
+                                      </span>
+                                    </Badge>
+                                  )}
+
+                                  {/* Special Requests Badge */}
+                                  {reservation.specialRequests && (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs px-2 py-0.5 bg-accent/10 text-accent border-accent/20 hover:bg-accent/15"
+                                      title={reservation.specialRequests}
+                                    >
+                                      <MessageSquare className="h-3 w-3 mr-1" />
+                                      Petición
+                                    </Badge>
+                                  )}
+
+                                  {/* Dietary Notes Badge */}
+                                  {reservation.dietaryNotes && (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs px-2 py-0.5 bg-muted text-muted-foreground border-border hover:bg-muted/80"
+                                      title={reservation.dietaryNotes}
+                                    >
+                                      <AlertCircle className="h-3 w-3 mr-1" />
+                                      Dieta
+                                    </Badge>
+                                  )}
+
+                                  {/* Occasion Badge */}
+                                  {reservation.occasion && (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs px-2 py-0.5 bg-primary/10 text-primary border-primary/20 hover:bg-primary/15"
+                                      title={reservation.occasion}
+                                    >
+                                      <Star className="h-3 w-3 mr-1" />
+                                      {reservation.occasion}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </TableCell>
+
+                            {/* Status Badge */}
+                            <TableCell className="hidden sm:table-cell">
+                              <Badge className={`${statusStyle.color} border text-xs`}>
+                                {statusLabels[reservation.status]}
+                              </Badge>
+                            </TableCell>
+
+                            {/* Table Info */}
+                            <TableCell>
+                              <div className="space-y-1">
+                                <div className="font-medium text-sm">
+                                  {formatTableDisplay(reservation)}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {reservation.tables && reservation.tables.length > 0 ? locationShort[reservation.tables[0].location] : ''}
+                                </div>
+                              </div>
+                            </TableCell>
+
+                            {/* Date - CLEAN & CLEAR */}
+                            <TableCell>
+                              <div className="text-sm font-semibold">
+                                {formatReservationDateTime(reservation.date, reservation.time).date}
+                              </div>
+                            </TableCell>
+
+                            {/* Time - CLEAN & CLEAR */}
+                            <TableCell>
+                              <div className="text-sm font-mono font-semibold">
+                                {formatReservationDateTime(reservation.date, reservation.time).time}
+                              </div>
+                            </TableCell>
+
+                            {/* Contact - Hidden on mobile */}
+                            <TableCell className="hidden md:table-cell">
+                              <div className="space-y-1 text-xs text-muted-foreground max-w-[120px]">
+                                <div className="truncate" title={reservation.customerEmail}>
+                                  {reservation.customerEmail}
+                                </div>
+                                {reservation.customerPhone && (
+                                  <div className="truncate">
+                                    {reservation.customerPhone}
+                                  </div>
+                                )}
+                              </div>
+                            </TableCell>
+
+                            {/* Actions */}
+                            <TableCell>
+                              <ReservationActions
+                                reservation={reservation}
+                                onEdit={() => setEditingReservation(reservation)}
+                                onViewDetails={() => setViewingReservation(reservation)}
+                                onStatusUpdate={onStatusUpdate}
                               />
                             </TableCell>
-                          )}
+                          </TableRow>
 
-                          {/* Status Emoji */}
-                          <TableCell>
-                            <span className="text-lg" title={statusLabels[reservation.status]}>
-                              {statusStyle.emoji}
-                            </span>
-                          </TableCell>
+                          {/* Mobile Expanded Row - DEBAJO DE CADA RESERVA INDIVIDUAL */}
+                          {(reservation.hasPreOrder && reservation.reservation_items?.length > 0 || reservation.specialRequests) && (
+                            <TableRow className="md:hidden border-none">
+                              <TableCell colSpan={bulkMode ? 9 : 8} className="py-2 pl-8">
+                                <div className="flex flex-col gap-2 text-xs text-muted-foreground border-l-2 border-muted pl-3">
+                                  {/* Pre-order expanded info */}
+                                  {reservation.hasPreOrder && reservation.reservation_items?.length > 0 && (
+                                    <div className="flex flex-col gap-1">
+                                      <span className="flex items-center gap-1 text-secondary-foreground font-medium">
+                                        <Utensils className="h-3 w-3" />
+                                        Pre-pedido ({reservation.reservation_items.length} items)
+                                      </span>
+                                      <div className="flex flex-wrap gap-1">
+                                        {reservation.reservation_items.slice(0, 3).map((item) => (
+                                          <span key={item.id} className="flex items-center gap-0.5 bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs">
+                                            {item.menu_items?.menu_categories?.type === 'WINE' ? (
+                                              <Wine className="h-2.5 w-2.5" />
+                                            ) : (
+                                              <Utensils className="h-2.5 w-2.5" />
+                                            )}
+                                            {item.quantity}x {item.menu_items.name}
+                                          </span>
+                                        ))}
+                                        {reservation.reservation_items.length > 3 && (
+                                          <span className="text-secondary-foreground font-medium">+{reservation.reservation_items.length - 3} más</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
 
-                          {/* Customer Info */}
-                          <TableCell>
-                            <div className="space-y-1">
-                              <div className="font-medium text-foreground flex items-center gap-1">
-                                {reservation.customerName}
-                                {reservation.customerEmail.includes('vip') && (
-                                  <Star className="h-3 w-3 text-yellow-500" />
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Users className="h-3 w-3" />
-                                <span>{reservation.partySize}p</span>
-                                {urgencyBadge && (
-                                  <Badge variant={urgencyBadge.variant} className="text-xs px-1">
-                                    {urgencyBadge.text}
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          </TableCell>
-
-                          {/* Status Badge */}
-                          <TableCell className="hidden sm:table-cell">
-                            <Badge className={`${statusStyle.color} border text-xs`}>
-                              {statusLabels[reservation.status]}
-                            </Badge>
-                          </TableCell>
-
-                          {/* Table Info */}
-                          <TableCell>
-                            <div className="space-y-1">
-                              <div className="font-medium text-sm">
-                                {reservation.tables?.number || 'N/A'}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {reservation.tables ? locationShort[reservation.tables.location] : ''}
-                              </div>
-                            </div>
-                          </TableCell>
-
-                          {/* Date/Time */}
-                          <TableCell>
-                            <div className="text-sm font-mono">
-                              {formatDateCompact(reservation.date, reservation.time)}
-                            </div>
-                          </TableCell>
-
-                          {/* Contact - Hidden on mobile */}
-                          <TableCell className="hidden md:table-cell">
-                            <div className="space-y-1 text-xs text-muted-foreground max-w-[120px]">
-                              <div className="truncate" title={reservation.customerEmail}>
-                                {reservation.customerEmail}
-                              </div>
-                              {reservation.customerPhone && (
-                                <div className="truncate">
-                                  {reservation.customerPhone}
+                                  {/* Special requests expanded */}
+                                  {reservation.specialRequests && (
+                                    <div className="flex items-start gap-2 text-accent">
+                                      <MessageSquare className="h-3 w-3 mt-0.5" />
+                                      <span className="text-xs">{reservation.specialRequests}</span>
+                                    </div>
+                                  )}
                                 </div>
-                              )}
-                            </div>
-                          </TableCell>
-
-                          {/* Actions */}
-                          <TableCell>
-                            <ReservationActions
-                              reservation={reservation}
-                              onEdit={() => setEditingReservation(reservation)}
-                              onViewDetails={() => setViewingReservation(reservation)}
-                              onStatusUpdate={onStatusUpdate}
-                            />
-                          </TableCell>
-                        </TableRow>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </React.Fragment>
                       )
                     })}
                   </TableBody>
                 </Table>
-              </div>
-
-              {/* Additional Info Row for mobile - Special requests, pre-orders */}
-              <div className="mt-2 space-y-1 text-xs text-muted-foreground md:hidden">
-                {groupReservations.map((reservation) => (
-                  <div key={`mobile-${reservation.id}`} className="flex gap-4 flex-wrap">
-                    {reservation.hasPreOrder && (
-                      <span className="flex items-center gap-1 text-green-600">
-                        <CheckCircle className="h-3 w-3" />
-                        Pre-orden
-                      </span>
-                    )}
-                    {reservation.specialRequests && (
-                      <span className="flex items-center gap-1 text-orange-600" title={reservation.specialRequests}>
-                        <MessageSquare className="h-3 w-3" />
-                        <span className="truncate max-w-[100px]">{reservation.specialRequests}</span>
-                      </span>
-                    )}
-                  </div>
-                ))}
               </div>
             </CardContent>
           </Card>

@@ -341,30 +341,42 @@ export function CookieConsentBanner({
   useEffect(() => {
     if (isInitialized) return
 
-    // Check for existing consent
-    const existingConsentId = localStorage.getItem(LEGAL_CONSTANTS.COOKIE_CONSENT_STORAGE_KEY)
-    if (existingConsentId) {
-      setConsentId(existingConsentId)
-      // Validate existing consent is still active
-      fetch(`/api/legal/cookies?consentId=${existingConsentId}`)
-        .then(response => response.json())
-        .then(data => {
+    const initializeCookieConsent = async () => {
+      const existingConsentId = localStorage.getItem(LEGAL_CONSTANTS.COOKIE_CONSENT_STORAGE_KEY)
+
+      if (existingConsentId) {
+        try {
+          // Validate existing consent before proceeding
+          const response = await fetch(`/api/legal/cookies?consentId=${existingConsentId}`)
+          const data = await response.json()
+
           if (data.success && data.consent && !data.consent.withdrawal_timestamp &&
               new Date(data.consent.expiry_timestamp) > new Date()) {
+            // Valid consent found - skip popup
+            setConsentId(existingConsentId)
             setHasConsent(true)
+            setIsInitialized(true)
+            return // Do not run CookieConsent.run()
+          } else {
+            // Invalid or expired consent - clear localStorage
+            localStorage.removeItem(LEGAL_CONSTANTS.COOKIE_CONSENT_STORAGE_KEY)
           }
-        })
-        .catch(error => {
-          console.error('Error checking existing consent:', error)
-        })
+        } catch (error) {
+          console.error('Error validating existing consent:', error)
+          // On error, clear localStorage and show popup
+          localStorage.removeItem(LEGAL_CONSTANTS.COOKIE_CONSENT_STORAGE_KEY)
+        }
+      }
+
+      // No valid consent found - initialize cookie consent popup
+      const config = getConsentConfig()
+      configRef.current = config
+
+      CookieConsent.run(config)
+      setIsInitialized(true)
     }
 
-    // Initialize cookie consent
-    const config = getConsentConfig()
-    configRef.current = config
-
-    CookieConsent.run(config)
-    setIsInitialized(true)
+    initializeCookieConsent()
 
     return () => {
       // Cleanup if needed

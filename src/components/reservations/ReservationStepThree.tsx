@@ -95,11 +95,11 @@ export default function ReservationStepThree({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5" />
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <Users className="h-4 w-4 sm:h-5 sm:w-5" />
           {t.title}
         </CardTitle>
-        <p className="text-muted-foreground">{t.subtitle}</p>
+        <p className="text-sm sm:text-base text-muted-foreground">{t.subtitle}</p>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">

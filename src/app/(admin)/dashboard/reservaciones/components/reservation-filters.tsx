@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Calendar } from '@/components/ui/calendar-es'
+import { CustomCalendar } from '@/components/ui/custom-calendar'
 import { Badge } from '@/components/ui/badge'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { Search, X, Filter } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useBusinessHours } from '@/hooks/useBusinessHours'
 
 interface Table {
   id: string
@@ -50,11 +51,11 @@ const locationOptions = [
   { value: 'SALA_VIP', label: 'Sala VIP' }
 ]
 
-export function ReservationFilters({ 
-  tables, 
-  loading = false, 
-  error = null, 
-  currentFilters 
+export function ReservationFilters({
+  tables,
+  loading = false,
+  error = null,
+  currentFilters
 }: ReservationFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -62,6 +63,14 @@ export function ReservationFilters({
   const [date, setDate] = useState<Date | undefined>(
     currentFilters.date ? new Date(currentFilters.date) : undefined
   )
+
+  // Business hours for calendar validation
+  const {
+    closedDays,
+    minAdvanceMinutes,
+    isDateDisabled,
+    getDisabledReason
+  } = useBusinessHours()
 
   const updateFilter = (key: string, value: string | undefined) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -145,11 +154,15 @@ export function ReservationFilters({
         {/* Date Filter */}
         <div className="space-y-1 min-w-0">
           <Label className="text-xs">Fecha</Label>
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={handleDateChange}
+          <CustomCalendar
+            value={date ? format(date, 'yyyy-MM-dd') : ''}
+            onChange={(dateString) => handleDateChange(dateString ? new Date(dateString) : undefined)}
+            placeholder="Seleccionar fecha"
             className="h-9"
+            closedDays={closedDays}
+            minAdvanceMinutes={minAdvanceMinutes}
+            isDateDisabled={isDateDisabled}
+            getDisabledReason={getDisabledReason}
           />
         </div>
 

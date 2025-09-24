@@ -58,8 +58,8 @@ export const CartFloatingButton: React.FC<CartFloatingButtonProps> = ({
       <button
         onClick={toggleCart}
         className={cn(
-          // CUADRADO con esquinas redondeadas (siguiendo patrón de cards)
-          'w-14 h-14 rounded-lg flex items-center justify-center',
+          // CUADRADO con esquinas redondeadas (siguiendo patrón de cards) - Más compacto
+          'w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center',
           'backdrop-blur-2xl border',
           'transition-all duration-300 group',
           'hover:scale-105 active:scale-95',
@@ -81,7 +81,7 @@ export const CartFloatingButton: React.FC<CartFloatingButtonProps> = ({
 
         <div className="relative">
           <ShoppingCart
-            className="w-6 h-6 text-primary group-hover:text-primary/80 transition-colors duration-200"
+            className="w-4 h-4 sm:w-5 sm:h-5 text-primary group-hover:text-primary/80 transition-colors duration-200"
             strokeWidth={2}
           />
 
@@ -90,7 +90,7 @@ export const CartFloatingButton: React.FC<CartFloatingButtonProps> = ({
             className={cn(
               'absolute -top-2 -right-2 h-5 w-5 p-0 text-xs',
               'flex items-center justify-center',
-              'bg-red-500 hover:bg-red-500 text-white border-0',
+              'bg-destructive hover:bg-destructive text-destructive-foreground border-0',
               'min-w-[1.25rem] rounded-full',
               'shadow-lg transition-all duration-200',
               'group-hover:scale-110'

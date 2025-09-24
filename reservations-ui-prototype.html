@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Reservas - Prototipo UI Mejorado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom animations */
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .slide-up { animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Urgency indicators */
+        .urgent-glow { box-shadow: 0 0 0 2px #ef4444, 0 0 0 4px rgba(239, 68, 68, 0.2); }
+        .today-glow { box-shadow: 0 0 0 2px #f59e0b, 0 0 0 4px rgba(245, 158, 11, 0.2); }
+
+        /* Modal backdrop */
+        .modal-backdrop { backdrop-filter: blur(4px); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- HEADER -->
+    <div class="bg-white border-b sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Gestión de Reservaciones</h1>
+                    <p class="text-gray-600">Dashboard mejorado - Solo reservas relevantes</p>
+                </div>
+                <div class="flex gap-3">
+                    <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        ➕ Nueva Reserva
+                    </button>
+                    <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        🔄 Actualizar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK STATS -->
+    <div class="max-w-7xl mx-auto px-6 py-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white p-4 rounded-lg border">
+                <div class="text-2xl font-bold text-blue-600">12</div>
+                <div class="text-sm text-gray-600">HOY</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg border">
+                <div class="text-2xl font-bold text-green-600">8</div>
+                <div class="text-sm text-gray-600">CONFIRMADAS</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg border">
+                <div class="text-2xl font-bold text-amber-600">3</div>
+                <div class="text-sm text-gray-600">PENDIENTES</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg border">
+                <div class="text-2xl font-bold text-red-600">2</div>
+                <div class="text-sm text-gray-600">URGENTES</div>
+            </div>
+        </div>
+
+        <!-- FILTERS (Mejorados) -->
+        <div class="bg-white p-4 rounded-lg border mb-6">
+            <div class="flex flex-wrap gap-4">
+                <select class="px-3 py-2 border rounded-lg">
+                    <option>📅 Desde HOY (automático)</option>
+                    <option>Solo HOY</option>
+                    <option>Esta semana</option>
+                    <option>Este mes</option>
+                </select>
+                <select class="px-3 py-2 border rounded-lg">
+                    <option>📊 Todos los estados</option>
+                    <option>🟡 Pendientes</option>
+                    <option>🟢 Confirmadas</option>
+                    <option>🔵 En mesa</option>
+                </select>
+                <input type="search" placeholder="🔍 Buscar cliente..." class="px-3 py-2 border rounded-lg flex-1 min-w-48">
+            </div>
+        </div>
+
+        <!-- RESERVATIONS LIST (Agrupadas por fecha) -->
+
+        <!-- HOY - Sección Prioritaria -->
+        <div class="mb-8 fade-in">
+            <div class="flex items-center gap-3 mb-4">
+                <h2 class="text-xl font-bold text-gray-800">🔥 HOY</h2>
+                <span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full font-medium">4 reservas</span>
+                <span class="text-sm text-gray-500">14 de septiembre, 2025</span>
+            </div>
+
+            <!-- Reserva URGENTE (en 30 min) -->
+            <div class="bg-white rounded-lg border urgent-glow mb-3 slide-up">
+                <div class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">🚨</span>
+                                <div>
+                                    <div class="font-semibold text-gray-900">María González</div>
+                                    <div class="text-sm text-gray-600">📧 maria@email.com • 📞 +34 666 123 456</div>
+                                </div>
+                            </div>
+                            <div class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full font-medium">
+                                ⏰ EN 30 MIN
+                            </div>
+                            <div class="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-full">
+                                🟡 PENDIENTE
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-right text-sm">
+                                <div class="font-medium">19:00 • Mesa T5</div>
+                                <div class="text-gray-600">👥 4 personas</div>
+                            </div>
+                            <button onclick="showActions(this)" class="p-2 hover:bg-gray-100 rounded-lg">
+                                ⋮
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Quick Actions (Hidden by default) -->
+                    <div class="hidden mt-3 pt-3 border-t flex gap-2">
+                        <button onclick="confirmReservation()" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+                            ✅ Confirmar
+                        </button>
+                        <button onclick="callCustomer()" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                            📞 Llamar
+                        </button>
+                        <button onclick="editReservation('urgent')" class="px-3 py-1 border border-gray-300 text-sm rounded hover:bg-gray-50">
+                            ✏️ Editar
+                        </button>
+                        <button onclick="viewDetails('urgent')" class="px-3 py-1 border border-gray-300 text-sm rounded hover:bg-gray-50">
+                            👁️ Ver detalles
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reserva HOY (confirmada) -->
+            <div class="bg-white rounded-lg border today-glow mb-3">
+                <div class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">👑</span>
+                                <div>
+                                    <div class="font-semibold text-gray-900">Carlos Vega (VIP)</div>
+                                    <div class="text-sm text-gray-600">📧 carlos@empresa.com • 📞 +34 677 987 654</div>
+                                </div>
+                            </div>
+                            <div class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                ✅ CONFIRMADA
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-right text-sm">
+                                <div class="font-medium">21:30 • Sala VIP</div>
+                                <div class="text-gray-600">👥 6 personas</div>
+                            </div>
+                            <button onclick="showActions(this)" class="p-2 hover:bg-gray-100 rounded-lg">
+                                ⋮
+                            </button>
+                        </div>
+                    </div>
+                    <div class="hidden mt-3 pt-3 border-t flex gap-2">
+                        <button onclick="seatReservation()" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                            🪑 Sentar en mesa
+                        </button>
+                        <button onclick="editReservation('vip')" class="px-3 py-1 border border-gray-300 text-sm rounded hover:bg-gray-50">
+                            ✏️ Editar
+                        </button>
+                        <button onclick="viewDetails('vip')" class="px-3 py-1 border border-gray-300 text-sm rounded hover:bg-gray-50">
+                            👁️ Ver detalles
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reserva completada HOY -->
+            <div class="bg-white rounded-lg border border-gray-200 opacity-75 mb-3">
+                <div class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">✅</span>
+                                <div>
+                                    <div class="font-semibold text-gray-700">Ana Martín</div>
+                                    <div class="text-sm text-gray-500">Comida completada</div>
+                                </div>
+                            </div>
+                            <div class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                ⚪ COMPLETADA
+                            </div>
+                        </div>
+                        <div class="text-right text-sm text-gray-600">
+                            <div>13:00 • Mesa T12</div>
+                            <div>👥 2 personas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAÑANA - Sección Secundaria -->
+        <div class="mb-8 fade-in">
+            <div class="flex items-center gap-3 mb-4">
+                <h2 class="text-xl font-bold text-gray-800">📅 MAÑANA</h2>
+                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">6 reservas</span>
+                <span class="text-sm text-gray-500">15 de septiembre, 2025</span>
+            </div>
+
+            <div class="bg-white rounded-lg border mb-3">
+                <div class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">🍽️</span>
+                                <div>
+                                    <div class="font-semibold text-gray-900">Luis Rodríguez</div>
+                                    <div class="text-sm text-gray-600">Aniversario • Sin alergias</div>
+                                </div>
+                            </div>
+                            <div class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                ✅ CONFIRMADA
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-right text-sm">
+                                <div class="font-medium">20:00 • Terraza</div>
+                                <div class="text-gray-600">👥 8 personas</div>
+                            </div>
+                            <button onclick="showActions(this)" class="p-2 hover:bg-gray-100 rounded-lg">
+                                ⋮
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Más reservas de mañana (collapsed) -->
+            <div class="text-center">
+                <button class="text-blue-600 hover:text-blue-800 text-sm">
+                    👁️ Ver 5 reservas más de mañana
+                </button>
+            </div>
+        </div>
+
+        <!-- PRÓXIMOS DÍAS - Sección Terciaria -->
+        <div class="mb-8 fade-in">
+            <div class="flex items-center gap-3 mb-4">
+                <h2 class="text-xl font-bold text-gray-800">📆 PRÓXIMOS DÍAS</h2>
+                <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">23 reservas</span>
+            </div>
+
+            <div class="text-center py-8 bg-white rounded-lg border">
+                <p class="text-gray-600 mb-4">📊 Vista agrupada por días</p>
+                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    📅 Ver calendario completo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE EDICIÓN -->
+    <div id="editModal" class="hidden fixed inset-0 z-50 modal-backdrop bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto slide-up">
+            <div class="sticky top-0 bg-white border-b px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold">✏️ Editar Reservación</h3>
+                    <button onclick="closeModal()" class="p-2 hover:bg-gray-100 rounded-lg">✕</button>
+                </div>
+            </div>
+
+            <div class="p-6 space-y-6">
+                <!-- Customer Info -->
+                <div class="space-y-4">
+                    <h4 class="font-semibold text-gray-800">👤 Información del Cliente</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" value="María González" class="p-3 border rounded-lg" placeholder="Nombre completo">
+                        <input type="email" value="maria@email.com" class="p-3 border rounded-lg" placeholder="Email">
+                    </div>
+                    <input type="tel" value="+34 666 123 456" class="w-full p-3 border rounded-lg" placeholder="Teléfono">
+                </div>
+
+                <!-- Reservation Details -->
+                <div class="space-y-4">
+                    <h4 class="font-semibold text-gray-800">📅 Detalles de la Reserva</h4>
+                    <div class="grid grid-cols-3 gap-4">
+                        <input type="date" value="2025-09-14" class="p-3 border rounded-lg">
+                        <input type="time" value="19:00" class="p-3 border rounded-lg">
+                        <input type="number" value="4" min="1" max="20" class="p-3 border rounded-lg" placeholder="Personas">
+                    </div>
+                    <select class="w-full p-3 border rounded-lg">
+                        <option>Mesa T5 (Terraza • 4 personas)</option>
+                        <option>Sin mesa asignada</option>
+                        <option>Mesa T3 (Terraza • 6 personas)</option>
+                    </select>
+                </div>
+
+                <!-- Special Requests -->
+                <div class="space-y-4">
+                    <h4 class="font-semibold text-gray-800">📝 Solicitudes Especiales</h4>
+                    <textarea rows="3" class="w-full p-3 border rounded-lg" placeholder="Celebración, alergias, preferencias..."></textarea>
+                </div>
+
+                <!-- Status -->
+                <div class="space-y-4">
+                    <h4 class="font-semibold text-gray-800">📊 Estado</h4>
+                    <select class="w-full p-3 border rounded-lg">
+                        <option value="PENDING">🟡 Pendiente</option>
+                        <option value="CONFIRMED">🟢 Confirmada</option>
+                        <option value="SEATED">🔵 En mesa</option>
+                        <option value="COMPLETED">⚪ Completada</option>
+                        <option value="CANCELLED">🔴 Cancelada</option>
+                    </select>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button onclick="saveReservation()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        💾 Guardar Cambios
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE DETALLES -->
+    <div id="detailModal" class="hidden fixed inset-0 z-50 modal-backdrop bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-lg w-full slide-up">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">👁️ Detalles de Reservación</h3>
+                    <button onclick="closeDetailModal()" class="p-2 hover:bg-gray-100 rounded-lg">✕</button>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-red-50 border border-red-200 p-4 rounded-lg">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-lg">🚨</span>
+                            <span class="font-semibold text-red-800">RESERVA URGENTE</span>
+                        </div>
+                        <p class="text-sm text-red-700">Faltan 30 minutos. Cliente sin confirmar.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <div class="font-medium text-gray-600">Cliente</div>
+                            <div>María González</div>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-600">Estado</div>
+                            <div>🟡 Pendiente</div>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-600">Fecha & Hora</div>
+                            <div>Hoy, 19:00</div>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-600">Mesa</div>
+                            <div>T5 (Terraza)</div>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-600">Personas</div>
+                            <div>👥 4 personas</div>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-600">Teléfono</div>
+                            <div>📞 +34 666 123 456</div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t">
+                        <div class="font-medium text-gray-600 mb-2">Historial</div>
+                        <div class="text-sm space-y-1">
+                            <div>• Creada hace 2 horas</div>
+                            <div>• Email enviado hace 1 hora</div>
+                            <div class="text-red-600">• Sin confirmación del cliente</div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 pt-4">
+                        <button onclick="callCustomer()" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                            📞 Llamar Ahora
+                        </button>
+                        <button onclick="editReservation('urgent')" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                            ✏️ Editar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Interactive Functions
+        function showActions(button) {
+            const actionsDiv = button.closest('.p-4').querySelector('.hidden');
+            if (actionsDiv) {
+                actionsDiv.classList.toggle('hidden');
+            }
+        }
+
+        function editReservation(id) {
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function viewDetails(id) {
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+        }
+
+        function confirmReservation() {
+            alert('✅ Reservación confirmada - SMS enviado al cliente');
+        }
+
+        function callCustomer() {
+            alert('📞 Iniciando llamada a +34 666 123 456...');
+        }
+
+        function seatReservation() {
+            alert('🪑 Cliente sentado en mesa - Estado actualizado');
+        }
+
+        function saveReservation() {
+            alert('💾 Cambios guardados exitosamente');
+            closeModal();
+        }
+
+        // Close modals on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeDetailModal();
+            }
+        });
+
+        // Auto-refresh simulation
+        setInterval(() => {
+            console.log('🔄 Auto-refresh: Checking for new reservations...');
+        }, 30000);
+    </script>
+</body>
+</html>

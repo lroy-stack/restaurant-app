@@ -3,17 +3,17 @@ import { z } from 'zod'
 // Language type
 export type Language = 'es' | 'en' | 'de'
 
-// Multilingual error messages (expanded for professional use)
-const errorMessages = {
+// Dynamic multilingual error messages (expanded for professional use)
+const createErrorMessages = (maxPartySize: number = 10) => ({
   es: {
     // Step 1: DateTime & Party Size
     dateRequired: "Fecha requerida",
-    timeRequired: "Hora requerida", 
+    timeRequired: "Hora requerida",
     partySizeMin: "Mínimo 1 persona",
-    partySizeMax: "Máximo 20 personas",
+    partySizeMax: `Máximo ${maxPartySize} personas`, // DYNAMIC
     
-    // Step 2: Table Selection 
-    tableRequired: "Mesa requerida",
+    // Step 2: Table Selection
+    tableRequired: "Al menos una mesa requerida",
     
     // Step 3: Contact Information
     firstNameRequired: "Nombre requerido",
@@ -38,8 +38,8 @@ const errorMessages = {
     // Step 1: DateTime & Party Size
     dateRequired: "Date required",
     timeRequired: "Time required",
-    partySizeMin: "Minimum 1 person", 
-    partySizeMax: "Maximum 20 people",
+    partySizeMin: "Minimum 1 person",
+    partySizeMax: `Maximum ${maxPartySize} people`, // DYNAMIC
     
     // Step 2: Table Selection
     tableRequired: "Table required",
@@ -68,7 +68,7 @@ const errorMessages = {
     dateRequired: "Datum erforderlich",
     timeRequired: "Uhrzeit erforderlich",
     partySizeMin: "Mindestens 1 Person",
-    partySizeMax: "Maximal 20 Personen",
+    partySizeMax: `Maximal ${maxPartySize} Personen`, // DYNAMIC
     
     // Step 2: Table Selection
     tableRequired: "Tisch erforderlich",
@@ -92,20 +92,24 @@ const errorMessages = {
     privacyRequired: "Datenschutzerklärung muss akzeptiert werden",
     termsRequired: "AGBs müssen akzeptiert werden"
   }
-}
+})
 
-// Individual step schemas following React Hook Form best practices
-export const stepOneSchema = z.object({
+// Individual step schemas following React Hook Form best practices (DYNAMIC)
+export const createStepOneSchema = (maxPartySize: number = 10) => z.object({
   // Date & Time Selection
   date: z.string().min(1),
   time: z.string().min(1),
-  partySize: z.number().int().min(1).max(20),
+  partySize: z.number().int().min(1).max(maxPartySize), // DYNAMIC
   preferredLocation: z.string().optional(),
 })
 
+// Backward compatibility - uses default maxPartySize
+export const stepOneSchema = createStepOneSchema(10)
+
 export const stepTwoSchema = z.object({
-  // Table Selection & Pre-order
-  tableId: z.string().min(1),
+  // Table Selection & Pre-order (UPDATED: Multiple tables support)
+  tableIds: z.array(z.string()).min(1, "Al menos una mesa requerida"),
+  tableId: z.string().optional(), // Legacy compatibility
   preOrderItems: z.array(z.object({
     id: z.string(),
     name: z.string(), 
@@ -139,16 +143,9 @@ export const stepFourSchema = z.object({
   marketingConsent: z.boolean().default(false),
 })
 
-// Combined schema for the complete form following best practices
-export const professionalReservationSchema = z.object({
-  stepOne: stepOneSchema,
-  stepTwo: stepTwoSchema, 
-  stepThree: stepThreeSchema,
-  stepFour: stepFourSchema,
-})
-
-// Factory function for dynamic language-based validation
-export const createProfessionalReservationSchema = (lang: Language = 'es') => {
+// Combined schema for the complete form following best practices (DYNAMIC)
+export const createProfessionalReservationSchema = (lang: Language = 'es', maxPartySize: number = 10) => {
+  const errorMessages = createErrorMessages(maxPartySize)
   const messages = errorMessages[lang]
   
   return z.object({
@@ -158,12 +155,13 @@ export const createProfessionalReservationSchema = (lang: Language = 'es') => {
       partySize: z.number()
         .int()
         .min(1, messages.partySizeMin)
-        .max(20, messages.partySizeMax),
+        .max(maxPartySize, messages.partySizeMax), // DYNAMIC
       preferredLocation: z.string().optional(),
     }),
     
     stepTwo: z.object({
-      tableId: z.string().min(1, messages.tableRequired),
+      tableIds: z.array(z.string()).min(1, messages.tableRequired),
+      tableId: z.string().optional(), // Legacy compatibility
       preOrderItems: z.array(z.object({
         id: z.string(),
         name: z.string(),
@@ -205,12 +203,15 @@ export const createProfessionalReservationSchema = (lang: Language = 'es') => {
   })
 }
 
-// Type exports for TypeScript integration
-export type ProfessionalReservationFormData = z.infer<typeof professionalReservationSchema>
-export type StepOneData = z.infer<typeof stepOneSchema>
-export type StepTwoData = z.infer<typeof stepTwoSchema>  
+// Backward compatibility - uses default maxPartySize
+export const professionalReservationSchema = createProfessionalReservationSchema('es', 10)
+
+// Type exports for TypeScript integration (DYNAMIC)
+export type ProfessionalReservationFormData = z.infer<ReturnType<typeof createProfessionalReservationSchema>>
+export type StepOneData = z.infer<ReturnType<typeof createStepOneSchema>>
+export type StepTwoData = z.infer<typeof stepTwoSchema>
 export type StepThreeData = z.infer<typeof stepThreeSchema>
 export type StepFourData = z.infer<typeof stepFourSchema>
 
-// Export error messages for UI components
-export { errorMessages }
+// Export error messages factory for UI components
+export { createErrorMessages }

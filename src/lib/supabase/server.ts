@@ -16,14 +16,14 @@ if (!supabaseAnonKey) {
 
 // 🔧 CORRECCIÓN: Función que recibe cookieStore como parámetro
 export function createServerSupabaseClient(cookieStore: ReadonlyRequestCookies) {
-  return createServerClient(supabaseUrl, supabaseAnonKey, {
+  return createServerClient(supabaseUrl!, supabaseAnonKey!, {
     cookies: {
       getAll() {
         return cookieStore.getAll()
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet: Array<{name: string, value: string, options?: any}>) {
         try {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value, options }: {name: string, value: string, options?: any}) =>
             cookieStore.set(name, value, options)
           )
         } catch {
@@ -60,15 +60,15 @@ export function createAdminSupabaseClient(cookieStore: ReadonlyRequestCookies) {
 
   return createServerClient(
     supabaseUrl!,
-    serviceRoleKey!,
+    serviceRoleKey,
     {
       cookies: {
         getAll() {
           return cookieStore.getAll()
         },
-        setAll(cookiesToSet: Array<{name: string; value: string; options?: any}>) {
+        setAll(cookiesToSet: Array<{name: string, value: string, options?: any}>) {
           try {
-            cookiesToSet.forEach(({ name, value, options }: {name: string; value: string; options?: any}) =>
+            cookiesToSet.forEach(({ name, value, options }: {name: string, value: string, options?: any}) =>
               cookieStore.set(name, value, options)
             )
           } catch {
@@ -88,8 +88,36 @@ export function createAdminSupabaseClient(cookieStore: ReadonlyRequestCookies) {
   )
 }
 
-// 🔧 CORRECCIÓN: Función utilitaria para admin client
+// 🔧 CORRECCIÓN: Función utilitaria para admin client (con cookies)
 export async function createAdminClient() {
   const cookieStore = await cookies()
   return createAdminSupabaseClient(cookieStore)
+}
+
+// 🚀 NEW: Cliente admin directo para API routes (sin cookies)
+export function createDirectAdminClient() {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!serviceRoleKey) {
+    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable')
+  }
+
+  return createServerClient(
+    supabaseUrl!,
+    serviceRoleKey,
+    {
+      cookies: {
+        getAll() { return [] },
+        setAll() { /* no-op */ },
+      },
+      db: {
+        schema: 'restaurante'  // 🚨 CRÍTICO: ÚNICAMENTE esquema restaurante
+      },
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      }
+    }
+  )
 }

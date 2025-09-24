@@ -30,6 +30,8 @@ export interface MenuItem {
   containsPeanuts: boolean
   images: string[]
   displayOrder: number
+  glassPrice?: number
+  alcoholContent?: number
 }
 
 export interface MenuCategory {
@@ -68,12 +70,11 @@ export function useMenu(filters?: MenuFilterData) {
 
   const fetchMenu = async () => {
     try {
-      console.log('fetchMenu called with filters:', filters)
       setLoading(true)
       setError(null)
 
       const queryParams = new URLSearchParams()
-      
+
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
@@ -83,19 +84,16 @@ export function useMenu(filters?: MenuFilterData) {
       }
 
       const url = `/api/menu?${queryParams}`
-      console.log('Fetching URL:', url)
       const response = await fetch(url)
-      
+
       if (!response.ok) {
-        console.error('Response not ok:', response.status, response.statusText)
         throw new Error('Error al cargar el menú')
       }
 
       const data = await response.json()
-      console.log('Menu data received:', data)
       setMenu(data)
     } catch (err) {
-      console.error('Fetch error:', err)
+      console.error('Error loading menu:', err)
       setError(err instanceof Error ? err.message : 'Ocurrió un error')
     } finally {
       setLoading(false)

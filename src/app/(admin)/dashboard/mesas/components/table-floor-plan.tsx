@@ -10,6 +10,21 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { MapPin, ZoomIn, ZoomOut, RotateCcw, Save, Loader2 } from 'lucide-react'
 
+// 🚀 Helper function to safely format reservation time
+const formatReservationTime = (timeString: string): string => {
+  try {
+    const date = new Date(timeString)
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date string:', timeString)
+      return 'Hora inválida'
+    }
+    return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+  } catch (error) {
+    console.error('Error formatting time:', error, timeString)
+    return 'Error hora'
+  }
+}
+
 // CRITICAL: Dynamic import to prevent SSR issues with react-grid-layout
 const ResponsiveGridLayout = dynamic(
   () => import('react-grid-layout').then(mod => mod.WidthProvider(mod.Responsive)),
@@ -43,8 +58,14 @@ interface TableData {
   location: keyof typeof ENIGMA_ZONES
   qrCode: string
   isActive: boolean
-  currentStatus?: 'available' | 'reserved' | 'occupied' | 'maintenance'
-  currentReservation?: any
+  currentStatus?: 'available' | 'reserved' | 'occupied' | 'maintenance' | 'temporally_closed'
+  // 🔥 ACTUALIZADO: Tipo específico para currentReservation
+  currentReservation?: {
+    customerName: string
+    partySize: number
+    time: string
+    status: string
+  } | null
 }
 
 interface TableFloorPlanProps {
@@ -158,8 +179,8 @@ function TableItem({ table }: { table: TableData }) {
       </div>
       
       {/* Status badge with modern styling */}
-      <Badge 
-        variant={table.isActive ? "secondary" : "outline"} 
+      <Badge
+        variant={table.isActive ? "secondary" : "outline"}
         className="text-xs mt-1 relative z-10 backdrop-blur-sm"
       >
         {!table.isActive ? 'Cerrada' :
@@ -168,6 +189,18 @@ function TableItem({ table }: { table: TableData }) {
          table.currentStatus === 'occupied' ? 'Ocupada' :
          'Mantenimiento'}
       </Badge>
+
+      {/* 🔥 NUEVO: Mostrar información de reserva si existe */}
+      {table.isActive && table.currentReservation && (
+        <div className="text-xs mt-1 relative z-10 text-center space-y-0.5">
+          <div className="font-semibold text-primary truncate">
+            {table.currentReservation.customerName}
+          </div>
+          <div className="opacity-75">
+            {table.currentReservation.partySize}p • {formatReservationTime(table.currentReservation.time)}
+          </div>
+        </div>
+      )}
       
       {/* Subtle zone indicator */}
       <div className="absolute bottom-1 right-1 text-xs opacity-30 font-mono">

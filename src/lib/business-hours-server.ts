@@ -134,12 +134,8 @@ export async function getAvailableTimeSlots(
   // Get business hours for selected day
   const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
   
-  if (!dayHours || dayHours.is_closed) {
-    return [{
-      time: '',
-      available: false,
-      reason: 'Restaurant closed on this day'
-    }]
+  if (!dayHours || !dayHours.is_open) {
+    return []
   }
   
   const slots: TimeSlot[] = []

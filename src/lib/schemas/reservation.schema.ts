@@ -3,8 +3,8 @@ import { z } from 'zod'
 // Enum values from database
 const ReservationStatus = z.enum(['PENDING', 'CONFIRMED', 'SEATED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'])
 
-// Zod schema matching exact database structure
-export const createReservationSchema = z.object({
+// Dynamic Zod schema generation with configurable maxPartySize
+export const createReservationSchema = (maxPartySize: number = 10) => z.object({
   // Customer Information (required for reservations table)
   firstName: z.string()
     .min(1, 'El nombre es obligatorio')
@@ -33,7 +33,7 @@ export const createReservationSchema = z.object({
   partySize: z.number()
     .int('El número de personas debe ser entero')
     .min(1, 'Mínimo 1 persona')
-    .max(20, 'Máximo 20 personas'),
+    .max(maxPartySize, `Máximo ${maxPartySize} personas`),
 
   tableId: z.string().optional(),
 
@@ -69,14 +69,14 @@ export const createReservationSchema = z.object({
   status: ReservationStatus.default('PENDING')
 })
 
-// Update schema for editing (allows partial updates)
-export const updateReservationSchema = createReservationSchema.partial().extend({
+// Update schema for editing (allows partial updates) - DYNAMIC
+export const updateReservationSchema = (maxPartySize: number = 10) => createReservationSchema(maxPartySize).partial().extend({
   id: z.string().min(1, 'ID de reserva requerido')
 })
 
-// Types
-export type ReservationFormData = z.infer<typeof createReservationSchema>
-export type UpdateReservationData = z.infer<typeof updateReservationSchema>
+// Types - FIXED: Use ReturnType for function schemas
+export type ReservationFormData = z.infer<ReturnType<typeof createReservationSchema>>
+export type UpdateReservationData = z.infer<ReturnType<typeof updateReservationSchema>>
 export type ReservationStatusType = z.infer<typeof ReservationStatus>
 
 // Default values aligned with database defaults
@@ -97,8 +97,8 @@ export const validateReservationDateTime = (dateTime: string): boolean => {
   return date > now
 }
 
-export const validatePartySize = (size: number): boolean => {
-  return Number.isInteger(size) && size >= 1 && size <= 20
+export const validatePartySize = (size: number, maxPartySize: number = 10): boolean => {
+  return Number.isInteger(size) && size >= 1 && size <= maxPartySize
 }
 
 // Customer creation schema (for new customers from reservations)
