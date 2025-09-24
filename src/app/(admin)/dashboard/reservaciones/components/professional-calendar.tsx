@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-import { Calendar, momentLocalizer, View } from 'react-big-calendar'
-import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
+import { Calendar, momentLocalizer, View, ToolbarProps, Event } from 'react-big-calendar'
+import withDragAndDrop, { withDragAndDropProps } from 'react-big-calendar/lib/addons/dragAndDrop'
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import moment from 'moment'
 import 'moment/locale/es'
@@ -197,7 +197,7 @@ export function ProfessionalCalendar({
   }, [onReservationClick])
 
   // Toolbar personalizada
-  const CustomToolbar = useCallback(({ label, onNavigate, onView }: any) => {
+  const CustomToolbar = useCallback(({ label, onNavigate, onView }: ToolbarProps) => {
     return (
       <div className="flex items-center justify-between mb-4 pb-4 border-b">
         <div className="flex items-center gap-2">
@@ -265,13 +265,13 @@ export function ProfessionalCalendar({
   }, [])
 
   // Handlers para drag & drop
-  const handleEventDrop = useCallback(({ event, start, end }: any) => {
+  const handleEventDrop = useCallback(({ event, start, end }: { event: Event; start: Date; end: Date }) => {
     const updatedEvent = { ...event, start, end }
     console.log('Event moved:', updatedEvent)
     onReservationMove?.(event.id, start, end)
   }, [onReservationMove])
 
-  const handleEventResize = useCallback(({ event, start, end }: any) => {
+  const handleEventResize = useCallback(({ event, start, end }: { event: Event; start: Date; end: Date }) => {
     const updatedEvent = { ...event, start, end }
     console.log('Event resized:', updatedEvent)
     onReservationResize?.(event.id, start, end)

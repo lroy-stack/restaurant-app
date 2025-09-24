@@ -3,7 +3,7 @@
 // PRP Implementation: GDPR rights processing with audit trails
 
 import { NextRequest, NextResponse } from 'next/server'
-import { GdprRequestType, GdprRequestStatus, CreateGdprRequestSchema } from '@/types/legal'
+import { GDPRRequestType, GDPRRequestStatus, CreateGDPRRequestSchema } from '@/types/legal'
 import { z } from 'zod'
 import { supabase } from '@/lib/supabase'
 
@@ -52,11 +52,11 @@ export async function GET(request: NextRequest) {
       query = query.eq('email', email)
     }
 
-    if (status && GdprRequestStatus.safeParse(status).success) {
+    if (status && GDPRRequestStatus.safeParse(status).success) {
       query = query.eq('status', status)
     }
 
-    if (requestType && GdprRequestType.safeParse(requestType).success) {
+    if (requestType && GDPRRequestType.safeParse(requestType).success) {
       query = query.eq('requestType', requestType)
     }
 
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Validate request data
-    const validationResult = CreateGdprRequestSchema.safeParse(body)
+    const validationResult = CreateGDPRRequestSchema.safeParse(body)
     if (!validationResult.success) {
       return NextResponse.json(
         {
@@ -230,12 +230,12 @@ export async function PUT(request: NextRequest) {
     }
 
     // Validate status
-    if (!GdprRequestStatus.safeParse(status).success) {
+    if (!GDPRRequestStatus.safeParse(status).success) {
       return NextResponse.json(
         {
           success: false,
           error: 'Invalid status',
-          validStatuses: GdprRequestStatus.options
+          validStatuses: GDPRRequestStatus.options
         },
         { status: 400 }
       )

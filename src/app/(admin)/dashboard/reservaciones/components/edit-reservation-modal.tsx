@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import type { Reservation } from '@/types/database'
 import { useForm } from 'react-hook-form'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -51,7 +52,7 @@ interface EditReservationModalProps {
   isOpen: boolean
   onClose: () => void
   reservation: Reservation | null
-  onSave: (id: string, data: any) => Promise<boolean>
+  onSave: (id: string, data: Partial<Reservation>) => Promise<boolean>
 }
 
 interface EditFormData {
