@@ -26,9 +26,63 @@ const formatReservationTime = (timeString: string): string => {
 }
 
 // CRITICAL: Dynamic import to prevent SSR issues with react-grid-layout
+// FIX: Robust pattern for CommonJS/ES6 module compatibility
 const ResponsiveGridLayout = dynamic(
-  () => import('react-grid-layout').then(mod => mod.WidthProvider(mod.Responsive)),
-  { 
+  async () => {
+    try {
+      const RGL = await import('react-grid-layout')
+
+      // Handle both CommonJS and ES6 module formats
+      const GridLayout = RGL.default || RGL
+
+      // Try multiple access patterns for compatibility
+      let WidthProvider, Responsive
+
+      if (GridLayout.WidthProvider && GridLayout.Responsive) {
+        // Standard pattern
+        WidthProvider = GridLayout.WidthProvider
+        Responsive = GridLayout.Responsive
+      } else if (RGL.WidthProvider && RGL.Responsive) {
+        // Direct access pattern
+        WidthProvider = RGL.WidthProvider
+        Responsive = RGL.Responsive
+      } else {
+        // Fallback: destructure attempt
+        const extracted = Object.assign({}, GridLayout, RGL)
+        WidthProvider = extracted.WidthProvider
+        Responsive = extracted.Responsive
+      }
+
+      // Validate exports exist to prevent runtime errors
+      if (!WidthProvider || !Responsive) {
+        console.error('❌ react-grid-layout exports missing:', {
+          WidthProvider: !!WidthProvider,
+          Responsive: !!Responsive,
+          GridLayoutKeys: Object.keys(GridLayout || {}),
+          RGLKeys: Object.keys(RGL || {})
+        })
+        throw new Error('react-grid-layout exports not found')
+      }
+
+      console.log('✅ react-grid-layout loaded successfully')
+      return WidthProvider(Responsive)
+    } catch (error) {
+      console.error('❌ Failed to load react-grid-layout:', error)
+      // Return a fallback component
+      return ({ children, ...props }: any) => (
+        <div className="p-6 border border-dashed border-muted-foreground/30 rounded-lg bg-muted/10">
+          <div className="text-center space-y-2">
+            <p className="text-muted-foreground">Vista de planta no disponible</p>
+            <p className="text-xs text-muted-foreground">Error al cargar react-grid-layout</p>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            {children}
+          </div>
+        </div>
+      )
+    }
+  },
+  {
     ssr: false,
     loading: () => (
       <div className="h-96 bg-muted animate-pulse rounded flex items-center justify-center">
@@ -39,9 +93,11 @@ const ResponsiveGridLayout = dynamic(
   }
 )
 
-// Import CSS for react-grid-layout
-import 'react-grid-layout/css/styles.css'
-import 'react-resizable/css/styles.css'
+// Import CSS for react-grid-layout (conditionally to prevent SSR issues)
+if (typeof window !== 'undefined') {
+  import('react-grid-layout/css/styles.css')
+  import('react-resizable/css/styles.css')
+}
 
 // REAL Enigma zones
 const ENIGMA_ZONES = {
