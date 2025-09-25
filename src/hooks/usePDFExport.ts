@@ -6,9 +6,15 @@ import { format, startOfDay, endOfDay, addDays, startOfWeek, endOfWeek } from 'd
 import { es } from 'date-fns/locale'
 import type { Reservation } from '@/types/reservation'
 
-// Lazy imports for better performance
-const jsPDFImport = () => import('jspdf')
-const autoTableImport = () => import('jspdf-autotable')
+// Alternative: Direct dynamic import with explicit extension application
+const loadPDFLibraries = async () => {
+  // Import jsPDF first
+  const jsPDFModule = await import('jspdf')
+  // Import and apply autoTable extension
+  await import('jspdf-autotable')
+
+  return { jsPDF: jsPDFModule.default }
+}
 
 export type ExportDateRange = 'today' | 'tomorrow' | 'week'
 
@@ -118,9 +124,8 @@ export function usePDFExport() {
     try {
       setIsExporting(true)
 
-      // Dynamic imports for better performance
-      const { jsPDF } = await jsPDFImport()
-      await autoTableImport()
+      // Load PDF libraries with proper autoTable extension
+      const { jsPDF } = await loadPDFLibraries()
 
       // Filter and sort reservations
       const filteredReservations = filterReservationsByDateRange(reservations, options.dateRange)
@@ -269,7 +274,9 @@ function addReservationsTable(doc: any, reservations: Reservation[], options: PD
     return row
   })
 
-  ;(doc as any).autoTable({
+  // Verify autoTable is available and use it
+  if (typeof (doc as any).autoTable === 'function') {
+    (doc as any).autoTable({
     head: [headers],
     body: tableData,
     startY,
@@ -311,6 +318,13 @@ function addReservationsTable(doc: any, reservations: Reservation[], options: PD
     },
     margin: { left: 20, right: 20 }
   })
+  } else {
+    // Fallback: Add error message if autoTable is not available
+    console.error('❌ jsPDF autoTable extension not loaded correctly')
+    doc.setFontSize(12)
+    doc.setTextColor(...ENIGMA_COLORS.text)
+    doc.text('Error: No se pudo generar la tabla. Intente de nuevo.', 20, startY)
+  }
 }
 
 function addFooter(doc: any, pageWidth: number, pageHeight: number) {
