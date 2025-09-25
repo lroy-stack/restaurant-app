@@ -59,7 +59,7 @@ export const CartFloatingButton: React.FC<CartFloatingButtonProps> = ({
         onClick={toggleCart}
         className={cn(
           // CUADRADO con esquinas redondeadas (siguiendo patrón de cards) - Más compacto
-          'w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center',
+          'w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center',
           'backdrop-blur-2xl border',
           'transition-all duration-300 group',
           'hover:scale-105 active:scale-95',
@@ -85,15 +85,15 @@ export const CartFloatingButton: React.FC<CartFloatingButtonProps> = ({
             strokeWidth={2}
           />
 
-          {/* Cart count badge with improved styling */}
+          {/* Cart count badge - Más compacto */}
           <Badge
             className={cn(
-              'absolute -top-2 -right-2 h-5 w-5 p-0 text-xs',
+              'absolute -top-1.5 -right-1.5 h-4 w-4 p-0 text-[10px] sm:text-xs',
               'flex items-center justify-center',
               'bg-destructive hover:bg-destructive text-destructive-foreground border-0',
-              'min-w-[1.25rem] rounded-full',
-              'shadow-lg transition-all duration-200',
-              'group-hover:scale-110'
+              'min-w-[1rem] sm:min-w-[1.25rem] rounded-full',
+              'shadow-md transition-all duration-200',
+              'group-hover:scale-105'
             )}
           >
             {cartCount > 99 ? '99+' : cartCount}

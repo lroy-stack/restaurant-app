@@ -365,9 +365,9 @@ export default function MenuPage() {
               }
             </p>
 
-            {/* Quick Stats - Enhanced Mobile Layout */}
+            {/* Quick Stats - ALWAYS Horizontal Alignment */}
             {menu && (
-              <div className="grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-4 sm:gap-6 mb-6 sm:mb-8">
+              <div className="flex flex-row justify-center items-center gap-2 sm:gap-4 md:gap-6 mb-6 sm:mb-8 text-xs sm:text-sm">
                 <div className="text-center">
                   <div className="enigma-menu-stat-value">{menu.summary.wineItems || 0}</div>
                   <div className="text-sm sm:text-sm text-white/80" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>{language === 'en' ? 'Wines' : 'Vinos'}</div>
@@ -381,7 +381,7 @@ export default function MenuPage() {
                   <div className="text-sm sm:text-sm text-white/80" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>{language === 'en' ? 'Vegetarian' : 'Vegetarianos'}</div>
                 </div>
                 {menu.summary.priceRange && (
-                  <div className="text-center col-span-2 sm:col-span-1">
+                  <div className="text-center">
                     <div className="enigma-menu-stat-value">€{menu.summary.priceRange.min}-{menu.summary.priceRange.max}</div>
                     <div className="text-sm sm:text-sm text-white/80" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>{language === 'en' ? 'Price Range' : 'Rango de Precios'}</div>
                   </div>
@@ -431,25 +431,25 @@ export default function MenuPage() {
       </section>
 
 
-      {/* Search and Filter Section - Enhanced Mobile Layout */}
-      <section className="py-6 sm:py-8 md:py-12 bg-muted/30">
+      {/* Search and Filter Section */}
+      <section className="py-8 md:py-12 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row gap-3 sm:gap-4 items-center">
-            {/* Search - Full width on mobile */}
-            <div className="relative w-full md:flex-1 md:max-w-md">
+          <div className="flex flex-col lg:flex-row gap-4 items-center">
+            {/* Search */}
+            <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder={language === 'en' ? 'Search dishes...' : 'Buscar platos...'}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10 sm:h-9"
+                className="pl-10"
               />
             </div>
 
-            {/* Category Filter - Full width on mobile */}
+            {/* Category Filter */}
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full md:w-[200px] h-10 sm:h-9">
+              <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder={language === 'en' ? 'Choose category' : 'Elegir categoría'} />
               </SelectTrigger>
               <SelectContent>
@@ -462,10 +462,10 @@ export default function MenuPage() {
               </SelectContent>
             </Select>
 
-            {/* Advanced Filters - Full width on mobile */}
+            {/* Advanced Filters */}
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" className="gap-2 w-full md:w-auto h-10 sm:h-9">
+                <Button variant="outline" className="gap-2">
                   <Filter className="h-4 w-4" />
                   {language === 'en' ? 'Filters' : 'Filtros'}
                   {Object.keys(filters).length > 0 && (
@@ -684,8 +684,8 @@ export default function MenuPage() {
                     )}
                   </div>
 
-                  {/* Menu Items Grid - PROGRESSIVE 1→2→3→4 Mobile-First */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+                  {/* Menu Items Grid - RESPONSIVE 2x2 Mobile, 4x4 Desktop */}
+                  <div className="grid grid-cols-2 gap-2 sm:gap-4 md:gap-6 lg:grid-cols-4">
                     {category.menuItems.map((item) => {
                       const allergens = getAdvancedAllergenObjects(item)
 

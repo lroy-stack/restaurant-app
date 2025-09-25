@@ -5,20 +5,21 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { useTopRecommendedItems } from "@/hooks/use-recommended-menu-items"
+import { useTopRecommendedWines } from "@/hooks/use-recommended-wines"
 import {
   Star,
   ArrowRight,
   Eye,
   ShoppingCart,
-  Heart
+  Heart,
+  Wine
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProductDetailModal } from "@/components/menu/ProductDetailModal"
 import { AllergenInfo } from '@/app/(admin)/dashboard/menu/components/ui/allergen-badges'
 import { useCart } from '@/hooks/useCart'
 
-interface FeaturedDishesProps {
+interface FeaturedWinesProps {
   maxItems?: number
   showViewMore?: boolean
   className?: string
@@ -26,43 +27,45 @@ interface FeaturedDishesProps {
 
 /**
  * Componente que reutiliza EXACTAMENTE las tarjetas del /menu
- * Para mostrar platos destacados usando componentes centralizados
+ * Para mostrar vinos recomendados usando componentes centralizados
  */
-export function FeaturedDishes({
-  maxItems = 4,
+export function FeaturedWines({
+  maxItems = 2,
   showViewMore = true,
   className
-}: FeaturedDishesProps) {
-  const { topItems, loading, error } = useTopRecommendedItems(maxItems)
+}: FeaturedWinesProps) {
+  const { topItems, loading, error } = useTopRecommendedWines(maxItems)
   const [selectedItem, setSelectedItem] = useState<any>(null)
   const [selectedItemCategory, setSelectedItemCategory] = useState<any>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const { addToCart, isInCart, getCartItem } = useCart()
 
-  // Mapear item para carrito
-  const mapMenuItemToCartItem = (item: any) => {
+  // Mapear vino para carrito
+  const mapWineItemToCartItem = (item: any) => {
     return {
       id: item.id,
-      type: 'dish' as const,
+      type: 'wine' as const,
       name: item.name,
       nameEn: item.nameEn,
       description: item.description,
       descriptionEn: item.descriptionEn,
       price: item.price,
       image_url: item.imageUrl,
-      category: item.category?.name || 'Platos',
-      categoryEn: item.category?.nameEn || 'Dishes'
+      category: item.category?.name || 'Vinos',
+      categoryEn: item.category?.nameEn || 'Wines',
+      winery: item.winery,
+      wine_type: item.wineType,
     }
   }
 
   const handleAddToCart = (item: any) => {
-    const cartItem = mapMenuItemToCartItem(item)
+    const cartItem = mapWineItemToCartItem(item)
     addToCart(cartItem)
   }
 
   const openDetailModal = (item: any) => {
     setSelectedItem(item)
-    setSelectedItemCategory(item.category || { name: 'Platos', nameEn: 'Dishes', type: 'FOOD' })
+    setSelectedItemCategory(item.category || { name: 'Vinos', nameEn: 'Wines', type: 'WINE' })
     setShowDetailModal(true)
   }
 
@@ -104,7 +107,7 @@ export function FeaturedDishes({
       <section className={cn("py-12 sm:py-16 bg-gradient-to-br from-muted/30 to-accent/5", className)}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h3 className="enigma-section-title text-destructive">Error al cargar platos destacados</h3>
+            <h3 className="enigma-section-title text-destructive">Error al cargar vinos recomendados</h3>
             <p className="text-muted-foreground mb-6">{error}</p>
             <Link href="/menu">
               <Button variant="outline">Ver Menú Completo</Button>
@@ -115,19 +118,19 @@ export function FeaturedDishes({
     )
   }
 
-  // No hay platos
+  // No hay vinos
   if (!topItems.length) {
     return (
       <section className={cn("py-12 sm:py-16 bg-gradient-to-br from-muted/30 to-accent/5", className)}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h3 className="enigma-section-title">Platos de la Casa</h3>
+            <h3 className="enigma-section-title">Nuestra Cava</h3>
             <p className="text-muted-foreground mb-8">
-              Próximamente destacaremos nuestros platos más especiales
+              Próximamente destacaremos nuestros vinos más especiales
             </p>
             <Link href="/menu">
               <Button>
-                Ver Menú Completo
+                Ver Nuestra Carta
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
@@ -143,13 +146,13 @@ export function FeaturedDishes({
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-8 sm:mb-12">
-            <h3 className="enigma-section-title">Platos de la Casa</h3>
+            <h3 className="enigma-section-title">Nuestra Cava</h3>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-              Nuestros platos más especiales, elaborados con ingredientes premium y técnicas de autor
+              Selección especial de vinos recomendados por nuestro sumiller, perfectos para acompañar una experiencia gastronómica única
             </p>
           </div>
 
-          {/* Grid de platos - USANDO EXACTAMENTE LAS TARJETAS DEL /MENU */}
+          {/* Grid de vinos - USANDO EXACTAMENTE LAS TARJETAS DEL /MENU */}
           <div className="grid grid-cols-2 gap-2 sm:gap-4 md:gap-6 lg:grid-cols-4">
             {topItems.map((item) => {
               const allergens = item.allergens || []
@@ -168,6 +171,11 @@ export function FeaturedDishes({
                     <div className="text-right flex-shrink-0">
                       <div className="flex items-baseline gap-2 justify-end">
                         <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">€{item.price}</div>
+                        {item.glassPrice && (
+                          <div className="text-sm sm:text-xs text-muted-foreground">
+                            / €{item.glassPrice} copa
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -183,6 +191,16 @@ export function FeaturedDishes({
                         {item.description}
                       </p>
                     </div>
+
+                    {/* Alcohol content for wines */}
+                    {item.alcoholContent && (
+                      <div className="mb-3 p-2.5 bg-primary/10 rounded-md border border-primary/20">
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
+                          <Wine className="h-3.5 w-3.5" />
+                          <span>{item.alcoholContent}% Vol.</span>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Allergen & Dietary Info - COMPONENTE REUTILIZADO */}
                     <div className="mb-3 sm:mb-4">
@@ -262,7 +280,7 @@ export function FeaturedDishes({
             <div className="text-center mt-8">
               <Link href="/menu">
                 <Button size="lg" className="bg-primary hover:bg-primary/90 px-8">
-                  Ver Menú Completo
+                  Ver Nuestra Carta
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>

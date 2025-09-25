@@ -281,7 +281,7 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
       )}>
         <button
           className={cn(
-            'w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center',
+            'w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center',
             'backdrop-blur-2xl border',
             'transition-all duration-300',
             'hover:scale-105 active:scale-95',
@@ -295,9 +295,9 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
         >
           <div className="transition-all duration-200">
             {isMobileMenuOpen ? (
-              <X className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
+              <X className="w-4 h-4 text-foreground" />
             ) : (
-              <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
+              <Menu className="w-4 h-4 text-foreground" />
             )}
           </div>
         </button>

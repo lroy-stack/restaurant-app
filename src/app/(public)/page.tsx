@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Star, Award, Users, Utensils, MapPin, Phone, Mail, Clock } from "lucide-react"
 import { EnigmaLogo } from "@/components/ui/enigma-logo"
 import { FeaturedDishes } from "@/components/homepage/featured-dishes"
+import { FeaturedWines } from "@/components/homepage/featured-wines"
 
 export default function HomePage() {
   return (
@@ -18,7 +19,8 @@ export default function HomePage() {
             className="w-full h-full bg-cover bg-no-repeat"
             style={{
               backgroundImage: 'url(https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1758114245475)',
-              backgroundPosition: '65% center'
+              backgroundPosition: '65% center',
+              backgroundAttachment: 'scroll'
             }}
           />
         </div>
@@ -53,15 +55,15 @@ export default function HomePage() {
 
 
           {/* Responsive CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
             <Link href="/reservas">
-              <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg">
+              <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 px-6 sm:px-8 py-3 sm:py-4">
                 <Utensils className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Reservar Mesa
               </Button>
             </Link>
             <Link href="/menu">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto border-accent text-accent hover:bg-accent hover:text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary text-primary hover:bg-primary hover:text-white px-6 sm:px-8 py-3 sm:py-4">
                 Ver Nuestro Menú
               </Button>
             </Link>
@@ -71,6 +73,9 @@ export default function HomePage() {
 
       {/* Featured Dishes Section - REUTILIZANDO componentes del /menu */}
       <FeaturedDishes maxItems={4} showViewMore={true} />
+
+      {/* Featured Wines Section - Nuestra Cava */}
+      <FeaturedWines maxItems={2} showViewMore={true} />
 
       {/* Features Section - 100% Responsive Grid */}
       <section className="py-12 sm:py-16 bg-muted/30">
