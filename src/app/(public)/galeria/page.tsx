@@ -6,13 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Camera, MapPin, Users, ChefHat, Utensils, Award } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { useMediaLibrary } from "@/hooks/use-media-library";
+import { useMediaLibrary, MediaItem } from "@/hooks/use-media-library";
 import { useRestaurant } from "@/hooks/use-restaurant";
+import { GalleryLightbox } from "@/components/gallery/GalleryLightbox";
 
 export default function GaleriaPage() {
   const { restaurant, loading: restaurantLoading } = useRestaurant()
   const { mediaData, loading: mediaLoading, getHeroImage, buildImageUrl, getGalleryCategories, getImagesByCategory } = useMediaLibrary({ type: 'gallery' })
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
+
+  // Lightbox state
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   // Get dynamic hero image
   const heroImage = getHeroImage('galeria')
@@ -44,6 +49,35 @@ export default function GaleriaPage() {
   }
 
   const filteredImages = getFilteredImages()
+
+  // Lightbox handlers
+  const handleImageClick = (item: MediaItem) => {
+    const index = filteredImages.findIndex(img => img.id === item.id)
+    setCurrentImageIndex(index >= 0 ? index : 0)
+    setLightboxOpen(true)
+  }
+
+  const handleShare = async (item: MediaItem) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: item.name,
+          text: item.description || 'Imagen de Enigma Cocina Con Alma',
+          url: item.url
+        })
+      } catch (error) {
+        console.log('Error sharing:', error)
+      }
+    } else {
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(item.url)
+        // Could show toast notification here
+      } catch (error) {
+        console.log('Error copying to clipboard:', error)
+      }
+    }
+  }
 
   if (restaurantLoading || mediaLoading) {
     return <div className="min-h-screen flex items-center justify-center">Cargando galería...</div>
@@ -136,35 +170,40 @@ export default function GaleriaPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {filteredImages.map((image) => (
-                <Card
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-4">
+              {filteredImages.map((image, index) => (
+                <div
                   key={image.id}
-                  className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group cursor-pointer"
+                  className="aspect-square relative overflow-hidden rounded-lg group cursor-pointer bg-gradient-to-br from-primary/5 to-secondary/5"
+                  onClick={() => handleImageClick(image)}
+                  style={{
+                    animationDelay: `${Math.min(index * 50, 500)}ms`
+                  }}
                 >
-                  <div className="aspect-square relative bg-gradient-to-br from-primary/10 to-secondary/10 overflow-hidden">
-                    <img
-                      src={buildImageUrl(image)}
-                      alt={image.alt_text || image.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                  </div>
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="mb-2">
-                      <Badge variant="secondary" className="text-xs">
-                        {categories.find(cat => cat.id === image.category.replace('gallery_', ''))?.name || "General"}
-                      </Badge>
+                  <img
+                    src={buildImageUrl(image)}
+                    alt={image.alt_text || image.name}
+                    className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
+                    loading="lazy"
+                  />
+
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <Camera className="h-8 w-8 text-white drop-shadow-lg" />
                     </div>
-                    <h3 className="text-lg font-semibold mb-2 text-primary group-hover:text-primary/80 transition-colors">
+                  </div>
+
+                  {/* Info Overlay Bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    <h4 className="text-white text-sm font-medium truncate mb-1">
                       {image.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {image.description || "Imagen de nuestra galería"}
-                    </p>
-                  </CardContent>
-                </Card>
+                    </h4>
+                    <Badge variant="secondary" className="text-xs">
+                      {categories.find(cat => cat.id === image.category.replace('gallery_', ''))?.name || "General"}
+                    </Badge>
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -286,6 +325,16 @@ export default function GaleriaPage() {
           </div>
         </div>
       </section>
+
+      {/* Gallery Lightbox */}
+      <GalleryLightbox
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        items={filteredImages}
+        currentIndex={currentImageIndex}
+        onIndexChange={setCurrentImageIndex}
+        onShare={handleShare}
+      />
     </>
   );
 }
