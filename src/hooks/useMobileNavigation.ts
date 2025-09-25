@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { useUIStore, useNavigationBreakpoints } from './useResponsiveLayout'
+import { useUIStore } from './useResponsiveLayout'
+import { useResponsiveNavigation } from './useResponsiveNavigation'
 
 /**
  * useMobileNavigation Hook
@@ -17,7 +18,7 @@ import { useUIStore, useNavigationBreakpoints } from './useResponsiveLayout'
 
 export const useMobileNavigation = () => {
   const { sidebarOpen, toggleSidebar, closeSidebar } = useUIStore()
-  const { shouldShowFloatingNav, shouldShowSidebar } = useNavigationBreakpoints()
+  const { shouldShowFloatingNav, shouldShowSidebar } = useResponsiveNavigation()
   const sidebarRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
 
