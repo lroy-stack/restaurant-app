@@ -336,20 +336,20 @@ export default function MenuPage() {
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative py-16 md:py-20 xl:py-24 text-white overflow-hidden -mt-16 pt-16">
+      {/* Hero Section - Enhanced Mobile-First */}
+      <section className="relative py-12 sm:py-16 md:py-20 xl:py-24 text-white overflow-hidden -mt-16 pt-16">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-black/40 z-10" />
           {/* Real restaurant gastronomic atmosphere image */}
-          <div 
-            className="w-full h-full bg-cover bg-center bg-no-repeat" 
+          <div
+            className="w-full h-full bg-cover bg-center bg-no-repeat"
             style={{
               backgroundImage: 'url(https://ik.imagekit.io/insomnialz/IMG_9755.HEIC?updatedAt=1754141888431&tr=w-1920,h-1080,c-at_max,f-auto,q-auto,pr-true)'
             }}
           />
         </div>
         <div className="relative z-20 container mx-auto px-4">
-          <div className="text-center mb-12 mt-20">
+          <div className="text-center mb-8 sm:mb-12 mt-16 sm:mt-20">
             <Badge className="mb-4 bg-white/20 text-white border-white/30" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
               {language === 'en' ? '🏛️ In the Authentic Old Town of Calpe' : '🏛️ En el Auténtico Casco Antiguo de Calpe'}
             </Badge>
@@ -365,25 +365,25 @@ export default function MenuPage() {
               }
             </p>
 
-            {/* Quick Stats */}
+            {/* Quick Stats - Enhanced Mobile Layout */}
             {menu && (
-              <div className="flex flex-wrap justify-center gap-6 mb-8">
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-4 sm:gap-6 mb-6 sm:mb-8">
                 <div className="text-center">
                   <div className="enigma-menu-stat-value">{menu.summary.wineItems || 0}</div>
-                  <div className="text-sm text-white/80" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>{language === 'en' ? 'Wines' : 'Vinos'}</div>
+                  <div className="text-sm sm:text-sm text-white/80" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>{language === 'en' ? 'Wines' : 'Vinos'}</div>
                 </div>
                 <div className="text-center">
                   <div className="enigma-menu-stat-value">{sectionCounts.food}</div>
-                  <div className="text-sm text-white/80" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>{language === 'en' ? 'Dishes' : 'Platos'}</div>
+                  <div className="text-sm sm:text-sm text-white/80" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>{language === 'en' ? 'Dishes' : 'Platos'}</div>
                 </div>
                 <div className="text-center">
                   <div className="enigma-menu-stat-value">{menu.summary.vegetarianItems}</div>
-                  <div className="text-sm text-white/80" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>{language === 'en' ? 'Vegetarian' : 'Vegetarianos'}</div>
+                  <div className="text-sm sm:text-sm text-white/80" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>{language === 'en' ? 'Vegetarian' : 'Vegetarianos'}</div>
                 </div>
                 {menu.summary.priceRange && (
-                  <div className="text-center">
+                  <div className="text-center col-span-2 sm:col-span-1">
                     <div className="enigma-menu-stat-value">€{menu.summary.priceRange.min}-{menu.summary.priceRange.max}</div>
-                    <div className="text-sm text-white/80" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>{language === 'en' ? 'Price Range' : 'Rango de Precios'}</div>
+                    <div className="text-sm sm:text-sm text-white/80" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>{language === 'en' ? 'Price Range' : 'Rango de Precios'}</div>
                   </div>
                 )}
               </div>
@@ -431,25 +431,25 @@ export default function MenuPage() {
       </section>
 
 
-      {/* Search and Filter Section */}
-      <section className="py-8 md:py-12 bg-muted/30">
+      {/* Search and Filter Section - Enhanced Mobile Layout */}
+      <section className="py-6 sm:py-8 md:py-12 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
-            {/* Search */}
-            <div className="relative flex-1 max-w-md">
+          <div className="flex flex-col md:flex-row gap-3 sm:gap-4 items-center">
+            {/* Search - Full width on mobile */}
+            <div className="relative w-full md:flex-1 md:max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder={language === 'en' ? 'Search dishes...' : 'Buscar platos...'}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 h-10 sm:h-9"
               />
             </div>
 
-            {/* Category Filter */}
+            {/* Category Filter - Full width on mobile */}
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-full md:w-[200px] h-10 sm:h-9">
                 <SelectValue placeholder={language === 'en' ? 'Choose category' : 'Elegir categoría'} />
               </SelectTrigger>
               <SelectContent>
@@ -462,10 +462,10 @@ export default function MenuPage() {
               </SelectContent>
             </Select>
 
-            {/* Advanced Filters */}
+            {/* Advanced Filters - Full width on mobile */}
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="gap-2 w-full md:w-auto h-10 sm:h-9">
                   <Filter className="h-4 w-4" />
                   {language === 'en' ? 'Filters' : 'Filtros'}
                   {Object.keys(filters).length > 0 && (
@@ -684,27 +684,27 @@ export default function MenuPage() {
                     )}
                   </div>
 
-                  {/* Menu Items Grid - RESPONSIVE 2x2 Mobile, 4x4 Desktop */}
-                  <div className="grid grid-cols-2 gap-2 sm:gap-4 md:gap-6 lg:grid-cols-4">
+                  {/* Menu Items Grid - PROGRESSIVE 1→2→3→4 Mobile-First */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
                     {category.menuItems.map((item) => {
                       const allergens = getAdvancedAllergenObjects(item)
 
                       return (
                         <Card key={item.id} className="relative group h-full flex flex-col overflow-hidden hover:shadow-lg transition-all duration-200 border-border/50 hover:border-primary/20">
-                          {/* CARD HEADER - Status Badges & Price */}
-                          <div className="flex items-start justify-between p-2 sm:p-4 pb-2 sm:pb-3 border-b border-border/50">
-                            <div className="flex gap-1.5 flex-wrap">
+                          {/* CARD HEADER - Status Badges & Price - Enhanced */}
+                          <div className="flex items-start justify-between p-3 sm:p-4 md:p-5 pb-3 sm:pb-3 border-b border-border/50">
+                            <div className="flex gap-2 flex-wrap">
                               {item.isRecommended && (
-                                <div className="w-6 h-6 bg-accent/20 rounded-full flex items-center justify-center">
-                                  <Heart className="w-3 h-3 text-accent fill-current" />
+                                <div className="w-7 h-7 sm:w-6 sm:h-6 bg-accent/20 rounded-full flex items-center justify-center">
+                                  <Heart className="w-4 h-4 sm:w-3 sm:h-3 text-accent fill-current" />
                                 </div>
                               )}
                             </div>
                             <div className="text-right flex-shrink-0">
                               <div className="flex items-baseline gap-2 justify-end">
-                                <div className="text-sm sm:text-lg font-bold text-primary">€{item.price}</div>
+                                <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">€{item.price}</div>
                                 {category.type === 'WINE' && item.glassPrice && (
-                                  <div className="text-xs text-muted-foreground">
+                                  <div className="text-sm sm:text-xs text-muted-foreground">
                                     / €{item.glassPrice} {language === 'en' ? 'glass' : 'copa'}
                                   </div>
                                 )}
@@ -712,14 +712,14 @@ export default function MenuPage() {
                             </div>
                           </div>
 
-                          {/* CARD BODY - Content */}
-                          <CardContent className="flex-1 flex flex-col p-2 sm:p-4 pt-2 sm:pt-3">
-                            {/* Item Name & Description */}
+                          {/* CARD BODY - Content - Enhanced Padding */}
+                          <CardContent className="flex-1 flex flex-col p-3 sm:p-4 md:p-5 pt-3 sm:pt-3">
+                            {/* Item Name & Description - Enhanced Legibility */}
                             <div className="mb-3 sm:mb-4">
-                              <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2 leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                              <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-2 sm:mb-3 leading-snug group-hover:text-primary transition-colors line-clamp-2">
                                 {getItemDisplayName(item)}
                               </h3>
-                              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                              <p className="text-sm sm:text-sm md:text-base text-muted-foreground leading-relaxed line-clamp-3 sm:line-clamp-2">
                                 {getItemDisplayDescription(item)}
                               </p>
                             </div>
@@ -773,26 +773,26 @@ export default function MenuPage() {
                                 </div>
                               )}
 
-                              {/* Action Buttons - Responsive Icons */}
-                              <div className="flex gap-1 sm:gap-2 justify-end">
-                                {/* View Details - Responsive Icon */}
+                              {/* Action Buttons - Progressive Mobile-Friendly */}
+                              <div className="flex gap-2 sm:gap-3 justify-end">
+                                {/* View Details - Better Touch Targets */}
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() => openDetailModal(item, category)}
-                                  className="h-6 w-6 sm:h-8 sm:w-8 p-0"
+                                  className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 p-0 hover:shadow-md transition-all duration-200"
                                   title={language === 'en' ? 'View Details' : 'Ver Detalle'}
                                 >
-                                  <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                                  <Eye className="h-4 w-4 sm:h-4 sm:w-4 md:h-5 md:w-5" />
                                 </Button>
 
-                                {/* Add to Cart - Responsive Icon for FOOD and WINE */}
+                                {/* Add to Cart - Enhanced Touch Experience */}
                                 {(category.type === 'FOOD' || category.type === 'WINE') && (
                                   <Button
                                     onClick={() => handleAddToCart(item, category)}
                                     size="sm"
                                     className={cn(
-                                      "relative h-6 w-6 sm:h-8 sm:w-8 p-0 transition-all duration-200",
+                                      "relative h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 p-0 transition-all duration-200 hover:shadow-md",
                                       isInCart(item.id)
                                         ? "bg-green-50 border-green-200 hover:bg-green-100 text-green-700 border"
                                         : "bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -802,12 +802,12 @@ export default function MenuPage() {
                                       : (isInCart(item.id) ? 'Añadir Más' : 'Al Carrito')
                                     }
                                   >
-                                    <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
+                                    <ShoppingCart className="h-4 w-4 sm:h-4 sm:w-4 md:h-5 md:w-5" />
 
-                                    {/* Responsive quantity badge */}
+                                    {/* Enhanced quantity badge */}
                                     {isInCart(item.id) && getCartItem(item.id) && getCartItem(item.id)!.quantity > 0 && (
                                       <Badge
-                                        className="absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 h-3 w-3 sm:h-4 sm:w-4 p-0 text-xs flex items-center justify-center bg-red-500 hover:bg-red-500 text-white border-0 rounded-full"
+                                        className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 h-4 w-4 sm:h-5 sm:w-5 p-0 text-xs flex items-center justify-center bg-red-500 hover:bg-red-500 text-white border-0 rounded-full shadow-sm"
                                       >
                                         {getCartItem(item.id)?.quantity}
                                       </Badge>
