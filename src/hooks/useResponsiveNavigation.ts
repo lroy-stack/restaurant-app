@@ -35,14 +35,21 @@ export interface NavigationState {
 export function useResponsiveNavigation(): NavigationState {
   const currentBreakpoint = useBreakpointName()
 
-  // Simple, clear business logic
-  const shouldShowSidebar = currentBreakpoint === 'desktop'
+  // TABLET-AWARE LOGIC: Only REAL desktop shows sidebar
+  // Tablet horizontal (1024x768) should show hamburger, not sidebar
+  const shouldShowSidebar = currentBreakpoint === 'desktop' &&
+    typeof window !== 'undefined' &&
+    window.innerWidth >= 1280 // Only screens 1280px+ get sidebar
+
   const shouldShowFloatingNav = !shouldShowSidebar // Inverse relationship
 
   // Device type helpers
   const isMobile = currentBreakpoint === 'mobile'
-  const isTablet = currentBreakpoint === 'tablet'
-  const isDesktop = currentBreakpoint === 'desktop'
+  const isTablet = currentBreakpoint === 'tablet' ||
+    (currentBreakpoint === 'desktop' && typeof window !== 'undefined' && window.innerWidth < 1280)
+  const isDesktop = currentBreakpoint === 'desktop' &&
+    typeof window !== 'undefined' &&
+    window.innerWidth >= 1280
 
   return {
     shouldShowSidebar,
