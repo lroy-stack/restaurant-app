@@ -6,6 +6,8 @@ export interface RecommendedWineItem {
   nameEn?: string
   description: string
   descriptionEn?: string
+  richDescription?: string
+  richDescriptionEn?: string
   price: number
   isAvailable: boolean
   isRecommended: boolean
@@ -79,6 +81,8 @@ export function useRecommendedWines(): UseRecommendedWinesResult {
         nameEn: item.nameEn,
         description: item.description,
         descriptionEn: item.descriptionEn,
+        richDescription: item.richDescription,
+        richDescriptionEn: item.richDescriptionEn,
         price: typeof item.price === 'number' ? item.price : parseFloat(item.price || '0'),
         isAvailable: Boolean(item.isAvailable),
         isRecommended: Boolean(item.isRecommended),
