@@ -163,6 +163,11 @@ export async function GET(request: NextRequest) {
       categoryId: item.categoryId,
       category: item.category,
       allergens: item.allergens?.map((ia: any) => ia.allergen).filter(Boolean) || [],
+      // Wine-specific fields
+      glassprice: item.glassprice ? parseFloat(item.glassprice) : undefined,
+      alcoholcontent: item.alcoholcontent ? parseFloat(item.alcoholcontent) : undefined,
+      richDescription: item.richDescription,
+      richDescriptionEn: item.richDescriptionEn,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt
     }))
