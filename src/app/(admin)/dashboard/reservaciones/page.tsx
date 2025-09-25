@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -19,6 +20,7 @@ import { CompactReservationList } from './components/compact-reservation-list'
 import { QuickStats } from './components/quick-stats'
 import { ViewToggle, useViewMode } from './components/view-toggle'
 import { ReservationCalendar } from './components/reservation-calendar'
+import { ExportModal } from '@/components/reservations/export-modal'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -26,6 +28,7 @@ export default function ReservacionesPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { currentView } = useViewMode()
+  const [showExportModal, setShowExportModal] = useState(false)
   
   // Extract filters from URL params
   const filters = {
@@ -134,10 +137,7 @@ export default function ReservacionesPage() {
         onNewReservation={() => {
           router.push('/dashboard/reservaciones/nueva')
         }}
-        onExport={() => {
-          // TODO: Implement export functionality  
-          console.log('Export reservations')
-        }}
+        onExport={() => setShowExportModal(true)}
       />
 
       {/* Filters - RESPONSIVE CARD - MANTENER DISEÑO PERFECTO */}
@@ -173,6 +173,14 @@ export default function ReservacionesPage() {
           />
         </div>
       )}
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        reservations={reservations}
+        totalCount={reservations.length}
+      />
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { EmailService } from '@/lib/email/emailService'
+import { buildTokenUrl } from '@/lib/email/config/emailConfig'
 
 const emailService = EmailService.getInstance()
 import { getSpainTimestamp } from '@/lib/utils/timestamps'
@@ -309,7 +310,7 @@ export async function PATCH(
               // Add the new token URL
               const updatedEmailData = {
                 ...emailData,
-                tokenUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://enigmaconalma.com'}/mi-reserva?token=${token}`
+                tokenUrl: buildTokenUrl(token)
               }
 
               const emailResult = await emailService.sendReservationModified(updatedEmailData)
