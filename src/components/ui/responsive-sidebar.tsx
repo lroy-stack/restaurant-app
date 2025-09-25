@@ -97,9 +97,6 @@ export function ResponsiveSidebar({ children, className }: ResponsiveSidebarProp
     }
   }
 
-  // CRITICAL: Only render on desktop (prevents tablet/mobile conflicts)
-  if (!shouldShowSidebar) return null
-
   return (
     <>
       {/* Overlay for mobile/tablet */}
