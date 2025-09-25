@@ -56,27 +56,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <StaffOrAbove>
       <div className="h-screen bg-background">
-        {/* Floating Navigation - appears only on mobile/tablet */}
+        {/* FloatingNav maneja su propia visibilidad */}
         <FloatingNav />
 
-        {/* Dashboard Layout - Professional Responsive Grid */}
-        <div className={cn(
-          "flex h-full" // Clean full height without adjustments
-        )}>
-          {/* Responsive Sidebar */}
+        <div className="flex h-full">
+          {/* ResponsiveSidebar maneja su propia visibilidad */}
           <ResponsiveSidebar className="w-64" />
-          
-          {/* Main Content Area - Responsive Grid */}
-          <main className={cn(
-            "flex-1 overflow-y-auto overflow-x-hidden",
-            "bg-background"
-          )}>
+
+          {/* Main Content Area */}
+          <main className="flex-1 overflow-y-auto overflow-x-hidden bg-background">
             <Suspense fallback={<DashboardSkeleton />}>
-              <div className={cn(
-                "p-4 lg:p-6",
-                "max-w-full",
-                "space-y-6"
-              )}>
+              <div className="p-4 lg:p-6 max-w-full space-y-6">
                 {children}
               </div>
             </Suspense>

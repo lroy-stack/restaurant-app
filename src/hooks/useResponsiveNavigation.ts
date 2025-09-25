@@ -54,23 +54,3 @@ export function useResponsiveNavigation(): NavigationState {
   }
 }
 
-/**
- * Legacy Compatibility Hook
- *
- * Provides same interface as old useNavigationBreakpoints
- * for gradual migration
- *
- * @deprecated Use useResponsiveNavigation instead
- */
-export function useNavigationBreakpoints() {
-  const nav = useResponsiveNavigation()
-
-  return {
-    shouldShowSidebar: nav.shouldShowSidebar,
-    shouldShowFloatingNav: nav.shouldShowFloatingNav,
-    currentBreakpoint: nav.currentBreakpoint,
-    // Legacy properties for compatibility
-    shouldShowDesktopNav: nav.shouldShowSidebar,
-    shouldShowMobileNav: nav.shouldShowFloatingNav
-  }
-}

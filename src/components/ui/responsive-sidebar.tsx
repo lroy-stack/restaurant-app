@@ -3,7 +3,6 @@
 import { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { useMobileNavigation } from '@/hooks/useMobileNavigation'
-import { useNavigationBreakpoints } from '@/hooks/useResponsiveLayout'
 import { useConditionalScrollLock } from '@/hooks/useScrollLock'
 import { Button } from './button'
 import { Separator } from './separator'
@@ -97,7 +96,10 @@ export function ResponsiveSidebar({ children, className }: ResponsiveSidebarProp
       console.error('Error during logout:', error)
     }
   }
-  
+
+  // CRITICAL: Only render on desktop (prevents tablet/mobile conflicts)
+  if (!shouldShowSidebar) return null
+
   return (
     <>
       {/* Overlay for mobile/tablet */}

@@ -3,7 +3,6 @@
 import { cn } from '@/lib/utils'
 import { Menu, X } from 'lucide-react'
 import { useMobileNavigation } from '@/hooks/useMobileNavigation'
-import { useNavigationBreakpoints } from '@/hooks/useResponsiveLayout'
 import { Button } from './button'
 
 interface MobileNavProps {
@@ -11,8 +10,7 @@ interface MobileNavProps {
 }
 
 export function MobileNav({ className }: MobileNavProps) {
-  const { sidebarOpen, toggleSidebar } = useMobileNavigation()
-  const { shouldShowFloatingNav } = useNavigationBreakpoints()
+  const { sidebarOpen, toggleSidebar, shouldShowFloatingNav } = useMobileNavigation()
 
   // Only show when floating nav should be visible (mobile/tablet)
   if (!shouldShowFloatingNav) return null
@@ -72,7 +70,7 @@ export function MobileHeader({
   title?: string
   showOnMobile?: boolean
 }) {
-  const { shouldShowFloatingNav } = useNavigationBreakpoints()
+  const { shouldShowFloatingNav } = useMobileNavigation()
 
   // Only show if explicitly requested
   if (!showOnMobile || !shouldShowFloatingNav) return null

@@ -141,16 +141,3 @@ export const useMediaQuery = (query: string) => {
   return matches
 }
 
-// 🚨 CORRECT: Desktop = sidebar fijo, todo lo demás = floating nav con hamburger
-export const useNavigationBreakpoints = () => {
-  const { breakpoint } = useResponsiveLayout()
-
-  return {
-    // For dashboard sidebar: Show fixed sidebar ONLY on desktop
-    shouldShowSidebar: breakpoint === 'desktop',
-    // For floating nav: Show on mobile + tablet (horizontal + vertical)
-    shouldShowFloatingNav: breakpoint === 'mobile' || breakpoint === 'tablet',
-    // Current breakpoint for debugging
-    currentBreakpoint: breakpoint
-  }
-}
