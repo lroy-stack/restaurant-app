@@ -5,16 +5,8 @@ import { useState, useCallback } from 'react'
 import { format, startOfDay, endOfDay, addDays, startOfWeek, endOfWeek } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { Reservation } from '@/types/reservation'
-
-// Alternative: Direct dynamic import with explicit extension application
-const loadPDFLibraries = async () => {
-  // Import jsPDF first
-  const jsPDFModule = await import('jspdf')
-  // Import and apply autoTable extension
-  await import('jspdf-autotable')
-
-  return { jsPDF: jsPDFModule.default }
-}
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
 
 export type ExportDateRange = 'today' | 'tomorrow' | 'week'
 
@@ -124,8 +116,7 @@ export function usePDFExport() {
     try {
       setIsExporting(true)
 
-      // Load PDF libraries with proper autoTable extension
-      const { jsPDF } = await loadPDFLibraries()
+      // jsPDF with autoTable extension loaded via static imports
 
       // Filter and sort reservations
       const filteredReservations = filterReservationsByDateRange(reservations, options.dateRange)
@@ -274,9 +265,8 @@ function addReservationsTable(doc: any, reservations: Reservation[], options: PD
     return row
   })
 
-  // Verify autoTable is available and use it
-  if (typeof (doc as any).autoTable === 'function') {
-    (doc as any).autoTable({
+  // Use autoTable with static imports - guaranteed to work
+  ;(doc as any).autoTable({
     head: [headers],
     body: tableData,
     startY,
@@ -318,13 +308,6 @@ function addReservationsTable(doc: any, reservations: Reservation[], options: PD
     },
     margin: { left: 20, right: 20 }
   })
-  } else {
-    // Fallback: Add error message if autoTable is not available
-    console.error('❌ jsPDF autoTable extension not loaded correctly')
-    doc.setFontSize(12)
-    doc.setTextColor(...ENIGMA_COLORS.text)
-    doc.text('Error: No se pudo generar la tabla. Intente de nuevo.', 20, startY)
-  }
 }
 
 function addFooter(doc: any, pageWidth: number, pageHeight: number) {
