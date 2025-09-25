@@ -5,8 +5,8 @@ import { useState, useCallback } from 'react'
 import { format, startOfDay, endOfDay, addDays, startOfWeek, endOfWeek } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { Reservation } from '@/types/reservation'
-import jsPDF from 'jspdf'
-import 'jspdf-autotable'
+import { jsPDF } from 'jspdf'
+import { autoTable } from 'jspdf-autotable'
 
 export type ExportDateRange = 'today' | 'tomorrow' | 'week'
 
@@ -265,8 +265,8 @@ function addReservationsTable(doc: any, reservations: Reservation[], options: PD
     return row
   })
 
-  // Use autoTable with static imports - guaranteed to work
-  ;(doc as any).autoTable({
+  // Use autoTable function with doc parameter - CORRECT OFFICIAL PATTERN
+  autoTable(doc, {
     head: [headers],
     body: tableData,
     startY,
