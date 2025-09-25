@@ -141,22 +141,16 @@ export const useMediaQuery = (query: string) => {
   return matches
 }
 
-// 🚨 NEW: Specific hooks for navigation behavior
+// 🚨 CORRECT: Desktop = sidebar fijo, todo lo demás = floating nav con hamburger
 export const useNavigationBreakpoints = () => {
   const { breakpoint } = useResponsiveLayout()
-  const isTabletHorizontal = useMediaQuery(breakpointQueries.isTabletHorizontal)
 
   return {
-    // For public header: Should show desktop nav only on real desktop
-    shouldShowDesktopNav: breakpoint === 'desktop' && !isTabletHorizontal,
-    // For mobile menu: Show hamburger on mobile AND tablet (including horizontal)
-    shouldShowMobileNav: breakpoint === 'mobile' || breakpoint === 'tablet',
-    // For dashboard sidebar: Show full sidebar only on real desktop
-    shouldShowSidebar: breakpoint === 'desktop' && !isTabletHorizontal,
-    // For floating nav: Show on mobile and tablet
+    // For dashboard sidebar: Show fixed sidebar ONLY on desktop
+    shouldShowSidebar: breakpoint === 'desktop',
+    // For floating nav: Show on mobile + tablet (horizontal + vertical)
     shouldShowFloatingNav: breakpoint === 'mobile' || breakpoint === 'tablet',
     // Current breakpoint for debugging
-    currentBreakpoint: breakpoint,
-    isTabletHorizontal
+    currentBreakpoint: breakpoint
   }
 }
