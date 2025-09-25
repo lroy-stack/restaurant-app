@@ -152,13 +152,14 @@ export function FeaturedWines({
             </p>
           </div>
 
-          {/* Grid de vinos - USANDO EXACTAMENTE LAS TARJETAS DEL /MENU */}
-          <div className="grid grid-cols-2 gap-2 sm:gap-4 md:gap-6 lg:grid-cols-4">
+          {/* Layout centrado para 2 vinos recomendados */}
+          <div className="flex justify-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl w-full">
             {topItems.map((item) => {
               const allergens = item.allergens || []
 
               return (
-                <Card key={item.id} className="group h-full flex flex-col overflow-hidden hover:shadow-lg transition-all duration-200 border-border/50 hover:border-primary/20">
+                <Card key={item.id} className="relative group h-full flex flex-col overflow-hidden hover:shadow-lg transition-all duration-200 border-border/50 hover:border-primary/20">
                   {/* CARD HEADER - Status Badges & Price - Enhanced */}
                   <div className="flex items-start justify-between p-3 sm:p-4 md:p-5 pb-3 sm:pb-3 border-b border-border/50">
                     <div className="flex gap-2 flex-wrap">
@@ -188,19 +189,10 @@ export function FeaturedWines({
                         {item.name}
                       </h3>
                       <p className="text-sm sm:text-sm md:text-base text-muted-foreground leading-relaxed line-clamp-3 sm:line-clamp-2">
-                        {item.description}
+                        {item.richDescription || item.description}
                       </p>
                     </div>
 
-                    {/* Alcohol content for wines */}
-                    {item.alcoholContent && (
-                      <div className="mb-3 p-2.5 bg-primary/10 rounded-md border border-primary/20">
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                          <Wine className="h-3.5 w-3.5" />
-                          <span>{item.alcoholContent}% Vol.</span>
-                        </div>
-                      </div>
-                    )}
 
                     {/* Allergen & Dietary Info - COMPONENTE REUTILIZADO */}
                     <div className="mb-3 sm:mb-4">
@@ -270,9 +262,20 @@ export function FeaturedWines({
                       </div>
                     </div>
                   </CardContent>
+
+                  {/* Badge de alcohol - OVERLAY BOTTOM LEFT como en /menu */}
+                  {item.alcoholContent && (
+                    <div className="absolute bottom-2 left-2">
+                      <div className="px-2 py-1 bg-primary/10 rounded-md flex items-center gap-1">
+                        <Wine className="w-3 h-3 text-primary" />
+                        <span className="text-xs font-medium text-primary">{item.alcoholContent}% Vol.</span>
+                      </div>
+                    </div>
+                  )}
                 </Card>
               )
             })}
+            </div>
           </div>
 
           {/* Link al menú completo */}
