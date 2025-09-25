@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Shield, Download, Trash2, Mail, MessageSquare, Newspaper, Database } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Customer } from '@/lib/validations/customer'
+import { useNewsletterStatus } from '@/hooks/useNewsletterStatus'
 
 interface CustomerGdprProps {
   customer: Customer
@@ -34,6 +35,7 @@ export function CustomerGdpr({
   const [isLoading, setIsLoading] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [updating, setUpdating] = useState<string | null>(null)
+  const newsletterStatus = useNewsletterStatus(customer.email)
   const [consentStatus, setConsentStatus] = useState<ConsentStatus>({
     emailConsent: customer.emailConsent,
     smsConsent: customer.smsConsent,
@@ -62,9 +64,52 @@ export function CustomerGdpr({
 
   useEffect(() => {
     fetchConsentStatus()
-  }, [customer.id])
+  }, [customer.id, fetchConsentStatus])
+
+  const handleNewsletterToggle = async (newValue: boolean) => {
+    setUpdating('newsletter')
+
+    try {
+      const url = '/api/newsletter/subscribe'
+      const method = newValue ? 'POST' : 'DELETE'
+
+      const response = await fetch(
+        newValue ? url : `${url}?email=${encodeURIComponent(customer.email)}`,
+        {
+          method,
+          headers: newValue ? { 'Content-Type': 'application/json' } : {},
+          ...(newValue && {
+            body: JSON.stringify({
+              email: customer.email,
+              source: 'admin_panel'
+            })
+          })
+        }
+      )
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        toast.success(`Newsletter ${newValue ? 'activado' : 'desactivado'} correctamente`)
+        // Force refresh newsletter status
+        window.location.reload()
+      } else {
+        throw new Error(data.error || 'Failed to update newsletter')
+      }
+    } catch (error) {
+      console.error('Error updating newsletter:', error)
+      toast.error('Error al actualizar newsletter')
+    } finally {
+      setUpdating(null)
+    }
+  }
 
   const handleConsentToggle = async (consentType: string, newValue: boolean) => {
+    if (consentType === 'newsletter') {
+      await handleNewsletterToggle(newValue)
+      return
+    }
+
     setUpdating(consentType)
 
     try {
@@ -180,13 +225,16 @@ export function CustomerGdpr({
             <Newspaper className="h-4 w-4 text-purple-600" />
             <Label htmlFor="newsletter" className="text-sm font-medium">
               Newsletter
+              {newsletterStatus.loading && (
+                <span className="ml-1 text-xs text-muted-foreground">(cargando...)</span>
+              )}
             </Label>
           </div>
           <Switch
             id="newsletter"
-            checked={consentStatus.marketingConsent}
-            onCheckedChange={(checked) => handleConsentToggle('marketing', checked)}
-            disabled={updating === 'marketing'}
+            checked={newsletterStatus.isSubscribed}
+            onCheckedChange={(checked) => handleConsentToggle('newsletter', checked)}
+            disabled={updating === 'newsletter' || newsletterStatus.loading}
           />
         </div>
 

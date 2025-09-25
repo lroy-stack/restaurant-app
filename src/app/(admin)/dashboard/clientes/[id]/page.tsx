@@ -2,6 +2,8 @@
 
 import { useParams } from 'next/navigation'
 import { useCustomerProfile } from '@/hooks/useCustomerProfile'
+import { useNewsletterStatus } from '@/hooks/useNewsletterStatus'
+import { useCustomerPreOrders } from '@/hooks/useCustomerPreOrders'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -42,6 +44,9 @@ export default function CustomerProfilePage() {
     getRecommendations,
     sendCustomEmail
   } = useCustomerProfile(customerId)
+
+  const newsletterStatus = useNewsletterStatus(customer?.email)
+  const preOrders = useCustomerPreOrders(customerId)
 
   if (loading) {
     return (
@@ -217,13 +222,24 @@ export default function CustomerProfilePage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Newsletter</CardTitle>
-                  <Mail className="h-4 w-4 text-green-600" />
+                  <Mail className={`h-4 w-4 ${newsletterStatus.isSubscribed ? 'text-green-600' : 'text-gray-400'}`} />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-green-600">✓ Suscrito</div>
-                  <p className="text-xs text-muted-foreground">
-                    Desde footer - 21/09/2025
-                  </p>
+                  {newsletterStatus.loading ? (
+                    <div className="text-sm text-muted-foreground">Cargando...</div>
+                  ) : (
+                    <>
+                      <div className={`text-2xl font-bold ${newsletterStatus.isSubscribed ? 'text-green-600' : 'text-gray-600'}`}>
+                        {newsletterStatus.isSubscribed ? '✓ Suscrito' : '✗ No suscrito'}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {newsletterStatus.isSubscribed && newsletterStatus.subscription
+                          ? `${newsletterStatus.subscription.subscription_source} - ${new Date(newsletterStatus.subscription.subscription_date).toLocaleDateString('es-ES')}`
+                          : 'Sin suscripción activa'
+                        }
+                      </p>
+                    </>
+                  )}
                 </CardContent>
               </Card>
 
@@ -246,10 +262,21 @@ export default function CustomerProfilePage() {
                   <Utensils className="h-4 w-4 text-blue-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">€66.50</div>
-                  <p className="text-xs text-muted-foreground">
-                    4 platos seleccionados
-                  </p>
+                  {preOrders.loading ? (
+                    <div className="text-sm text-muted-foreground">Cargando...</div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold">
+                        {preOrders.totalAmount > 0 ? `€${preOrders.totalAmount.toFixed(2)}` : 'Sin pedidos'}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {preOrders.itemCount > 0
+                          ? `${preOrders.itemCount} ${preOrders.itemCount === 1 ? 'plato' : 'platos'} (${preOrders.totalItems} total)`
+                          : 'No hay pre-orders'
+                        }
+                      </p>
+                    </>
+                  )}
                 </CardContent>
               </Card>
 
@@ -335,9 +362,22 @@ export default function CustomerProfilePage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="p-2 bg-green-50 border border-green-200 rounded">
-                      <div className="font-medium text-green-800">Newsletter</div>
-                      <div className="text-green-700 text-xs">✓ Suscrito activo</div>
+                    <div className={`p-2 border rounded ${
+                      newsletterStatus.isSubscribed
+                        ? 'bg-green-50 border-green-200'
+                        : 'bg-gray-50 border-gray-200'
+                    }`}>
+                      <div className={`font-medium ${
+                        newsletterStatus.isSubscribed ? 'text-green-800' : 'text-gray-800'
+                      }`}>Newsletter</div>
+                      <div className={`text-xs ${
+                        newsletterStatus.isSubscribed ? 'text-green-700' : 'text-gray-600'
+                      }`}>
+                        {newsletterStatus.loading
+                          ? 'Cargando...'
+                          : (newsletterStatus.isSubscribed ? '✓ Suscrito activo' : '✗ No suscrito')
+                        }
+                      </div>
                     </div>
                     <div className="p-2 bg-blue-50 border border-blue-200 rounded">
                       <div className="font-medium text-blue-800">Grupo Grande</div>
@@ -345,7 +385,15 @@ export default function CustomerProfilePage() {
                     </div>
                     <div className="p-2 bg-purple-50 border border-purple-200 rounded">
                       <div className="font-medium text-purple-800">Pre-Orders</div>
-                      <div className="text-purple-700 text-xs">€66.50 valor</div>
+                      <div className="text-purple-700 text-xs">
+                        {preOrders.loading
+                          ? 'Cargando...'
+                          : (preOrders.totalAmount > 0
+                            ? `€${preOrders.totalAmount.toFixed(2)} valor`
+                            : 'Sin pedidos'
+                          )
+                        }
+                      </div>
                     </div>
                     <div className="p-2 bg-yellow-50 border border-yellow-200 rounded">
                       <div className="font-medium text-yellow-800">Email Activo</div>
@@ -359,7 +407,12 @@ export default function CustomerProfilePage() {
                       <div>• Cliente organizado (pre-orders detallados)</div>
                       <div>• Grupo familiar/social grande (7 pax)</div>
                       <div>• Comprometido digitalmente (newsletter)</div>
-                      <div>• Potencial cliente de valor (€66.50 pedido)</div>
+                      <div>
+                        • {preOrders.totalAmount > 0
+                          ? `Potencial cliente de valor (€${preOrders.totalAmount.toFixed(2)} pedido)`
+                          : 'Cliente sin historial de pre-orders'
+                        }
+                      </div>
                     </div>
                   </div>
 
@@ -476,8 +529,18 @@ export default function CustomerProfilePage() {
                   <div className="text-xs text-muted-foreground bg-muted p-2 rounded">
                     <div className="font-medium mb-1">Informe incluye:</div>
                     <ul className="text-xs space-y-0.5">
-                      <li>• Newsletter: ✓ Suscrito (footer)</li>
-                      <li>• Reserva: 1 Cancelada (€66.50 pre-order)</li>
+                      <li>• Newsletter: {newsletterStatus.loading
+                        ? 'Cargando...'
+                        : (newsletterStatus.isSubscribed
+                          ? `✓ Suscrito (${newsletterStatus.subscription?.subscription_source || 'unknown'})`
+                          : '✗ No suscrito'
+                        )}</li>
+                      <li>• Pre-orders: {preOrders.loading
+                        ? 'Cargando...'
+                        : (preOrders.totalAmount > 0
+                          ? `€${preOrders.totalAmount.toFixed(2)} en ${preOrders.itemCount} plato${preOrders.itemCount !== 1 ? 's' : ''}`
+                          : 'Sin pre-orders'
+                        )}</li>
                       <li>• Consentimientos: Email ✓, Marketing ✗</li>
                       <li>• Datos personales y preferencias</li>
                     </ul>
