@@ -64,11 +64,11 @@ export function EnigmaThemeProvider({
   const value = {
     theme,
     mounted,
-    setTheme: (theme: EnigmaTheme) => {
+    setTheme: (newTheme: EnigmaTheme) => {
       if (mounted) {
-        localStorage?.setItem(storageKey, theme)
+        localStorage?.setItem(storageKey, newTheme)
       }
-      setTheme(theme)
+      setTheme(newTheme)
     },
   }
 
