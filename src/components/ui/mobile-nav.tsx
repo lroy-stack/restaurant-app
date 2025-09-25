@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils'
 import { Menu, X } from 'lucide-react'
 import { useMobileNavigation } from '@/hooks/useMobileNavigation'
+import { useNavigationBreakpoints } from '@/hooks/useResponsiveLayout'
 import { Button } from './button'
 
 interface MobileNavProps {
@@ -10,10 +11,11 @@ interface MobileNavProps {
 }
 
 export function MobileNav({ className }: MobileNavProps) {
-  const { sidebarOpen, toggleSidebar, isMobile, isTablet } = useMobileNavigation()
-  
-  // Only show on mobile and tablet
-  if (!isMobile && !isTablet) return null
+  const { sidebarOpen, toggleSidebar } = useMobileNavigation()
+  const { shouldShowFloatingNav } = useNavigationBreakpoints()
+
+  // Only show when floating nav should be visible (mobile/tablet)
+  if (!shouldShowFloatingNav) return null
   
   return (
     <Button
@@ -63,20 +65,20 @@ export function MobileNav({ className }: MobileNavProps) {
 }
 
 // Optional minimal header - can be used when needed, but not required
-export function MobileHeader({ 
-  title = "Enigma Admin", 
-  showOnMobile = false 
-}: { 
+export function MobileHeader({
+  title = "Enigma Admin",
+  showOnMobile = false
+}: {
   title?: string
-  showOnMobile?: boolean 
+  showOnMobile?: boolean
 }) {
-  const { isMobile } = useMobileNavigation()
-  
+  const { shouldShowFloatingNav } = useNavigationBreakpoints()
+
   // Only show if explicitly requested
-  if (!showOnMobile || !isMobile) return null
+  if (!showOnMobile || !shouldShowFloatingNav) return null
   
   return (
-    <header className="lg:hidden bg-transparent px-4 py-2">
+    <header className="bg-transparent px-4 py-2">
       <div className="flex items-center justify-center">
         <div className="flex items-center gap-3">
           <div className="w-6 h-6 bg-primary/10 rounded flex items-center justify-center">

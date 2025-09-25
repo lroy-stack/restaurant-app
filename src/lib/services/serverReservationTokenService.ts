@@ -1,4 +1,5 @@
 import { createServiceClient } from '@/utils/supabase/server'
+import { buildProductionUrl } from '../email/config/emailConfig'
 
 /**
  * SERVER-ONLY Token Service
@@ -218,8 +219,7 @@ export class ServerReservationTokenService {
    * Genera URL completa con detección de entorno
    */
   static getManagementUrl(token: string): string {
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    const baseUrl = isDevelopment ? 'http://localhost:3001' : 'https://enigmaconalma.com';
-    return `${baseUrl}/mi-reserva?token=${token}`;
+    // 🚨 CRITICAL: Always use production URL for email links
+    return buildProductionUrl('/mi-reserva', { token });
   }
 }

@@ -34,9 +34,24 @@ export const useUIStore = create<UIStore>()(
       closeSidebar: () => set({ sidebarOpen: false }),
       
       updateBreakpoint: (width) => {
-        const breakpoint = width >= 1024 ? 'desktop' 
-          : width >= 768 ? 'tablet' 
-          : 'mobile'
+        // 🚨 TABLET HORIZONTAL FIX: Consider both width AND height for better detection
+        const height = window?.innerHeight || 768
+        const aspectRatio = width / height
+        const isLandscape = aspectRatio > 1.3
+        const isTabletSize = width >= 768 && width <= 1366 // Common tablet range
+
+        // Enhanced logic:
+        // - Tablet horizontal (1024x768) → Should be 'tablet', not 'desktop'
+        // - Real desktop (1920x1080) → 'desktop'
+        // - Tablet vertical (768x1024) → 'tablet'
+        // - Mobile (375x667) → 'mobile'
+
+        const breakpoint = width < 768
+          ? 'mobile'
+          : isTabletSize && (height < 900 || isLandscape)
+            ? 'tablet'
+            : 'desktop'
+
         set({ breakpoint })
       },
       
@@ -91,28 +106,57 @@ export const useResponsiveLayout = () => {
   }
 }
 
-// Responsive breakpoint utilities
+// 🚨 ENHANCED: Responsive breakpoint utilities with aspect ratio awareness
 export const breakpoints = {
   mobile: 'max-width: 767px',
-  tablet: 'min-width: 768px and max-width: 1023px', 
-  desktop: 'min-width: 1024px'
+  tablet: '(min-width: 768px and max-width: 1366px) and (max-height: 900px), (min-width: 768px and max-width: 1366px) and (orientation: landscape)',
+  desktop: 'min-width: 1367px, (min-width: 1024px and min-height: 900px and orientation: portrait)'
+} as const
+
+// Helper breakpoint queries for common use cases
+export const breakpointQueries = {
+  isMobile: '(max-width: 767px)',
+  isTablet: '(min-width: 768px) and (max-width: 1366px) and ((max-height: 900px) or (orientation: landscape))',
+  isTabletHorizontal: '(min-width: 768px) and (max-width: 1366px) and (orientation: landscape)',
+  isTabletVertical: '(min-width: 768px) and (max-width: 1366px) and (orientation: portrait) and (max-height: 900px)',
+  isDesktop: '(min-width: 1367px), ((min-width: 1024px) and (min-height: 900px) and (orientation: portrait))'
 } as const
 
 // Custom hook for media query matching
 export const useMediaQuery = (query: string) => {
   const [matches, setMatches] = useState(false)
-  
+
   useEffect(() => {
     const mediaQuery = window.matchMedia(query)
     setMatches(mediaQuery.matches)
-    
+
     const handler = (event: MediaQueryListEvent) => {
       setMatches(event.matches)
     }
-    
+
     mediaQuery.addEventListener('change', handler)
     return () => mediaQuery.removeEventListener('change', handler)
   }, [query])
-  
+
   return matches
+}
+
+// 🚨 NEW: Specific hooks for navigation behavior
+export const useNavigationBreakpoints = () => {
+  const { breakpoint } = useResponsiveLayout()
+  const isTabletHorizontal = useMediaQuery(breakpointQueries.isTabletHorizontal)
+
+  return {
+    // For public header: Should show desktop nav only on real desktop
+    shouldShowDesktopNav: breakpoint === 'desktop' && !isTabletHorizontal,
+    // For mobile menu: Show hamburger on mobile AND tablet (including horizontal)
+    shouldShowMobileNav: breakpoint === 'mobile' || breakpoint === 'tablet',
+    // For dashboard sidebar: Show full sidebar only on real desktop
+    shouldShowSidebar: breakpoint === 'desktop' && !isTabletHorizontal,
+    // For floating nav: Show on mobile and tablet
+    shouldShowFloatingNav: breakpoint === 'mobile' || breakpoint === 'tablet',
+    // Current breakpoint for debugging
+    currentBreakpoint: breakpoint,
+    isTabletHorizontal
+  }
 }

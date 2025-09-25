@@ -14,6 +14,7 @@ import {
 import { Menu, Phone, Clock, MapPin, Camera, Utensils, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { EnigmaLogo } from "@/components/ui/enigma-logo"
+import { useNavigationBreakpoints } from "@/hooks/useResponsiveLayout"
 
 const navigation = [
   {
@@ -49,6 +50,7 @@ interface HeaderProps {
 export function Header({ variant = 'default' }: HeaderProps) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
+  const { shouldShowDesktopNav, shouldShowMobileNav, currentBreakpoint, isTabletHorizontal } = useNavigationBreakpoints()
 
   const isTransparent = variant === 'transparent'
   
@@ -83,8 +85,11 @@ export function Header({ variant = 'default' }: HeaderProps) {
           </span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
+        {/* Desktop Navigation - 🚨 NOW: Uses intelligent breakpoint detection */}
+        <nav className={cn(
+          "items-center gap-6",
+          shouldShowDesktopNav ? "flex" : "hidden"
+        )}>
           {navigation.map((item) => {
             const isActive = pathname === item.href
             const Icon = item.icon
@@ -125,16 +130,16 @@ export function Header({ variant = 'default' }: HeaderProps) {
           </Link>
         </nav>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation - 🚨 NOW: Shows on mobile AND tablet horizontal */}
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
             <Button
               variant="outline"
               size="icon"
               className={cn(
-                "md:hidden",
-                isTransparent 
-                  ? "border-white/30 text-white hover:bg-white/10" 
+                shouldShowMobileNav ? "flex" : "hidden",
+                isTransparent
+                  ? "border-white/30 text-white hover:bg-white/10"
                   : ""
               )}
             >

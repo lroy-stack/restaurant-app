@@ -144,6 +144,7 @@ export async function GET(request: Request) {
             nameEn: ia.allergen.nameEn
           })),
           images: item.imageUrl ? [item.imageUrl] : [],
+          imageUrl: item.imageUrl,
           displayOrder: 0,
           // Wine pairing information
           winePairings: itemWinePairings.map((p: any) => ({

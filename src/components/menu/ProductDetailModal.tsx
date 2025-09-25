@@ -97,7 +97,7 @@ export function ProductDetailModal({
 
   // Use allergens from API dynamically
   const allergens = item.allergens || []
-  const hasImages = item.images && item.images.length > 0
+  const hasImages = item.imageUrl && item.imageUrl.trim() !== ''
   const winePairings = item.winePairings || []
   const foodPairings = item.foodPairings || []
 
@@ -113,11 +113,11 @@ export function ProductDetailModal({
                   category.type === 'WINE' ? 'aspect-[3/4]' : 'aspect-square'
                 }`}>
                   <Image
-                    src={item.images[selectedImage]}
+                    src={item.imageUrl}
                     alt={getDisplayName(item)}
                     fill
                     className="object-cover"
-                    priority={selectedImage === 0}
+                    priority
                     sizes="(max-width: 768px) 95vw, 400px"
                   />
                 </div>

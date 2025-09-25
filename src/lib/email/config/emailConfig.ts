@@ -39,14 +39,14 @@ export interface EmailConfig {
 
 /**
  * CONFIGURACIÓN CENTRALIZADA DE EMAILS
- * Todas las URLs y branding en un solo lugar
+ * 🚨 CRITICAL: Email URLs ALWAYS point to production, regardless of environment
+ * This ensures email links work from any development/staging environment
  */
 export function getEmailConfig(): EmailConfig {
-  // 🔧 DEVELOPMENT: Use current port instead of NEXT_PUBLIC_SITE_URL
-  const isDevelopment = process.env.NODE_ENV === 'development'
-  const baseUrl = isDevelopment
-    ? 'http://localhost:3001'  // Use current development port
-    : (process.env.NEXT_PUBLIC_SITE_URL || 'https://enigmaconalma.com')
+  // 🚨 EMAILS ALWAYS USE PRODUCTION URL - Never localhost/staging
+  // Current: https://almaenigma.vercel.app (Vercel deployment)
+  // Future: https://enigmaconalma.com (Final domain)
+  const baseUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'https://almaenigma.vercel.app'
 
   return {
     urls: {
@@ -86,7 +86,8 @@ export function getEmailConfig(): EmailConfig {
 }
 
 /**
- * Helper para generar URLs de tokens con parámetros
+ * 🚨 CRITICAL: Helper para generar URLs de tokens - ALWAYS PRODUCTION
+ * Email links must work regardless of development environment
  */
 export function buildTokenUrl(token: string, action?: string): string {
   const config = getEmailConfig()
@@ -94,6 +95,22 @@ export function buildTokenUrl(token: string, action?: string): string {
 
   if (action) {
     url += `&action=${action}`
+  }
+
+  return url
+}
+
+/**
+ * 🚨 PRODUCTION-ONLY: URL builder specifically for emails
+ * Used for any link that goes into customer emails
+ */
+export function buildProductionUrl(path: string, params?: Record<string, string>): string {
+  const baseUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'https://almaenigma.vercel.app'
+  let url = `${baseUrl}${path}`
+
+  if (params) {
+    const searchParams = new URLSearchParams(params)
+    url += `?${searchParams.toString()}`
   }
 
   return url

@@ -5,6 +5,7 @@
 import { createServiceClient } from '@/utils/supabase/server'
 import { emailQueue } from './emailQueue'
 import { EmailType } from '../email/types/emailTypes'
+import { buildTokenUrl, buildProductionUrl } from '../email/config/emailConfig'
 
 export interface ReminderJob {
   reservationId: string
@@ -89,7 +90,7 @@ export class ReminderScheduler {
         restaurantName: reservation.restaurants?.name || 'Enigma Cocina Con Alma',
         restaurantEmail: reservation.restaurants?.email || process.env.RESTAURANT_EMAIL || 'reservas@enigmaconalma.com',
         restaurantPhone: reservation.restaurants?.phone || process.env.RESTAURANT_PHONE || '+34 123 456 789',
-        tokenUrl: `${process.env.NEXT_PUBLIC_APP_URL}/reservas/token/${reservation.token}`
+        tokenUrl: buildTokenUrl(reservation.token)
       }
 
       // Schedule reminder email in queue
@@ -356,7 +357,7 @@ export class ReminderScheduler {
         restaurantName: reservation.restaurants?.name || 'Enigma Cocina Con Alma',
         restaurantEmail: reservation.restaurants?.email || process.env.RESTAURANT_EMAIL || 'reservas@enigmaconalma.com',
         restaurantPhone: reservation.restaurants?.phone || process.env.RESTAURANT_PHONE || '+34 123 456 789',
-        tokenUrl: `${process.env.NEXT_PUBLIC_APP_URL}/review/${reservation.token}`
+        tokenUrl: buildProductionUrl('/review/' + reservation.token)
       }
 
       // Schedule review request email

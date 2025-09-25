@@ -29,6 +29,7 @@ export interface MenuItem {
   containsMollusks: boolean
   containsPeanuts: boolean
   images: string[]
+  imageUrl?: string
   displayOrder: number
   glassPrice?: number
   alcoholContent?: number

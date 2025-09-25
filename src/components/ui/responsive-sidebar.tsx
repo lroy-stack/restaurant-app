@@ -3,7 +3,7 @@
 import { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { useMobileNavigation } from '@/hooks/useMobileNavigation'
-import { useResponsiveLayout } from '@/hooks/useResponsiveLayout'
+import { useNavigationBreakpoints } from '@/hooks/useResponsiveLayout'
 import { Button } from './button'
 import { Separator } from './separator'
 import {
@@ -75,15 +75,15 @@ const navigationItems = [
 ]
 
 export function ResponsiveSidebar({ children, className }: ResponsiveSidebarProps) {
-  const { 
-    sidebarOpen, 
-    closeSidebar, 
-    sidebarRef, 
+  const {
+    sidebarOpen,
+    closeSidebar,
+    sidebarRef,
     overlayRef,
     isMobile,
-    isTablet 
+    isTablet
   } = useMobileNavigation()
-  const { isDesktop } = useResponsiveLayout()
+  const { shouldShowSidebar, shouldShowFloatingNav } = useNavigationBreakpoints()
   const router = useRouter()
 
   const handleLogout = async () => {
@@ -98,10 +98,10 @@ export function ResponsiveSidebar({ children, className }: ResponsiveSidebarProp
   return (
     <>
       {/* Overlay for mobile/tablet */}
-      {(isMobile || isTablet) && sidebarOpen && (
+      {shouldShowFloatingNav && sidebarOpen && (
         <div
           ref={overlayRef}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
           onClick={closeSidebar}
           aria-hidden="true"
         />
@@ -114,18 +114,16 @@ export function ResponsiveSidebar({ children, className }: ResponsiveSidebarProp
           // Base styles
           "bg-card border-r border-border shadow-sm",
           "flex flex-col transition-transform duration-300 ease-in-out",
-          
-          // Mobile/Tablet: Fixed overlay - above hamburger button
-          "fixed left-0 top-0 h-full w-64 z-50",
-          isMobile || isTablet ? (
-            sidebarOpen 
-              ? "translate-x-0" 
-              : "-translate-x-full"
-          ) : "",
-          
-          // Desktop: Always visible, no transform
-          "lg:relative lg:translate-x-0 lg:z-auto",
-          
+
+          // When shouldShowSidebar: Always visible sidebar (desktop)
+          shouldShowSidebar ? [
+            "relative translate-x-0 z-auto"
+          ] : [
+            // When shouldShowFloatingNav: Fixed overlay sidebar (mobile/tablet)
+            "fixed left-0 top-0 h-full w-64 z-50",
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          ],
+
           className
         )}
         aria-label="Navegación principal"
@@ -151,8 +149,8 @@ export function ResponsiveSidebar({ children, className }: ResponsiveSidebarProp
               return (
                 <li key={item.href}>
                   <Link href={item.href} onClick={() => {
-                    // Auto-close sidebar on mobile when navigating
-                    if (isMobile || isTablet) {
+                    // Auto-close sidebar when using floating nav
+                    if (shouldShowFloatingNav) {
                       closeSidebar()
                     }
                   }}>
