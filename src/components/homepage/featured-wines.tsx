@@ -152,9 +152,9 @@ export function FeaturedWines({
             </p>
           </div>
 
-          {/* Layout centrado para 2 vinos recomendados */}
+          {/* Grid de vinos - SIGUIENDO EXACTAMENTE PATRÓN DE FEATURED DISHES */}
           <div className="flex justify-center">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl w-full">
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 md:gap-6 max-w-2xl w-full">
             {topItems.map((item) => {
               const allergens = item.allergens || []
 
