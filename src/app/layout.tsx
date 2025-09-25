@@ -3,6 +3,7 @@ import { Toaster } from "sonner";
 import { SupabaseProvider } from "@/components/providers/supabase-provider";
 import { EnigmaThemeProvider } from "@/components/theme/theme-provider";
 import { CartProvider } from "@/contexts/CartContext";
+import { ScrollProvider } from "@/contexts/ScrollContext";
 import { benaya, playfairDisplay, crimsonText, sourceSerif4, inter } from "./fonts";
 import "./globals.css";
 
@@ -37,9 +38,11 @@ export default function RootLayout({
       <body className="font-sans antialiased min-h-screen bg-background">
         <EnigmaThemeProvider>
           <SupabaseProvider>
-            <CartProvider>
-              {children}
-            </CartProvider>
+            <ScrollProvider>
+              <CartProvider>
+                {children}
+              </CartProvider>
+            </ScrollProvider>
           </SupabaseProvider>
         </EnigmaThemeProvider>
         <Toaster 

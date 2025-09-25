@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { X, ChevronLeft, ChevronRight, Share2 } from "lucide-react"
 import { MediaItem } from "@/hooks/use-media-library"
+import { useConditionalScrollLock } from '@/hooks/useScrollLock'
 
 interface GalleryLightboxProps {
   isOpen: boolean
@@ -38,18 +39,8 @@ export function GalleryLightbox({
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, currentIndex, items.length, onIndexChange, onClose])
 
-  // Block body scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'unset'
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [isOpen])
+  // 🎯 PROFESSIONAL SCROLL MANAGEMENT: Use centralized scroll lock system
+  useConditionalScrollLock('gallery-lightbox', isOpen)
 
   if (!isOpen || !currentItem) return null
 

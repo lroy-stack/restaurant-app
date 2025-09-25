@@ -1,0 +1,135 @@
+'use client'
+
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
+
+// Types for scroll lock management
+interface ScrollLockState {
+  isLocked: boolean
+  lockedBy: Set<string>
+  scrollPosition: number
+}
+
+interface ScrollContextType {
+  // State
+  isScrollLocked: boolean
+
+  // Actions
+  enableScrollLock: (lockId: string) => void
+  disableScrollLock: (lockId: string) => void
+
+  // Utils
+  hasActiveLocks: () => boolean
+  getActiveLocks: () => string[]
+}
+
+const ScrollContext = createContext<ScrollContextType | undefined>(undefined)
+
+// Hook to use scroll context
+export const useScrollContext = () => {
+  const context = useContext(ScrollContext)
+  if (context === undefined) {
+    throw new Error('useScrollContext must be used within a ScrollProvider')
+  }
+  return context
+}
+
+// Scroll Provider Component
+export function ScrollProvider({ children }: { children: React.ReactNode }) {
+  const [scrollState, setScrollState] = useState<ScrollLockState>({
+    isLocked: false,
+    lockedBy: new Set(),
+    scrollPosition: 0
+  })
+
+  const scrollRestoreRef = useRef<number>(0)
+  const bodyStyleRef = useRef<string>('')
+
+  // Enable scroll lock with unique ID
+  const enableScrollLock = (lockId: string) => {
+    setScrollState(prev => {
+      const newLockedBy = new Set(prev.lockedBy)
+      newLockedBy.add(lockId)
+
+      // Only apply DOM changes if this is the first lock
+      if (!prev.isLocked) {
+        // Save current scroll position and body style
+        scrollRestoreRef.current = window.scrollY
+        bodyStyleRef.current = document.body.style.overflow || ''
+
+        // Apply scroll lock
+        document.body.style.overflow = 'hidden'
+
+        return {
+          isLocked: true,
+          lockedBy: newLockedBy,
+          scrollPosition: scrollRestoreRef.current
+        }
+      }
+
+      // Just add to the set if already locked
+      return {
+        ...prev,
+        lockedBy: newLockedBy
+      }
+    })
+  }
+
+  // Disable scroll lock for specific ID
+  const disableScrollLock = (lockId: string) => {
+    setScrollState(prev => {
+      const newLockedBy = new Set(prev.lockedBy)
+      newLockedBy.delete(lockId)
+
+      // Only restore if no more active locks
+      if (newLockedBy.size === 0 && prev.isLocked) {
+        // Restore scroll and body style
+        document.body.style.overflow = bodyStyleRef.current
+
+        // Restore scroll position (small delay to ensure DOM is ready)
+        setTimeout(() => {
+          window.scrollTo(0, scrollRestoreRef.current)
+        }, 0)
+
+        return {
+          isLocked: false,
+          lockedBy: newLockedBy,
+          scrollPosition: 0
+        }
+      }
+
+      // Keep locked if there are still active locks
+      return {
+        ...prev,
+        lockedBy: newLockedBy
+      }
+    })
+  }
+
+  // Utility functions
+  const hasActiveLocks = () => scrollState.lockedBy.size > 0
+  const getActiveLocks = () => Array.from(scrollState.lockedBy)
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Restore scroll on cleanup
+      if (scrollState.isLocked) {
+        document.body.style.overflow = bodyStyleRef.current
+      }
+    }
+  }, [])
+
+  const contextValue: ScrollContextType = {
+    isScrollLocked: scrollState.isLocked,
+    enableScrollLock,
+    disableScrollLock,
+    hasActiveLocks,
+    getActiveLocks
+  }
+
+  return (
+    <ScrollContext.Provider value={contextValue}>
+      {children}
+    </ScrollContext.Provider>
+  )
+}

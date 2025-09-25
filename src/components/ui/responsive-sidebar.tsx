@@ -4,6 +4,7 @@ import { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { useMobileNavigation } from '@/hooks/useMobileNavigation'
 import { useNavigationBreakpoints } from '@/hooks/useResponsiveLayout'
+import { useConditionalScrollLock } from '@/hooks/useScrollLock'
 import { Button } from './button'
 import { Separator } from './separator'
 import {
@@ -80,11 +81,13 @@ export function ResponsiveSidebar({ children, className }: ResponsiveSidebarProp
     closeSidebar,
     sidebarRef,
     overlayRef,
-    isMobile,
-    isTablet
+    shouldShowFloatingNav,
+    shouldShowSidebar
   } = useMobileNavigation()
-  const { shouldShowSidebar, shouldShowFloatingNav } = useNavigationBreakpoints()
   const router = useRouter()
+
+  // 🎯 MODULAR COMPOSITION: Separate scroll lock responsibility
+  useConditionalScrollLock('sidebar', shouldShowFloatingNav && sidebarOpen)
 
   const handleLogout = async () => {
     try {
