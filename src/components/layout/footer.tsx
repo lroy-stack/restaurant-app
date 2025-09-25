@@ -59,16 +59,14 @@ export function Footer() {
         { name: 'Menú', href: '/menu' },
         { name: 'Reservas', href: '/reservas' },
         { name: 'Galería', href: '/galeria' },
-        { name: 'Eventos', href: '/eventos' },
       ]
     },
     informacion: {
       title: 'Información',
       links: [
-        { name: 'Sobre Nosotros', href: '/sobre-nosotros' },
+        { name: 'Sobre Nosotros', href: '/historia' },
         { name: 'Contacto', href: '/contacto' },
-        { name: 'Reseñas', href: '/resenas' },
-        { name: 'Noticias', href: '/noticias' },
+        { name: 'Reseñas', href: 'https://www.tripadvisor.es/Restaurant_Review-g187526-d23958723-Reviews-Enigma_Cocina_Con_Alma-Calpe_Costa_Blanca_Province_of_Alicante_Valencian_Communi.html' },
       ]
     },
     legal: {
@@ -247,12 +245,23 @@ export function Footer() {
               <ul className="space-y-2">
                 {section.links.map((link) => (
                   <li key={link.href}>
-                    <Link 
-                      href={link.href}
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      {link.name}
-                    </Link>
+                    {link.href.startsWith('http') ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        {link.name}
+                      </a>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        {link.name}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
