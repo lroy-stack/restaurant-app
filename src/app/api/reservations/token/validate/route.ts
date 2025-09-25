@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Verificar tiempo hasta la reserva (2 horas mínimo)
-    const reservationDateTime = new Date(reservationData.date)
+    const reservationDateTime = new Date(reservationData.time)
     const timeDiff = reservationDateTime.getTime() - now.getTime()
     const hoursUntilReservation = timeDiff / (1000 * 60 * 60)
 

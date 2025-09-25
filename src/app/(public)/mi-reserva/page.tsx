@@ -279,7 +279,7 @@ function MiReservaContent() {
 
   // Check if modifications are allowed
   const canModify = ['PENDING', 'CONFIRMED'].includes(reservation.status)
-  const reservationDateTime = new Date(reservation.date)
+  const reservationDateTime = new Date(reservation.time)
   const isPastReservation = reservationDateTime < new Date()
   const canCancel = ['PENDING', 'CONFIRMED'].includes(reservation.status) && !isPastReservation
 
