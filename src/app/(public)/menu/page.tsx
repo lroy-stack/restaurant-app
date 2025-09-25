@@ -68,6 +68,7 @@ import { MenuFilterData } from '@/lib/validations/menu'
 import { useCart } from '@/hooks/useCart'
 import { cn } from "@/lib/utils"
 import { EnigmaLogo } from "@/components/ui/enigma-logo"
+import { useMediaLibrary } from "@/hooks/use-media-library"
 import { ProductDetailModal } from "@/components/menu/ProductDetailModal"
 import { AllergenInfo } from '@/app/(admin)/dashboard/menu/components/ui/allergen-badges'
 import { MenuSectionToggle } from "@/components/public/menu/MenuSectionToggle"
@@ -125,7 +126,8 @@ export default function MenuPage() {
 
   const { menu, loading, error } = useMenu(filters)
   const { addToCart, setLanguage: setCartLanguage, state, getCartCount, isInCart, getCartItem } = useCart()
-
+  const { getHeroImage, buildImageUrl, loading: mediaLoading } = useMediaLibrary({ type: 'hero' })
+  const heroImage = getHeroImage('menu')
 
   // Filter menu based on search, category, and ACTIVE SECTION
   const filteredMenu = useMemo(() => {
@@ -344,7 +346,9 @@ export default function MenuPage() {
           <div
             className="w-full h-full bg-cover bg-center bg-no-repeat"
             style={{
-              backgroundImage: 'url(https://ik.imagekit.io/insomnialz/IMG_9755.HEIC?updatedAt=1754141888431&tr=w-1920,h-1080,c-at_max,f-auto,q-auto,pr-true)'
+              backgroundImage: heroImage
+                ? `url(${buildImageUrl(heroImage)})`
+                : 'url(https://ik.imagekit.io/insomnialz/IMG_9755.HEIC?updatedAt=1754141888431&tr=w-1920,h-1080,c-at_max,f-auto,q-auto,pr-true)'
             }}
           />
         </div>

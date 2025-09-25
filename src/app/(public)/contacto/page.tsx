@@ -23,6 +23,7 @@ import { EnigmaLogo } from "@/components/ui/enigma-logo";
 import dynamic from 'next/dynamic'
 import { useRestaurant } from '@/hooks/use-restaurant'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
+import { useMediaLibrary } from "@/hooks/use-media-library"
 
 // Dynamic import for browser-only map component
 const RestaurantMap = dynamic(() => import('@/components/maps/RestaurantMap').then(mod => ({ default: mod.RestaurantMap })), {
@@ -35,6 +36,8 @@ const RestaurantMap = dynamic(() => import('@/components/maps/RestaurantMap').th
 })
 
 export default function ContactoPage() {
+  const { getHeroImage, buildImageUrl, loading: mediaLoading } = useMediaLibrary({ type: 'hero' })
+  const heroImage = getHeroImage('contacto')
   const { restaurant, loading, error } = useRestaurant()
   const { businessHours, loading: hoursLoading } = useBusinessHours()
 
@@ -111,7 +114,7 @@ export default function ContactoPage() {
 
   const businessHoursData = getBusinessHoursData()
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Cargando...</div>
+  if (loading || mediaLoading) return <div className="min-h-screen flex items-center justify-center">Cargando...</div>
   if (error) return <div>Error: {error}</div>
   return (
     <>
@@ -119,10 +122,12 @@ export default function ContactoPage() {
       <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden -mt-16 pt-16">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-black/40 z-10" />
-          <div 
-            className="w-full h-full bg-cover bg-center bg-no-repeat" 
+          <div
+            className="w-full h-full bg-cover bg-center bg-no-repeat"
             style={{
-              backgroundImage: 'url(https://ik.imagekit.io/insomnialz/_DSC1121.jpg?updatedAt=1754863669504&tr=w-1920,h-1080,c-at_max,f-auto,q-auto,pr-true)'
+              backgroundImage: heroImage
+                ? `url(${buildImageUrl(heroImage)})`
+                : 'url(https://ik.imagekit.io/insomnialz/_DSC1121.jpg?updatedAt=1754863669504&tr=w-1920,h-1080,c-at_max,f-auto,q-auto,pr-true)'
             }}
           />
         </div>

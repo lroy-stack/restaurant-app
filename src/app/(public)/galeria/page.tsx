@@ -93,7 +93,7 @@ export default function GaleriaPage() {
             style={{
               backgroundImage: heroImage
                 ? `url(${buildImageUrl(heroImage)})`
-                : 'url(https://ik.imagekit.io/insomnialz/IMG_0686.heic?updatedAt=1757368334667&tr=w-1920,h-1080,c-at_max,f-auto,q-auto,pr-true)'
+                : 'url(https://ik.imagekit.io/insomnialz/mariposas.jpg?updatedAt=1758793673956)'
             }}
           />
         </div>

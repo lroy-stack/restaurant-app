@@ -1,3 +1,5 @@
+'use client'
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -6,8 +8,16 @@ import { Star, Award, Users, Utensils, MapPin, Phone, Mail, Clock } from "lucide
 import { EnigmaLogo } from "@/components/ui/enigma-logo"
 import { FeaturedDishes } from "@/components/homepage/featured-dishes"
 import { FeaturedWines } from "@/components/homepage/featured-wines"
+import { useMediaLibrary } from "@/hooks/use-media-library"
 
 export default function HomePage() {
+  const { getHeroImage, buildImageUrl, loading } = useMediaLibrary({ type: 'hero' })
+  const heroImage = getHeroImage('home')
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Cargando...</div>
+  }
+
   return (
     <>
       {/* Hero Section - 100% Responsive */}
@@ -18,7 +28,9 @@ export default function HomePage() {
           <div
             className="w-full h-full bg-cover bg-no-repeat"
             style={{
-              backgroundImage: 'url(https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1758114245475)',
+              backgroundImage: heroImage
+                ? `url(${buildImageUrl(heroImage)})`
+                : 'url(https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1758114245475)',
               backgroundPosition: '65% center',
               backgroundAttachment: 'scroll'
             }}
@@ -155,7 +167,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  <span className="text-sm sm:text-base">Mar-Dom: 18:00 - 23:00</span>
+                  <span className="text-sm sm:text-base">Lun-Sáb: 18:30 - 23:00</span>
                 </div>
               </div>
             </div>

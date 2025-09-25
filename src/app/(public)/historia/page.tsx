@@ -7,9 +7,12 @@ import { Heart, Award, Users, MapPin, Star } from "lucide-react";
 import { EnigmaLogo } from "@/components/ui/enigma-logo";
 import Link from "next/link";
 import { useRestaurant } from '@/hooks/use-restaurant';
+import { useMediaLibrary } from "@/hooks/use-media-library";
 
 export default function HistoriaPage() {
   const { restaurant, loading, error, getFormattedRating, getLocationDescription } = useRestaurant()
+  const { getHeroImage, buildImageUrl, loading: mediaLoading } = useMediaLibrary({ type: 'hero' })
+  const heroImage = getHeroImage('historia')
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Cargando...</div>
   if (error) return <div>Error: {error}</div>
@@ -22,7 +25,9 @@ export default function HistoriaPage() {
           <div 
             className="w-full h-full bg-cover bg-center bg-no-repeat" 
             style={{
-              backgroundImage: 'url(https://ik.imagekit.io/insomnialz/_DSC0559.jpg?tr=w-1920,h-1080,c-at_max,f-auto,q-auto,pr-true)'
+              backgroundImage: heroImage
+                ? `url(${buildImageUrl(heroImage)})`
+                : 'url(https://ik.imagekit.io/insomnialz/_DSC0559.jpg?tr=w-1920,h-1080,c-at_max,f-auto,q-auto,pr-true)'
             }}
           />
         </div>
