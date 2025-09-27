@@ -7,7 +7,8 @@ import {
   UtensilsCrossed,
   MapPin,
   Clock,
-  RefreshCw
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics'

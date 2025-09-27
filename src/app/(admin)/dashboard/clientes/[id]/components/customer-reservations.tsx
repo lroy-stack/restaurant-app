@@ -13,6 +13,7 @@ import {
   Plus,
   ChevronDown,
   ChevronUp,
+  Globe,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
