@@ -163,14 +163,15 @@ export class EmailService {
   /**
    * CRITICAL: Query with exact database field names (VALIDATED schema)
    * Uses schema 'restaurante' and exact field names from SSH validation
+   * 🔧 FIXED: Now supports multiple tables via table_ids array
    */
   private async getReservationWithToken(reservationId: string) {
     try {
       const supabase = createDirectAdminClient()
 
       // CRITICAL: Use exact database field names and schema 'restaurante'
-      // FIXED: Incluir reservation_items para pre-pedidos
-      const { data, error } = await supabase
+      // 🔧 MULTI-TABLE FIX: Get reservation data first
+      const { data: reservation, error: reservationError } = await supabase
         .schema('restaurante')
         .from('reservations')
         .select(`
@@ -183,7 +184,6 @@ export class EmailService {
             purpose
           ),
           customers!customerId(*),
-          tables!tableId(*),
           reservation_items!reservationId(
             id,
             quantity,
@@ -202,12 +202,50 @@ export class EmailService {
         .eq('id', reservationId)
         .single()
 
-      if (error) {
-        console.error('Database query error:', error)
+      if (reservationError) {
+        console.error('Reservation query error:', reservationError)
         return null
       }
 
-      return data
+      // 🔧 MULTI-TABLE FIX: Get all tables from table_ids array OR legacy tableId
+      let allTables = []
+
+      // Handle modern multi-table reservations (table_ids array)
+      if (reservation.table_ids && reservation.table_ids.length > 0) {
+        console.log('🔧 Loading multiple tables for reservation:', reservation.table_ids)
+
+        const { data: tables, error: tablesError } = await supabase
+          .schema('restaurante')
+          .from('tables')
+          .select('*')
+          .in('id', reservation.table_ids)
+          .order('number')
+
+        if (!tablesError && tables) {
+          allTables = tables
+          console.log('✅ Loaded tables for email:', tables.map(t => t.number))
+        }
+      }
+      // Handle legacy single-table reservations (tableId)
+      else if (reservation.tableId) {
+        console.log('🔧 Loading legacy single table:', reservation.tableId)
+
+        const { data: table, error: tableError } = await supabase
+          .schema('restaurante')
+          .from('tables')
+          .select('*')
+          .eq('id', reservation.tableId)
+          .single()
+
+        if (!tableError && table) {
+          allTables = [table]
+        }
+      }
+
+      // Add all tables to reservation data
+      reservation.allTables = allTables
+
+      return reservation
     } catch (error) {
       console.error('getReservationWithToken error:', error)
       return null
@@ -227,6 +265,33 @@ export class EmailService {
   private async buildTemplateData(reservation: any): Promise<EmailTemplateData> {
     const token = reservation.reservation_tokens?.[0]
     const emailConfig = getEmailConfig()
+
+    // 🔧 MULTI-TABLE FIX: Process all tables from allTables array
+    let tableNumber = 'Por asignar'
+    let tableLocation = 'Por asignar'
+
+    if (reservation.allTables && reservation.allTables.length > 0) {
+      console.log('🔧 Processing multiple tables for email:', reservation.allTables.length)
+
+      // Sort tables by number for consistent display
+      const sortedTables = reservation.allTables.sort((a: any, b: any) => {
+        const aNum = parseInt(a.number) || 0
+        const bNum = parseInt(b.number) || 0
+        return aNum - bNum
+      })
+
+      // Create combined table number (e.g., "T8+T9")
+      const tableNumbers = sortedTables.map((table: any) => table.number).filter(Boolean)
+      if (tableNumbers.length > 0) {
+        tableNumber = tableNumbers.join('+')
+        console.log('✅ Combined table numbers for email:', tableNumber)
+      }
+
+      // Use location from first table (assuming all tables in same location for combinations)
+      if (sortedTables[0]?.location) {
+        tableLocation = sortedTables[0].location
+      }
+    }
 
     return {
       // Customer data (DYNAMIC from DB)
@@ -250,9 +315,9 @@ export class EmailService {
       reservationStatus: reservation.status,
       specialRequests: reservation.specialRequests,
 
-      // Table data (DYNAMIC from DB)
-      tableLocation: reservation.tables?.location || 'Por asignar',
-      tableNumber: reservation.tables?.number || 'Por asignar',
+      // 🔧 MULTI-TABLE FIX: Table data now supports multiple tables
+      tableLocation,
+      tableNumber,
 
       // Pre-order data (DYNAMIC from DB via reservation_items)
       preOrderItems: reservation.reservation_items?.map((item: any) => ({
