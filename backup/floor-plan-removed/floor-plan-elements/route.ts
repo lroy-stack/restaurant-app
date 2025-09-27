@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { ElementType, DEFAULT_ELEMENT_SIZES, DEFAULT_ELEMENT_STYLES } from '@/app/(admin)/dashboard/mesas/components/floor-plan/utils/elementTypes'
+
+// Simplified element types and defaults
+const VALID_ELEMENT_TYPES = ['table', 'bar', 'door', 'plant', 'wall'] as const
+const DEFAULT_SIZE = { width: 100, height: 100 }
+const DEFAULT_STYLE = { backgroundColor: '#f8f9fa', borderColor: '#dee2e6' }
 
 const RESTAURANT_ID = 'rest_enigma_001' // From database
 
@@ -44,13 +48,13 @@ export async function POST(request: NextRequest) {
     } = body
 
     // Validate element type
-    if (!Object.values(ElementType).includes(element_type)) {
+    if (!VALID_ELEMENT_TYPES.includes(element_type)) {
       return NextResponse.json({ error: 'Invalid element type' }, { status: 400 })
     }
 
     // Use defaults if not provided
-    const defaultSize = DEFAULT_ELEMENT_SIZES[element_type as ElementType]
-    const defaultStyle = DEFAULT_ELEMENT_STYLES[element_type as ElementType]
+    const defaultSize = DEFAULT_SIZE
+    const defaultStyle = DEFAULT_STYLE
 
     const { data: element, error } = await supabase
       .from('floor_plan_elements')

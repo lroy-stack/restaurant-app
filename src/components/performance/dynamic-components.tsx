@@ -63,14 +63,7 @@ export const DynamicAnalyticsChart = dynamic(
   }
 )
 
-// Floor plan components with @xyflow/react
-export const DynamicFloorPlan = dynamic(
-  () => import('@/app/(admin)/dashboard/mesas/components/floor-plan/ReactFloorPlan'),
-  {
-    loading: () => <Skeleton className="h-96 w-full" />,
-    ssr: false,
-  }
-)
+// Floor plan components removed - functionality moved to table status panel
 
 // Map components with Leaflet
 export const DynamicRestaurantMap = dynamic(

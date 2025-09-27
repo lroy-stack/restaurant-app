@@ -121,7 +121,7 @@ async function TablesContent({ searchParams }: { searchParams: Awaited<TablesPag
   }
 
   const tables = await getTables(filters)
-  const activeTab = searchParams.tab || 'floor-plan'
+  const activeTab = searchParams.tab || 'status'
 
   if (!tables || tables.length === 0) {
     return (
