@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -182,6 +183,23 @@ const locationLabels = {
   SALA_VIP: 'Sala VIP',
   TERRACE_JUSTICIA: 'Terraza Justicia',
   SALA_PRINCIPAL: 'Sala Principal'
+}
+
+// 🚀 UI/UX IMPROVEMENT: Group time slots by hour for better navigation
+function groupTimeSlotsByHour(timeSlots: string[]) {
+  const grouped = timeSlots.reduce((acc, slot) => {
+    const hour = slot.split(':')[0]
+    if (!acc[hour]) acc[hour] = []
+    acc[hour].push(slot)
+    return acc
+  }, {} as Record<string, string[]>)
+
+  return Object.keys(grouped)
+    .sort((a, b) => parseInt(a) - parseInt(b))
+    .map(hour => ({
+      hour,
+      slots: grouped[hour].sort()
+    }))
 }
 
 // Componente para editar pre-orden
@@ -912,7 +930,7 @@ export function EditReservationModal({ isOpen, onClose, reservation, onSave }: E
                     <SelectTrigger className={errors.time ? 'border-destructive' : ''}>
                       <SelectValue placeholder={loadingTimeSlots ? 'Cargando...' : 'Seleccionar hora'} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-[240px]">
                       {loadingTimeSlots ? (
                         <SelectItem value="loading" disabled>
                           <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -924,12 +942,18 @@ export function EditReservationModal({ isOpen, onClose, reservation, onSave }: E
                           Sin horarios
                         </SelectItem>
                       ) : (
-                        timeSlots.map((timeSlot) => (
-                          <SelectItem key={timeSlot} value={timeSlot}>
-                            <Clock className="h-4 w-4 mr-2" />
-                            {timeSlot}
-                          </SelectItem>
-                        ))
+                        groupTimeSlotsByHour(timeSlots).map((hourGroup, index) => [
+                          // Hour separator
+                          <div key={`sep-${hourGroup.hour}`} className={`px-2 py-1 text-xs font-medium text-muted-foreground bg-muted/30 ${index > 0 ? 'mt-1' : ''}`}>
+                            {hourGroup.hour}:00h
+                          </div>,
+                          // Time slots for this hour
+                          ...hourGroup.slots.map((timeSlot) => (
+                            <SelectItem key={timeSlot} value={timeSlot} className="py-1.5 pl-6">
+                              <span className="font-mono text-sm">{timeSlot}</span>
+                            </SelectItem>
+                          ))
+                        ]).flat()
                       )}
                     </SelectContent>
                   </Select>
