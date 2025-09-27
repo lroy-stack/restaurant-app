@@ -110,7 +110,7 @@ export function AnalyticsChart({
               stroke="hsl(var(--muted-foreground))"
               className="text-xs"
               tick={{ fontSize: 12 }}
-              tickFormatter={formatValue}
+              tickFormatter={(value) => formatValue(value as number | string)}
             />
             <Tooltip
               contentStyle={{
@@ -120,7 +120,7 @@ export function AnalyticsChart({
                 color: 'hsl(var(--foreground))',
                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
               }}
-              formatter={(value) => [formatValue(value), dataKey]}
+              formatter={(value) => [formatValue(Array.isArray(value) ? (value[0] as number | string) : (value as number | string)), dataKey]}
             />
             {showLegend && <Legend />}
             <Area
@@ -164,7 +164,7 @@ export function AnalyticsChart({
               stroke="hsl(var(--muted-foreground))"
               className="text-xs"
               tick={{ fontSize: 12 }}
-              tickFormatter={formatValue}
+              tickFormatter={(value) => formatValue(value as number | string)}
             />
             <Tooltip
               contentStyle={{
@@ -174,7 +174,7 @@ export function AnalyticsChart({
                 color: 'hsl(var(--foreground))',
                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
               }}
-              formatter={(value) => [formatValue(value), dataKey]}
+              formatter={(value) => [formatValue(Array.isArray(value) ? (value[0] as number | string) : (value as number | string)), dataKey]}
             />
             {showLegend && <Legend />}
             <Bar
@@ -202,12 +202,12 @@ export function AnalyticsChart({
               cx="50%"
               cy="50%"
               outerRadius={Math.min(height * 0.3, 100)}
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              label
             >
               {data.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={entry.fill || Object.values(ENIGMA_CHART_COLORS)[index % Object.values(ENIGMA_CHART_COLORS).length]}
+                  fill={(entry as { fill?: string }).fill || Object.values(ENIGMA_CHART_COLORS)[index % Object.values(ENIGMA_CHART_COLORS).length]}
                 />
               ))}
             </Pie>
@@ -219,7 +219,7 @@ export function AnalyticsChart({
                 color: 'hsl(var(--foreground))',
                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
               }}
-              formatter={(value) => [formatValue(value), dataKey]}
+              formatter={(value) => [formatValue(Array.isArray(value) ? (value[0] as number | string) : (value as number | string)), dataKey]}
             />
             {showLegend && <Legend />}
           </PieChart>
@@ -244,7 +244,7 @@ export function AnalyticsChart({
               stroke="hsl(var(--muted-foreground))"
               className="text-xs"
               tick={{ fontSize: 12 }}
-              tickFormatter={formatValue}
+              tickFormatter={(value) => formatValue(value as number | string)}
             />
             <Tooltip
               contentStyle={{
@@ -254,7 +254,7 @@ export function AnalyticsChart({
                 color: 'hsl(var(--foreground))',
                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
               }}
-              formatter={(value) => [formatValue(value), dataKey]}
+              formatter={(value) => [formatValue(Array.isArray(value) ? (value[0] as number | string) : (value as number | string)), dataKey]}
             />
             {showLegend && <Legend />}
             <Line

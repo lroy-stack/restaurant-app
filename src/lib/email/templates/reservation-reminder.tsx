@@ -58,6 +58,7 @@ export const ReservationReminderEmail = ({
       restaurantName={restaurantName}
       restaurantEmail={restaurantEmail}
       restaurantPhone={restaurantPhone}
+      branding={branding}
     >
       {/* Reminder Header */}
       <Section style={reminderBanner}>

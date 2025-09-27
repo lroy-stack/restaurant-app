@@ -29,6 +29,17 @@ export interface EmailBaseProps {
   instagramUrl?: string
   facebookUrl?: string
   whatsappNumber?: string
+  // Branding configuration
+  branding?: {
+    logo: string
+    fonts: {
+      googleFontsUrl: string
+      primary: string
+      secondary: string
+      body: string
+      elegant: string
+    }
+  }
   children: React.ReactNode
 }
 
@@ -43,6 +54,7 @@ export const EmailBase = ({
   instagramUrl,
   facebookUrl,
   whatsappNumber,
+  branding,
   children
 }: EmailBaseProps) => {
   // Use fallback data if props not provided (REAL data from SSH verification)

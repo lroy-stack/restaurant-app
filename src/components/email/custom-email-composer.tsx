@@ -223,9 +223,17 @@ export function CustomEmailComposer({
           'Content-Profile': 'restaurante'
         },
         body: JSON.stringify({
-          ...emailData,
+          // ✅ FIXED: Spread emailData but filter out empty optional fields
+          messageType: emailData.messageType,
+          customSubject: emailData.customSubject,
+          customMessage: emailData.customMessage,
+          priority: emailData.priority,
+          templateSource: emailData.templateSource,
           customerName,
           customerEmail,
+          // Only include CTA fields if they have actual content
+          ...(emailData.ctaText?.trim() && { ctaText: emailData.ctaText.trim() }),
+          ...(emailData.ctaUrl?.trim() && { ctaUrl: emailData.ctaUrl.trim() }),
           // Basic client context
           clientContext: {
             hasEmailConsent: hasEmailConsent,

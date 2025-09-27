@@ -1,14 +1,11 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ReactFlowProvider } from '@xyflow/react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { TableFloorPlan } from './table-floor-plan'
 import { TableStatusPanel } from './table-status-panel'
 import { TableAnalytics } from './table-analytics'
 import { TableConfiguration } from './table-configuration'
 import { EnhancedQRManager } from './enhanced-qr-manager'
-import { ReactFloorPlan } from './floor-plan/ReactFloorPlan'
 
 interface TableData {
   id: string
@@ -33,7 +30,7 @@ interface TableTabsProps {
   defaultTab?: string
 }
 
-export function TableTabs({ tables = [], defaultTab = 'floor-plan' }: TableTabsProps) {
+export function TableTabs({ tables = [], defaultTab = 'status' }: TableTabsProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const activeTab = searchParams.get('tab') || defaultTab
@@ -46,24 +43,13 @@ export function TableTabs({ tables = [], defaultTab = 'floor-plan' }: TableTabsP
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-      <TabsList className="grid w-full grid-cols-6">
-        <TabsTrigger value="floor-plan">Vista de Planta</TabsTrigger>
-        <TabsTrigger value="advanced-plan">Planta Avanzada</TabsTrigger>
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="status">Estados</TabsTrigger>
         <TabsTrigger value="analytics">Análisis</TabsTrigger>
         <TabsTrigger value="config">Configuración</TabsTrigger>
         <TabsTrigger value="qrcodes">QR Codes</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="floor-plan" className="space-y-4">
-        <TableFloorPlan tables={tables} />
-      </TabsContent>
-
-      <TabsContent value="advanced-plan" className="space-y-4">
-        <ReactFlowProvider>
-          <ReactFloorPlan tables={tables} />
-        </ReactFlowProvider>
-      </TabsContent>
 
       <TabsContent value="status" className="space-y-4">
         <TableStatusPanel tables={tables} />

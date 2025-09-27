@@ -8,15 +8,13 @@ import { Star, Award, Users, Utensils, MapPin, Phone, Mail, Clock } from "lucide
 import { EnigmaLogo } from "@/components/ui/enigma-logo"
 import { FeaturedDishes } from "@/components/homepage/featured-dishes"
 import { FeaturedWines } from "@/components/homepage/featured-wines"
+import { OptimizedImage } from "@/components/ui/optimized-image"
 import { useMediaLibrary } from "@/hooks/use-media-library"
+import { Suspense, memo } from "react"
 
 export default function HomePage() {
-  const { getHeroImage, buildImageUrl, loading } = useMediaLibrary({ type: 'hero' })
+  const { getHeroImage, buildImageUrl, loading: mediaLoading } = useMediaLibrary({ type: 'hero' })
   const heroImage = getHeroImage('home')
-
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Cargando...</div>
-  }
 
   return (
     <>
@@ -24,16 +22,12 @@ export default function HomePage() {
       <section className="relative h-[109vh] flex items-center justify-center overflow-hidden -mt-16">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-black/20 z-10" />
-          {/* Real restaurant night atmosphere image */}
-          <div
-            className="w-full h-full bg-cover bg-no-repeat"
-            style={{
-              backgroundImage: heroImage
-                ? `url(${buildImageUrl(heroImage)})`
-                : 'url(https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1758114245475)',
-              backgroundPosition: '65% center',
-              backgroundAttachment: 'scroll'
-            }}
+          {/* Optimized hero image with proper loading */}
+          <img
+            src="https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1754141731421"
+            alt="Enigma Cocina Con Alma - Restaurante en Calpe"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: '65% center' }}
           />
         </div>
         
@@ -84,10 +78,48 @@ export default function HomePage() {
       </section>
 
       {/* Featured Dishes Section - REUTILIZANDO componentes del /menu */}
-      <FeaturedDishes maxItems={4} showViewMore={true} />
+      <Suspense fallback={
+        <section className="py-12 sm:py-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="animate-pulse space-y-8">
+              <div className="h-8 bg-muted rounded w-48 mx-auto"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="space-y-4">
+                    <div className="h-48 bg-muted rounded"></div>
+                    <div className="h-4 bg-muted rounded w-3/4"></div>
+                    <div className="h-4 bg-muted rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      }>
+        <FeaturedDishes maxItems={4} showViewMore={true} />
+      </Suspense>
 
       {/* Featured Wines Section - Nuestra Cava */}
-      <FeaturedWines maxItems={2} showViewMore={true} />
+      <Suspense fallback={
+        <section className="py-12 sm:py-16 bg-muted/30">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="animate-pulse space-y-8">
+              <div className="h-8 bg-muted rounded w-48 mx-auto"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="space-y-4">
+                    <div className="h-64 bg-muted rounded"></div>
+                    <div className="h-4 bg-muted rounded w-3/4"></div>
+                    <div className="h-4 bg-muted rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      }>
+        <FeaturedWines maxItems={2} showViewMore={true} />
+      </Suspense>
 
       {/* Features Section - 100% Responsive Grid */}
       <section className="py-12 sm:py-16 bg-muted/30">

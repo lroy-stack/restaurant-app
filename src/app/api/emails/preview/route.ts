@@ -49,7 +49,7 @@ const sampleData: EmailTemplateData = {
   restaurantName: 'Enigma Cocina Con Alma',
   restaurantEmail: 'reservas@enigmaconalma.com',
   restaurantPhone: '+34 912 345 678',
-  tokenUrl: 'https://enigmaconalma.com/mi-reserva?token=vt_1758214441986_d3d76e7e',
+  tokenUrl: 'https://almaenigma.vercel.app/mi-reserva?token=vt_1758214441986_d3d76e7e',
   reservationStatus: 'CONFIRMED'
 }
 

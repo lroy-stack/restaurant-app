@@ -668,7 +668,7 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 h-12">
           <TabsTrigger value="management">Gestión QR</TabsTrigger>
           <TabsTrigger value="analytics">Análisis</TabsTrigger>
           <TabsTrigger value="templates">Plantillas</TabsTrigger>

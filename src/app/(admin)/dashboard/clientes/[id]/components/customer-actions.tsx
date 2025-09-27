@@ -14,8 +14,6 @@ import {
   MessageSquare,
   Share2,
   Eye,
-  Edit,
-  Trash2,
   Gift
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -25,7 +23,6 @@ interface CustomerActionsProps {
   customer: Customer
   onVipToggle: () => Promise<boolean>
   onExportData: () => Promise<boolean>
-  onSendEmail: () => void
   onViewReservations: () => void
 }
 
@@ -33,7 +30,6 @@ export function CustomerActions({
   customer,
   onVipToggle,
   onExportData,
-  onSendEmail,
   onViewReservations
 }: CustomerActionsProps) {
   const [isTogglingVip, setIsTogglingVip] = useState(false)
@@ -50,7 +46,7 @@ export function CustomerActions({
             : 'Estado VIP otorgado correctamente'
         )
       }
-    } catch (error) {
+    } catch {
       toast.error('Error al cambiar estado VIP')
     } finally {
       setIsTogglingVip(false)
@@ -64,7 +60,7 @@ export function CustomerActions({
       if (success) {
         toast.success('Datos exportados correctamente')
       }
-    } catch (error) {
+    } catch {
       toast.error('Error al exportar datos')
     } finally {
       setIsExporting(false)
@@ -98,7 +94,7 @@ export function CustomerActions({
       const profileUrl = `${window.location.origin}/dashboard/clientes/${customer.id}`
       await navigator.clipboard.writeText(profileUrl)
       toast.success('Enlace copiado al portapapeles')
-    } catch (error) {
+    } catch {
       toast.error('Error al copiar enlace')
     }
   }
@@ -162,11 +158,21 @@ export function CustomerActions({
     }
   ]
 
+  interface ActionButtonProps {
+    variant: 'default' | 'outline' | 'destructive' | 'secondary' | 'ghost' | 'link'
+    onClick: () => void
+    disabled?: boolean
+    loading?: boolean
+    icon: React.ComponentType<{ className?: string }>
+    label: string
+    description: string
+  }
+
   const ActionButton = ({
     action,
     size = 'default'
   }: {
-    action: any
+    action: ActionButtonProps
     size?: 'sm' | 'default'
   }) => (
     <Button

@@ -43,9 +43,11 @@ export function toSpainTimestamp(date: Date): string {
 }
 
 // Export default for common usage
-export default {
+const timestampUtils = {
   getSpainTimestamp,
   getSpainDate,
   getSpainExpiryDate,
   toSpainTimestamp
 }
+
+export default timestampUtils

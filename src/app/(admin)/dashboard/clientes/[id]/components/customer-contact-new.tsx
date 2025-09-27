@@ -25,7 +25,7 @@ import type { Customer } from '@/lib/validations/customer'
 
 interface CustomerContactNewProps {
   customer: Customer
-  onUpdate: (field: string, value: any) => Promise<boolean>
+  onUpdate: (field: string, value: unknown) => Promise<boolean>
   canEdit: boolean
 }
 
@@ -74,7 +74,7 @@ export function CustomerContactNew({
 
       // Update each field that changed
       for (const [field, value] of Object.entries(formData)) {
-        if (value !== (customer as any)[field]) {
+        if (value !== (customer as Record<string, unknown>)[field]) {
           const fieldSuccess = await onUpdate(field, value)
           if (!fieldSuccess) success = false
         }

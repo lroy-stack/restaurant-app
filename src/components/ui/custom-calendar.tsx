@@ -34,6 +34,8 @@ export interface CustomCalendarProps {
   // Validation functions from useBusinessHours
   isDateDisabled?: (date: Date) => boolean;
   getDisabledReason?: (date: Date) => string;
+  // NEW: Allow past dates for filter/search contexts
+  allowPastDates?: boolean;
 }
 
 export const CustomCalendar: React.FC<CustomCalendarProps> = ({
@@ -49,7 +51,8 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
   blockedDates = [],
   holidayModeActive = false,
   isDateDisabled: externalIsDateDisabled,
-  getDisabledReason: externalGetDisabledReason
+  getDisabledReason: externalGetDisabledReason,
+  allowPastDates = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -57,6 +60,11 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
     value ? new Date(value) : null
   );
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Sync internal state when value prop changes from parent
+  useEffect(() => {
+    setSelectedDate(value ? new Date(value) : null);
+  }, [value]);
 
   // Use external validation functions if provided, otherwise use internal logic
   const isDateDisabledInternal = (date: Date): boolean => {
@@ -76,12 +84,14 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
       return date < minDateTime;
     }
 
-    // For other dates, check if it's before today (past dates)
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const startOfSelectedDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    // For other dates, check if it's before today (past dates) - ONLY if allowPastDates is false
+    if (!allowPastDates) {
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const startOfSelectedDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-    if (startOfSelectedDay < startOfToday) {
-      return true;
+      if (startOfSelectedDay < startOfToday) {
+        return true;
+      }
     }
 
     // Check if it's a closed day
@@ -117,12 +127,14 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
       return `Requiere ${minHours} horas de anticipación`;
     }
 
-    // Past date check
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const startOfSelectedDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    // Past date check - ONLY if allowPastDates is false
+    if (!allowPastDates) {
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const startOfSelectedDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-    if (startOfSelectedDay < startOfToday) {
-      return 'No se pueden seleccionar fechas pasadas';
+      if (startOfSelectedDay < startOfToday) {
+        return 'No se pueden seleccionar fechas pasadas';
+      }
     }
 
     if (closedDays.includes(date.getDay())) {

@@ -12,11 +12,8 @@ if (!supabaseAnonKey) {
   throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable')
 }
 
-// Cliente público para operaciones del cliente
+// Cliente público para operaciones del cliente (sin restricción de schema)
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
-  db: {
-    schema: 'restaurante'  // 🚨 CRÍTICO: ÚNICAMENTE esquema restaurante
-  },
   auth: {
     persistSession: true,
     autoRefreshToken: true,
@@ -26,6 +23,18 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
     params: {
       eventsPerSecond: 10
     }
+  }
+})
+
+// Cliente específico para esquema restaurante
+export const supabaseRestaurante = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+  db: {
+    schema: 'restaurante'
+  },
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
   }
 })
 
@@ -48,8 +57,8 @@ export interface Database {
           cuisine_type: string | null
           price_range: string | null
           capacity: number | null
-          opening_hours: any | null
-          social_media: any | null
+          opening_hours: Record<string, unknown> | null
+          social_media: Record<string, unknown> | null
           features: string[] | null
           created_at: string
           updated_at: string
@@ -65,8 +74,8 @@ export interface Database {
           cuisine_type?: string | null
           price_range?: string | null
           capacity?: number | null
-          opening_hours?: any | null
-          social_media?: any | null
+          opening_hours?: Record<string, unknown> | null
+          social_media?: Record<string, unknown> | null
           features?: string[] | null
           created_at?: string
           updated_at?: string
@@ -82,8 +91,8 @@ export interface Database {
           cuisine_type?: string | null
           price_range?: string | null
           capacity?: number | null
-          opening_hours?: any | null
-          social_media?: any | null
+          opening_hours?: Record<string, unknown> | null
+          social_media?: Record<string, unknown> | null
           features?: string[] | null
           created_at?: string
           updated_at?: string
@@ -143,7 +152,7 @@ export interface Database {
           special_requests: string | null
           dietary_notes: string | null
           occasion: string | null
-          pre_order_items: any[] | null
+          pre_order_items: Record<string, unknown>[] | null
           pre_order_total: number
           total_estimated: number | null
           customer_notes: string | null
@@ -166,7 +175,7 @@ export interface Database {
           special_requests?: string | null
           dietary_notes?: string | null
           occasion?: string | null
-          pre_order_items?: any[] | null
+          pre_order_items?: Record<string, unknown>[] | null
           pre_order_total?: number
           total_estimated?: number | null
           customer_notes?: string | null
@@ -189,7 +198,7 @@ export interface Database {
           special_requests?: string | null
           dietary_notes?: string | null
           occasion?: string | null
-          pre_order_items?: any[] | null
+          pre_order_items?: Record<string, unknown>[] | null
           pre_order_total?: number
           total_estimated?: number | null
           customer_notes?: string | null
@@ -211,7 +220,7 @@ export interface Database {
           language: string
           is_vip: boolean
           dietary_preferences: string[] | null
-          preferences: any | null
+          preferences: Record<string, unknown> | null
           notes: string | null
           created_at: string
           updated_at: string
@@ -226,7 +235,7 @@ export interface Database {
           language?: string
           is_vip?: boolean
           dietary_preferences?: string[] | null
-          preferences?: any | null
+          preferences?: Record<string, unknown> | null
           notes?: string | null
           created_at?: string
           updated_at?: string
@@ -241,7 +250,7 @@ export interface Database {
           language?: string
           is_vip?: boolean
           dietary_preferences?: string[] | null
-          preferences?: any | null
+          preferences?: Record<string, unknown> | null
           notes?: string | null
           created_at?: string
           updated_at?: string
@@ -399,8 +408,8 @@ export interface Database {
     }
     Functions: {
       get_complete_menu: {
-        Args: {}
-        Returns: any[]
+        Args: Record<string, never>
+        Returns: Record<string, unknown>[]
       }
       check_table_availability: {
         Args: {
@@ -411,15 +420,15 @@ export interface Database {
           p_table_zone?: string
           p_table_id?: string
         }
-        Returns: any[]
+        Returns: Record<string, unknown>[]
       }
       create_reservation: {
         Args: {
           p_reservation_id: string
-          p_customer_data: any
-          p_reservation_data: any
+          p_customer_data: Record<string, unknown>
+          p_reservation_data: Record<string, unknown>
         }
-        Returns: any
+        Returns: Record<string, unknown>
       }
       get_reservations: {
         Args: {
@@ -433,7 +442,7 @@ export interface Database {
           p_sort_order?: string
           p_include_stats?: boolean
         }
-        Returns: any
+        Returns: Record<string, unknown>
       }
     }
     Enums: {
@@ -489,7 +498,7 @@ export const checkTableAvailability = async (
 }
 
 // Real-time subscriptions con esquema restaurante
-export const subscribeToTableUpdates = (callback: (payload: any) => void) => {
+export const subscribeToTableUpdates = (callback: (payload: Record<string, unknown>) => void) => {
   return supabase
     .channel('table-updates')
     .on('postgres_changes', {
@@ -500,7 +509,7 @@ export const subscribeToTableUpdates = (callback: (payload: any) => void) => {
     .subscribe()
 }
 
-export const subscribeToReservationUpdates = (callback: (payload: any) => void) => {
+export const subscribeToReservationUpdates = (callback: (payload: Record<string, unknown>) => void) => {
   return supabase
     .channel('reservation-updates')
     .on('postgres_changes', {

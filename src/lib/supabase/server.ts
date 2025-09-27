@@ -14,16 +14,16 @@ if (!supabaseAnonKey) {
   throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable')
 }
 
-// 🔧 CORRECCIÓN: Función que recibe cookieStore como parámetro
+// 🔧 CORRECCIÓN: Cliente sin restricción de schema (para auth)
 export function createServerSupabaseClient(cookieStore: ReadonlyRequestCookies) {
   return createServerClient(supabaseUrl!, supabaseAnonKey!, {
     cookies: {
       getAll() {
         return cookieStore.getAll()
       },
-      setAll(cookiesToSet: Array<{name: string, value: string, options?: any}>) {
+      setAll(cookiesToSet: Array<{name: string, value: string, options?: Record<string, unknown>}>) {
         try {
-          cookiesToSet.forEach(({ name, value, options }: {name: string, value: string, options?: any}) =>
+          cookiesToSet.forEach(({ name, value, options }: {name: string, value: string, options?: Record<string, unknown>}) =>
             cookieStore.set(name, value, options)
           )
         } catch {
@@ -33,8 +33,31 @@ export function createServerSupabaseClient(cookieStore: ReadonlyRequestCookies) 
         }
       },
     },
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false
+    }
+  })
+}
+
+// Cliente específico para esquema restaurante
+export function createServerSupabaseRestauranteClient(cookieStore: ReadonlyRequestCookies) {
+  return createServerClient(supabaseUrl!, supabaseAnonKey!, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll()
+      },
+      setAll(cookiesToSet: Array<{name: string, value: string, options?: Record<string, unknown>}>) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }: {name: string, value: string, options?: Record<string, unknown>}) =>
+            cookieStore.set(name, value, options)
+          )
+        } catch {}
+      },
+    },
     db: {
-      schema: 'restaurante'  // 🚨 CRÍTICO: ÚNICAMENTE esquema restaurante
+      schema: 'restaurante'
     },
     auth: {
       persistSession: false,
@@ -66,9 +89,9 @@ export function createAdminSupabaseClient(cookieStore: ReadonlyRequestCookies) {
         getAll() {
           return cookieStore.getAll()
         },
-        setAll(cookiesToSet: Array<{name: string, value: string, options?: any}>) {
+        setAll(cookiesToSet: Array<{name: string, value: string, options?: Record<string, unknown>}>) {
           try {
-            cookiesToSet.forEach(({ name, value, options }: {name: string, value: string, options?: any}) =>
+            cookiesToSet.forEach(({ name, value, options }: {name: string, value: string, options?: Record<string, unknown>}) =>
               cookieStore.set(name, value, options)
             )
           } catch {
@@ -76,8 +99,41 @@ export function createAdminSupabaseClient(cookieStore: ReadonlyRequestCookies) {
           }
         },
       },
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      }
+    }
+  )
+}
+
+// Cliente administrativo específico para esquema restaurante
+export function createAdminSupabaseRestauranteClient(cookieStore: ReadonlyRequestCookies) {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!serviceRoleKey) {
+    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable')
+  }
+
+  return createServerClient(
+    supabaseUrl!,
+    serviceRoleKey,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet: Array<{name: string, value: string, options?: Record<string, unknown>}>) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }: {name: string, value: string, options?: Record<string, unknown>}) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {}
+        },
+      },
       db: {
-        schema: 'restaurante'  // 🚨 CRÍTICO: ÚNICAMENTE esquema restaurante
+        schema: 'restaurante'
       },
       auth: {
         persistSession: false,
@@ -110,8 +166,33 @@ export function createDirectAdminClient() {
         getAll() { return [] },
         setAll() { /* no-op */ },
       },
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      }
+    }
+  )
+}
+
+// Cliente admin directo específico para esquema restaurante
+export function createDirectAdminRestauranteClient() {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!serviceRoleKey) {
+    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable')
+  }
+
+  return createServerClient(
+    supabaseUrl!,
+    serviceRoleKey,
+    {
+      cookies: {
+        getAll() { return [] },
+        setAll() { /* no-op */ },
+      },
       db: {
-        schema: 'restaurante'  // 🚨 CRÍTICO: ÚNICAMENTE esquema restaurante
+        schema: 'restaurante'
       },
       auth: {
         persistSession: false,

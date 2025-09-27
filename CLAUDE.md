@@ -53,7 +53,7 @@ npm run lint && npm run type-check && npm run test:all
 
 ### 🔑 Database Access Patterns
 - **Connection**: `supabase.enigmaconalma.com:8443`
-- **Schema**: `restaurante` (16 tables), `public` (auth)
+- **Schema**: `restaurante` (29 tables), `public` (auth)
 - **Headers**: `Accept-Profile: restaurante`, `Content-Profile: restaurante`
 - **SSH Debug**: `ssh root@31.97.182.226 "docker exec supabase-db psql -U postgres -d postgres -c '\dt restaurante.*'"`
 
@@ -71,21 +71,94 @@ npm run lint && npm run type-check && npm run test:all
 - **Database**: PostgreSQL + RLS policies
 - **VPS**: 31.97.182.226 (Docker Compose)
 
-## 🤖 SUBAGENT DELEGATION MATRIX
+## 🤖 SUBAGENT ORCHESTRATION SYSTEM
 
-### Built-in Agents (.claude/agents/)
+### 👨‍💼 MI ROL COMO AGENTE PRIMARIO
+- **PROJECT MANAGER**: Coordino, planifico, tomo decisiones estratégicas
+- **IMPLEMENTADOR**: YO desarrollo código, YO escribo, YO ejecuto
+- **CONSOLIDADOR**: Recibo expertise de subagentes y decido acciones
+- **COMUNICADOR**: Única interfaz con el usuario
+
+### 🧠 SUBAGENTES = MIS CONSULTORES EXPERTOS
+- **NO desarrollan** - me dan análisis y recomendaciones
+- **Ventanas contexto separadas** - especializados por dominio
+- **Reportan A MÍ** - nunca directamente al usuario
+- **Invocación automática** - basada en pattern matching de descriptions
+
+### 📋 AGENTES DISPONIBLES (.claude/agents/)
 ```bash
-/agents  # Interface access
+# ESPECIALISTAS ENIGMA RESTAURANT PLATFORM (4 agentes)
+restaurant-operations-master.md     # Multi-table reservas + GDPR + capacidad
+supabase-schema-architect.md       # RLS policies + 29 tablas + performance
+menu-wine-specialist.md            # Menú multiidioma + EU-14 + maridajes
+customer-intelligence-analyst.md   # VIP analytics + retention + patterns
 
-# Parallel execution pattern - MANDATORY
-code-reviewer + test-runner + documentation-manager + debugger
+# SISTEMA BASE CLAUDE CODE (6 agentes)
+meta-agent.md                      # Factory para crear nuevos agentes
+documentation-manager.md           # Sync automático de documentación
+validation-gates.md               # Testing y QA proactivo
+work-completion-summary.md        # TTS summaries al completar
+hello-world-agent.md              # Greetings handler
+llm-ai-agents-and-eng-research.md # AI research specialist
 ```
 
-### Orchestration Strategies
-- **Sequential**: Dependencies required (task-b depends task-a)
-- **Parallel**: Independent tasks (`strategy: "parallel"`)
-- **Adaptive**: Mixed approach based on complexity
-- **Batch Tool Pattern**: All operations single message
+### ⚡ PATRÓN DE INVOCACIÓN AUTOMÁTICA
+```typescript
+// Claude lee descriptions de agentes y delega automáticamente
+// Basado en pattern matching de user requests vs agent descriptions
+
+// Ejemplo de invocación:
+User: "Optimizar sistema de reservas"
+↓
+Claude analiza → Invoca restaurant-operations-specialist
+↓
+Subagente reporta expertise → Claude implementa solución
+```
+
+### 🏭 META-AGENT FACTORY PATTERN
+```bash
+# Crear nuevos agentes especializados:
+"I need a [Domain] Specialist agent that proactively manages [specific functionality]
+for the Enigma restaurant platform. Trigger on [keywords]."
+
+# Meta-agent automáticamente:
+# 1. Scrapes latest Claude Code docs
+# 2. Analyzes domain requirements
+# 3. Creates .claude/agents/new-agent.md
+# 4. Makes available for automatic delegation
+```
+
+### 🎯 DOMINIOS ESPECIALIZADOS ACTIVOS
+- **Restaurant Operations**: ✅ `restaurant-operations-master.md`
+  - 29 tablas, multi-table reservations (`table_ids[]`)
+  - GDPR compliance con audit trails y consent tracking
+  - Capacity optimization y algoritmos de asignación
+  - Pre-orders via `reservation_items` + `menu_items`
+
+- **Database Architecture**: ✅ `supabase-schema-architect.md`
+  - RLS policies optimizadas con auth.jwt() patterns
+  - Performance tuning y migration strategies
+  - Multi-tenant security con role hierarchies
+  - JSONB management para `floor_plan_elements`
+
+- **Menu & Wine Systems**: ✅ `menu-wine-specialist.md`
+  - Multiidioma (ES/EN/DE) con `richDescription` fields
+  - EU-14 allergen compliance via `menu_item_allergens`
+  - Wine pairing algorithms (`foodItemId` → `wineItemId`)
+  - Glass vs bottle pricing optimization
+
+- **Customer Intelligence**: ✅ `customer-intelligence-analyst.md`
+  - VIP analytics (`isVip`, `totalSpent`, `totalVisits`)
+  - Behavioral patterns y retention strategies
+  - Personalization via `favoriteDisheIds[]`, `dietaryRestrictions[]`
+  - GDPR consent management y data portability
+
+### 📡 COMMUNICATION FLOW (CRÍTICO)
+```mermaid
+User → Claude (Agente Primario) → Subagente Especializado
+     ←                         ← (Expertise/Recommendations)
+     → (Implementación)
+```
 
 ## 📡 HOOKS AUTOMATION SYSTEM
 
@@ -113,6 +186,17 @@ npm run build  # Production + validation
 npm run db:studio     # Visual interface
 npm run db:generate   # Prisma client
 npm run db:push       # Schema deployment
+```
+
+### 📋 SLASH COMMANDS DE ANÁLISIS Y PLANNING
+```bash
+# Context Engineering Commands (Seguir en secuencia)
+/dev-status [component]     # Estado actual desarrollo con health score
+/tech-inventory [database]  # Inventario completo DB + APIs + hooks
+/dev-plan <objetivo>        # Plan estructurado basado en análisis previo
+
+# Workflow recomendado:
+/dev-status → /tech-inventory → /dev-plan "implementar reservas VIP"
 ```
 
 ## 🎯 COMPONENT DEVELOPMENT PATTERNS
@@ -148,9 +232,20 @@ className="text-foreground border-border bg-card"
 
 ### Agent Coordination
 ```bash
-# Multi-agent parallel pattern
-Task("backend-architect") + Task("frontend-dev") + Task("qa-engineer")
-# Result aggregation automatic
+# Multi-agent parallel pattern - REAL EXAMPLES
+Task("meta-agent") → Create new specialist agents on demand
+Task("validation-gates") → Proactive testing after implementation
+Task("documentation-manager") → Auto-sync docs with code changes
+
+# Invocación automática por keywords ACTIVA:
+"reservations" → restaurant-operations-master.md ✅
+"multi-table booking" → restaurant-operations-master.md ✅
+"database schema" → supabase-schema-architect.md ✅
+"RLS policies" → supabase-schema-architect.md ✅
+"menu management" → menu-wine-specialist.md ✅
+"wine pairings" → menu-wine-specialist.md ✅
+"customer analytics" → customer-intelligence-analyst.md ✅
+"VIP management" → customer-intelligence-analyst.md ✅
 ```
 
 ## 📊 SECURITY & ENVIRONMENT
@@ -170,15 +265,32 @@ DATABASE_URL="postgresql://postgres:[PASS]@31.97.182.226:5432/postgres"
 ## 🔗 CROSS-REFERENCE MAP
 
 ### Internal Documentation
-- `ai_docs/` → Claude Code patterns
-- `.claude/agents/` → Subagent configs
-- `src/app/globals.css` → Design tokens
+- `ai_docs/anthropic_docs_subagents.md` → Subagent creation & management
+- `ai_docs/cc_hooks_docs.md` → Hook automation system
+- `ai_docs/Context Engineering/` → Advanced agent patterns y mejores prácticas
+- `ai_docs/Guía Rápida para Usar Claude Code Agents en Español/` → Spanish guides
+- `.claude/agents/` → 10 subagentes especializados disponibles
+- `.claude/commands/` → 3 slash commands para análisis y planning
+- `src/app/globals.css` → Enigma design tokens
 - `CLAUDE_PRINCIPLES.md` → Behavioral analysis
 
+### Critical Database Schema (29 Tables)
+```bash
+# Core domains para subagents:
+restaurante.reservations         # Multi-table + GDPR + pre-orders
+restaurante.customers           # VIP analytics + spending patterns
+restaurante.menu_items         # Multiidioma + wine + allergens
+restaurante.floor_plan_elements # JSONB drag&drop system
+restaurante.email_schedule     # Automation workflows
+restaurante.gdpr_requests      # Legal compliance
+# + 23 more specialized tables
+```
+
 ### External Integrations
-- **Context7**: Best practices lookup
-- **Shadcn/ui**: Component library
-- **Supabase**: Database patterns
+- **Context7**: Real-time best practices (`mcp__context7__resolve-library-id`)
+- **Shadcn/ui**: Component system patterns
+- **Supabase**: Self-hosted with Kong Gateway
+- **Firecrawl MCP**: Web scraping for agent creation
 
 ---
 

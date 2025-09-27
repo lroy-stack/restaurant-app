@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -64,13 +64,41 @@ export function ReservationFilters({
     currentFilters.date ? new Date(currentFilters.date) : undefined
   )
 
+  // Sync local state with URL parameters when they change
+  useEffect(() => {
+    setDate(currentFilters.date ? new Date(currentFilters.date) : undefined)
+    setSearchTerm(currentFilters.search || '')
+  }, [currentFilters.date, currentFilters.search])
+
   // Business hours for calendar validation
   const {
     closedDays,
-    minAdvanceMinutes,
-    isDateDisabled,
-    getDisabledReason
+    minAdvanceMinutes
   } = useBusinessHours()
+
+  // Custom date validation for filters (allows past dates, only blocks closed days)
+  const isDateDisabledForFilter = (date: Date): boolean => {
+    // Only block closed days, allow past dates for filtering historical reservations
+    return closedDays.includes(date.getDay())
+  }
+
+  const getDisabledReasonForFilter = (date: Date): string => {
+    if (closedDays.includes(date.getDay())) {
+      const dayOfWeek = date.getDay()
+      const dayNames = {
+        0: 'domingos',
+        1: 'lunes',
+        2: 'martes',
+        3: 'miércoles',
+        4: 'jueves',
+        5: 'viernes',
+        6: 'sábados'
+      }
+      const dayName = dayNames[dayOfWeek as keyof typeof dayNames]
+      return `Los ${dayName} permanecemos cerrados`
+    }
+    return ''
+  }
 
   const updateFilter = (key: string, value: string | undefined) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -160,9 +188,10 @@ export function ReservationFilters({
             placeholder="Seleccionar fecha"
             className="h-9"
             closedDays={closedDays}
-            minAdvanceMinutes={minAdvanceMinutes}
-            isDateDisabled={isDateDisabled}
-            getDisabledReason={getDisabledReason}
+            minAdvanceMinutes={0}
+            isDateDisabled={isDateDisabledForFilter}
+            getDisabledReason={getDisabledReasonForFilter}
+            allowPastDates={true}
           />
         </div>
 

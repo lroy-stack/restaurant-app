@@ -28,7 +28,7 @@ import type { Customer } from '@/lib/validations/customer'
 
 interface CustomerContactProps {
   customer: Customer
-  onUpdate: (field: string, value: any) => Promise<boolean>
+  onUpdate: (field: string, value: unknown) => Promise<boolean>
   isEditing: boolean
   canEdit: boolean
 }
@@ -58,14 +58,13 @@ const TABLE_LOCATIONS = [
 export function CustomerContact({
   customer,
   onUpdate,
-  isEditing,
   canEdit
 }: CustomerContactProps) {
   const [editingField, setEditingField] = useState<string | null>(null)
-  const [tempValues, setTempValues] = useState<Record<string, any>>({})
+  const [tempValues, setTempValues] = useState<Record<string, unknown>>({})
   const [isUpdating, setIsUpdating] = useState(false)
 
-  const handleEdit = (field: string, currentValue: any) => {
+  const handleEdit = (field: string, currentValue: unknown) => {
     if (!canEdit) {
       toast.error('No tienes permisos para editar')
       return
@@ -135,8 +134,8 @@ export function CustomerContact({
   }: {
     field: string
     label: string
-    value: any
-    icon: any
+    value: unknown
+    icon: React.ComponentType<{ className?: string }>
     type?: string
     options?: { value: string; label: string }[]
     multiline?: boolean

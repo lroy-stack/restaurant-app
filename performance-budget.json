@@ -1,0 +1,113 @@
+{
+  "budget": [
+    {
+      "path": "/*",
+      "resourceSizes": [
+        {
+          "resourceType": "script",
+          "budget": 200,
+          "warning": 180
+        },
+        {
+          "resourceType": "document",
+          "budget": 50,
+          "warning": 40
+        },
+        {
+          "resourceType": "stylesheet",
+          "budget": 50,
+          "warning": 40
+        },
+        {
+          "resourceType": "image",
+          "budget": 500,
+          "warning": 400
+        },
+        {
+          "resourceType": "media",
+          "budget": 200,
+          "warning": 150
+        },
+        {
+          "resourceType": "font",
+          "budget": 100,
+          "warning": 80
+        },
+        {
+          "resourceType": "other",
+          "budget": 50,
+          "warning": 40
+        },
+        {
+          "resourceType": "total",
+          "budget": 1000,
+          "warning": 800
+        }
+      ]
+    },
+    {
+      "path": "/(admin)/**",
+      "resourceSizes": [
+        {
+          "resourceType": "script",
+          "budget": 300,
+          "warning": 250
+        },
+        {
+          "resourceType": "total",
+          "budget": 1500,
+          "warning": 1200
+        }
+      ]
+    },
+    {
+      "path": "/(admin)/dashboard/mesas/**",
+      "resourceSizes": [
+        {
+          "resourceType": "script",
+          "budget": 500,
+          "warning": 400
+        },
+        {
+          "resourceType": "total",
+          "budget": 2000,
+          "warning": 1500
+        }
+      ],
+      "performance": {
+        "largestContentfulPaint": 3000,
+        "firstInputDelay": 100,
+        "cumulativeLayoutShift": 0.1,
+        "renderBlockingTime": 300
+      }
+    }
+  ],
+  "performance": {
+    "budgets": {
+      "firstContentfulPaint": 1800,
+      "largestContentfulPaint": 2500,
+      "firstInputDelay": 100,
+      "cumulativeLayoutShift": 0.1,
+      "timeToFirstByte": 800,
+      "totalBlockingTime": 200
+    },
+    "thresholds": {
+      "performance": 90,
+      "accessibility": 95,
+      "bestPractices": 90,
+      "seo": 95,
+      "pwa": 80
+    }
+  },
+  "lighthouse": {
+    "settings": {
+      "onlyCategories": ["performance", "accessibility", "best-practices", "seo"],
+      "skipAudits": ["uses-http2"],
+      "throttling": {
+        "rttMs": 40,
+        "throughputKbps": 10240,
+        "cpuSlowdownMultiplier": 1
+      }
+    }
+  }
+}

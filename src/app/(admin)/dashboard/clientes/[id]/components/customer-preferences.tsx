@@ -144,7 +144,7 @@ export function CustomerPreferences({
           <div className="space-y-3">
             {type === 'select' && options ? (
               <Select
-                value={tempValues[field] || ''}
+                value={tempValues[field] as string || ''}
                 onValueChange={(val) => setTempValues({ ...tempValues, [field]: val })}
               >
                 <SelectTrigger className="h-9">
@@ -160,7 +160,7 @@ export function CustomerPreferences({
               </Select>
             ) : multiline ? (
               <Textarea
-                value={tempValues[field] || ''}
+                value={tempValues[field] as string || ''}
                 onChange={(e) => setTempValues({ ...tempValues, [field]: e.target.value })}
                 placeholder={`Ingrese ${label.toLowerCase()}`}
                 rows={3}
@@ -173,9 +173,9 @@ export function CustomerPreferences({
                     <div key={restriction.value} className="flex items-center space-x-3">
                       <Checkbox
                         id={restriction.value}
-                        checked={(tempValues[field] || []).includes(restriction.value)}
+                        checked={(tempValues[field] as string[] || []).includes(restriction.value)}
                         onCheckedChange={(checked) => {
-                          const currentArray = tempValues[field] || []
+                          const currentArray = tempValues[field] as string[] || []
                           const newArray = checked
                             ? [...currentArray, restriction.value]
                             : currentArray.filter((item: string) => item !== restriction.value)
@@ -193,7 +193,7 @@ export function CustomerPreferences({
             ) : (
               <Input
                 type={type}
-                value={tempValues[field] || ''}
+                value={tempValues[field] as string || ''}
                 onChange={(e) => setTempValues({ ...tempValues, [field]: e.target.value })}
                 placeholder={`Ingrese ${label.toLowerCase()}`}
                 className="h-9"
@@ -228,8 +228,8 @@ export function CustomerPreferences({
           <div className="min-h-[36px] flex items-center">
             {isArray ? (
               <div className="flex flex-wrap gap-2">
-                {(value || []).length > 0 ? (
-                  (value || []).map((item: string) => {
+                {((value as string[]) || []).length > 0 ? (
+                  ((value as string[]) || []).map((item: string) => {
                     const restriction = DIETARY_RESTRICTIONS.find(r => r.value === item)
                     return (
                       <Badge key={item} variant="secondary" className="text-xs">
@@ -244,9 +244,9 @@ export function CustomerPreferences({
               </div>
             ) : (
               <span className="text-sm text-foreground">
-                {field === 'language' ? getLanguageLabel(value) :
-                 field === 'preferredLocation' ? getLocationLabel(value) :
-                 value || 'No especificado'}
+                {field === 'language' ? getLanguageLabel(value as string) :
+                 field === 'preferredLocation' ? getLocationLabel(value as string) :
+                 (value as string) || 'No especificado'}
               </span>
             )}
           </div>

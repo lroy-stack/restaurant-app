@@ -357,7 +357,7 @@ export class ReminderScheduler {
         restaurantName: reservation.restaurants?.name || 'Enigma Cocina Con Alma',
         restaurantEmail: reservation.restaurants?.email || process.env.RESTAURANT_EMAIL || 'reservas@enigmaconalma.com',
         restaurantPhone: reservation.restaurants?.phone || process.env.RESTAURANT_PHONE || '+34 123 456 789',
-        tokenUrl: buildProductionUrl('/review/' + reservation.token)
+        tokenUrl: buildTokenUrl(reservation.token)
       }
 
       // Schedule review request email

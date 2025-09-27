@@ -64,6 +64,7 @@ export const ReservationConfirmedEmail = ({
       restaurantName={restaurantName}
       restaurantEmail={restaurantEmail}
       restaurantPhone={restaurantPhone}
+      branding={branding}
     >
       {/* Modern Confirmation Banner */}
       <Container style={confirmationBanner}>
@@ -201,7 +202,7 @@ export const ReservationConfirmedEmail = ({
           </Button>
         )}
 
-        <Button style={secondaryButton} href={urls?.menu || 'https://enigmaconalma.com/menu'}>
+        <Button style={secondaryButton} href={urls?.menu || 'https://almaenigma.vercel.app/menu'}>
           Ver Nuestra Carta
         </Button>
       </Section>

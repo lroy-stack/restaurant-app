@@ -129,11 +129,16 @@ export function ReservationForm({
   const { customers } = useRealtimeCustomers()
   const {
     timeSlots,
+    lunchSlots,
+    dinnerSlots,
     closedDays,
     minAdvanceMinutes,
     maxPartySize,
     isDateDisabled,
-    getDisabledReason
+    getDisabledReason,
+    hasLunchService,
+    hasDinnerService,
+    isInGapPeriod
   } = useBusinessHours(formData.date)
   const { tables } = useTables()
   const { createReservation, checkAvailability, isLoading } = useReservations() // ✅ ADDED: checkAvailability
@@ -360,25 +365,85 @@ export function ReservationForm({
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Hora</label>
-              <Select
-                value={formData.time}
-                onValueChange={(time) => setFormData(prev => ({...prev, time}))}
-              >
-                <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder="Seleccionar hora" />
-                </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  <div className="max-h-48 overflow-y-auto">
-                    {timeSlots.map(slot => (
-                      <SelectItem key={slot.time} value={slot.time} disabled={!slot.available}>
-                        {slot.time} {!slot.available && `(${slot.reason})`}
-                      </SelectItem>
+            {/* ✅ ENHANCED: Dual Shift Time Slot Picker */}
+            <div className="space-y-4">
+              <label className="text-sm font-medium">Hora del Servicio</label>
+
+              {/* Lunch Shift Section */}
+              {lunchSlots.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Utensils className="h-4 w-4 text-orange-600" />
+                    <h4 className="font-semibold text-sm text-orange-800">🍽️ Servicio de Almuerzo (13:00-16:00)</h4>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {lunchSlots.map(slot => (
+                      <Button
+                        key={`lunch-${slot.time}`}
+                        type="button"
+                        variant={formData.time === slot.time ? "default" : "outline"}
+                        size="sm"
+                        disabled={!slot.available}
+                        onClick={() => setFormData(prev => ({...prev, time: slot.time}))}
+                        className={cn(
+                          "h-8 text-xs",
+                          formData.time === slot.time && "bg-orange-600 hover:bg-orange-700",
+                          !slot.available && "opacity-50 cursor-not-allowed"
+                        )}
+                        title={!slot.available ? slot.reason : undefined}
+                      >
+                        {slot.time}
+                      </Button>
                     ))}
                   </div>
-                </SelectContent>
-              </Select>
+                </div>
+              )}
+
+              {/* Gap Period Info */}
+              <div className="bg-muted/30 p-3 rounded-lg text-center border border-amber-200">
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4 text-amber-600" />
+                  <span>⏰ Cerrado de 16:00 a 18:30 (preparación entre servicios)</span>
+                </div>
+              </div>
+
+              {/* Dinner Shift Section */}
+              {dinnerSlots.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-blue-600" />
+                    <h4 className="font-semibold text-sm text-blue-800">🌙 Servicio de Cena (18:30-23:00)</h4>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {dinnerSlots.map(slot => (
+                      <Button
+                        key={`dinner-${slot.time}`}
+                        type="button"
+                        variant={formData.time === slot.time ? "default" : "outline"}
+                        size="sm"
+                        disabled={!slot.available}
+                        onClick={() => setFormData(prev => ({...prev, time: slot.time}))}
+                        className={cn(
+                          "h-8 text-xs",
+                          formData.time === slot.time && "bg-blue-600 hover:bg-blue-700",
+                          !slot.available && "opacity-50 cursor-not-allowed"
+                        )}
+                        title={!slot.available ? slot.reason : undefined}
+                      >
+                        {slot.time}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* No slots available message */}
+              {lunchSlots.length === 0 && dinnerSlots.length === 0 && formData.date && (
+                <div className="text-center py-4 text-muted-foreground">
+                  <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No hay horarios disponibles para esta fecha</p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">

@@ -36,6 +36,7 @@ export const ReservationReviewEmail = ({
       restaurantName={restaurantName}
       restaurantEmail={restaurantEmail}
       restaurantPhone={restaurantPhone}
+      branding={branding}
     >
       {/* Thank you header */}
       <Section style={thankYouBanner}>
@@ -169,7 +170,7 @@ export const ReservationReviewEmail = ({
         </Text>
 
         <Section style={buttonContainer}>
-          <Button style={loyaltyButton} href={urls?.programaFidelidad || 'https://enigmaconalma.com/programa-fidelidad'}>
+          <Button style={loyaltyButton} href={urls?.programaFidelidad || 'https://almaenigma.vercel.app/programa-fidelidad'}>
             Unirme al Programa
           </Button>
         </Section>
@@ -190,7 +191,7 @@ export const ReservationReviewEmail = ({
         </Text>
 
         <Section style={buttonContainer}>
-          <Button style={reserveButton} href={urls?.reservas || 'https://enigmaconalma.com/reservas'}>
+          <Button style={reserveButton} href={urls?.reservas || 'https://almaenigma.vercel.app/reservas'}>
             Hacer Nueva Reserva
           </Button>
         </Section>

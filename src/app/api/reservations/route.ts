@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createDirectAdminClient } from '@/lib/supabase/server'
+import { buildTokenUrl } from '@/lib/email/config/emailConfig'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -59,8 +60,31 @@ async function validateTimeSlot(date: string, time: string): Promise<{ valid: bo
           return { valid: false, reason: 'Restaurante cerrado este día' }
         }
 
-        if (time < dayHours.open_time || time > dayHours.close_time) {
-          return { valid: false, reason: `Horario disponible: ${dayHours.open_time} - ${dayHours.close_time}` }
+        // DUAL SHIFT VALIDATION: Check both lunch and dinner services
+        let isValidTime = false
+        let availableHours = []
+
+        // Check lunch service (if enabled)
+        if (dayHours.lunch_enabled && dayHours.lunch_open_time && dayHours.lunch_close_time) {
+          if (time >= dayHours.lunch_open_time && time <= dayHours.lunch_last_reservation_time) {
+            isValidTime = true
+          }
+          availableHours.push(`${dayHours.lunch_open_time}-${dayHours.lunch_close_time}`)
+        }
+
+        // Check dinner service (if restaurant is open)
+        if (dayHours.is_open && dayHours.open_time && dayHours.close_time) {
+          if (time >= dayHours.open_time && time <= dayHours.last_reservation_time) {
+            isValidTime = true
+          }
+          availableHours.push(`${dayHours.open_time}-${dayHours.close_time}`)
+        }
+
+        if (!isValidTime) {
+          const hoursDisplay = availableHours.length > 0
+            ? availableHours.join(' y ')
+            : 'Restaurante cerrado'
+          return { valid: false, reason: `Horario disponible: ${hoursDisplay}` }
         }
       }
     }
@@ -107,11 +131,27 @@ export async function GET(request: NextRequest) {
       query += `&status=eq.${status}`
     }
 
+    // Date filtering logic: by default show from today to end of week
     if (date) {
+      // Explicit date filter - show only that specific date
       query += `&date=gte.${date}T00:00:00&date=lte.${date}T23:59:59`
+    } else {
+      // Default filter: from today to end of week (Sunday)
+      const today = new Date()
+      const endOfWeek = new Date(today)
+
+      // Calculate end of week (Sunday)
+      const dayOfWeek = today.getDay() // 0 = Sunday, 1 = Monday, etc.
+      const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek
+      endOfWeek.setDate(today.getDate() + daysUntilSunday)
+
+      const todayStr = today.toISOString().split('T')[0]
+      const endOfWeekStr = endOfWeek.toISOString().split('T')[0]
+
+      query += `&date=gte.${todayStr}T00:00:00&date=lte.${endOfWeekStr}T23:59:59`
     }
 
-    query += '&order=date.desc,time.desc'
+    query += '&order=date.asc,time.asc'
 
     const response = await fetch(query, {
       headers: {
@@ -501,7 +541,7 @@ export async function POST(request: NextRequest) {
         specialRequests: data.specialRequests || '',
         preOrderItems: data.preOrderItems || [],
         preOrderTotal: data.preOrderTotal || 0,
-        tokenUrl: reservationToken ? `${process.env.NEXT_PUBLIC_APP_URL}/mi-reserva?token=${reservationToken}` : undefined
+        tokenUrl: reservationToken ? buildTokenUrl(reservationToken) : undefined
       })
       console.log('📧 Email confirmation result:', emailResult)
     } catch (emailError) {

@@ -7,18 +7,13 @@ import { Button } from '@/components/ui/button'
 import {
   Brain,
   TrendingUp,
-  TrendingDown,
   Target,
-  Calendar,
-  Euro,
-  Users,
   Clock,
   AlertTriangle,
   CheckCircle,
   Lightbulb,
   Star,
   Award,
-  Gift
 } from 'lucide-react'
 import type { Customer, CustomerMetrics, AIRecommendation } from '@/lib/validations/customer'
 

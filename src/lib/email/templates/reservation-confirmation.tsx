@@ -65,6 +65,7 @@ export const ReservationConfirmationEmail = ({
       restaurantName={restaurantName}
       restaurantEmail={restaurantEmail}
       restaurantPhone={restaurantPhone}
+      branding={branding}
     >
       {/* Greeting - DYNAMIC customer name */}
       <Heading style={h1}>
@@ -203,7 +204,7 @@ export const ReservationConfirmationEmail = ({
 
         <Row>
           <Column style={{textAlign: 'center'}}>
-            <Button style={secondaryButton} href={urls?.menu || 'https://enigmaconalma.com/menu'}>
+            <Button style={secondaryButton} href={urls?.menu || 'https://almaenigma.vercel.app/menu'}>
               Ver Nuestra Carta
             </Button>
           </Column>

@@ -370,4 +370,86 @@
   .btn-accent {
     @apply bg-accent text-accent-foreground hover:bg-accent/90 px-6 py-3 rounded-md font-medium transition-colors;
   }
+
+  /* CONTAINER QUERY UTILITIES - Component-level Responsiveness */
+
+  /* Container Query Setup */
+  .container-responsive {
+    container-type: inline-size;
+  }
+
+  .container-normal {
+    container-type: normal;
+  }
+
+  /* Container-based Grid Layouts */
+  .grid-container-responsive {
+    container-type: inline-size;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  /* Container Query Breakpoints - Component Size Based */
+  @container (min-width: 480px) {
+    .grid-container-responsive {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @container (min-width: 768px) {
+    .grid-container-responsive {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @container (min-width: 1024px) {
+    .grid-container-responsive {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  /* Responsive Tab Navigation with Container Queries */
+  .tabs-container-responsive {
+    container-type: inline-size;
+  }
+
+  .tabs-grid-responsive {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+  }
+
+  @container (min-width: 480px) {
+    .tabs-grid-responsive {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @container (min-width: 768px) {
+    .tabs-grid-responsive {
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+
+  /* Component-specific responsive utilities */
+  .card-container-responsive {
+    container-type: inline-size;
+  }
+
+  .card-content-responsive {
+    padding: 1rem;
+  }
+
+  @container (min-width: 480px) {
+    .card-content-responsive {
+      padding: 1.5rem;
+    }
+  }
+
+  @container (min-width: 768px) {
+    .card-content-responsive {
+      padding: 2rem;
+    }
+  }
 }

@@ -43,28 +43,28 @@ export function CustomerGdpr({
     dataProcessingConsent: customer.dataProcessingConsent,
   })
 
-  // Fetch current consent status from cookie_consents table
-  const fetchConsentStatus = async () => {
-    setIsLoading(true)
-    try {
-      const response = await fetch(`/api/customers/${customer.id}/gdpr`)
-
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success && data.consentStatus) {
-          setConsentStatus(data.consentStatus)
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching consent status:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   useEffect(() => {
+    const fetchConsentStatus = async () => {
+      setIsLoading(true)
+      try {
+        const response = await fetch(`/api/customers/${customer.id}/gdpr`)
+
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.consentStatus) {
+            setConsentStatus(data.consentStatus)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching consent status:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
     fetchConsentStatus()
-  }, [customer.id, fetchConsentStatus])
+  }, [customer.id])
 
   const handleNewsletterToggle = async (newValue: boolean) => {
     setUpdating('newsletter')

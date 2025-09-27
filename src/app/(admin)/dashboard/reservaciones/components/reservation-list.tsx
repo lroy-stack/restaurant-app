@@ -32,6 +32,7 @@ interface Reservation {
   time: string
   status: 'PENDING' | 'CONFIRMED' | 'SEATED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW'
   specialRequests?: string
+  dietaryNotes?: string
   hasPreOrder: boolean
   table_ids: string[] // ✅ NEW: Array of table IDs
   tableId?: string // Legacy compatibility
@@ -219,6 +220,14 @@ export function ReservationList({
                   <div className="mt-4 p-3 bg-gray-50 rounded-md">
                     <p className="text-sm text-gray-700">
                       <strong>Solicitudes especiales:</strong> {reservation.specialRequests}
+                    </p>
+                  </div>
+                )}
+
+                {reservation.dietaryNotes && (
+                  <div className="mt-4 p-3 bg-red-50 rounded-md border border-red-200">
+                    <p className="text-sm text-red-700">
+                      <strong>Peticiones dietéticas:</strong> {reservation.dietaryNotes}
                     </p>
                   </div>
                 )}

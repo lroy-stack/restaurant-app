@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getAvailableTimeSlots, getBusinessHours, validateTimeSlot } from '@/lib/business-hours-server'
+import { getAvailableTimeSlots, getBusinessHours, validateTimeSlot, BusinessHours } from '@/lib/business-hours-server'
 import { z } from 'zod'
 
 // Request validation schemas
@@ -21,6 +21,23 @@ const ValidateSlotRequestSchema = z.object({
   currentDateTime: z.string().datetime().optional()
 })
 
+/**
+ * NEW: Schedule formatting utility for dual shift display
+ */
+function formatDualSchedule(hours: BusinessHours): string {
+  if (!hours.is_open && !hours.lunch_enabled) return 'Cerrado'
+
+  const parts = []
+  if (hours.lunch_enabled && hours.lunch_open_time && hours.lunch_close_time) {
+    parts.push(`${hours.lunch_open_time}-${hours.lunch_close_time}`)
+  }
+  if (hours.is_open && hours.open_time && hours.close_time) {
+    parts.push(`${hours.open_time}-${hours.close_time}`)
+  }
+
+  return parts.join(' y ') || 'Cerrado'
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -30,13 +47,19 @@ export async function GET(request: NextRequest) {
       case 'hours': {
         // Get business hours configuration
         const businessHours = await getBusinessHours()
-        
+
         return NextResponse.json({
           success: true,
-          data: businessHours,
+          data: businessHours.map(h => ({
+            ...h,
+            hasLunchService: h.lunch_enabled || false,
+            hasDinnerService: h.is_open,
+            scheduleDisplay: formatDualSchedule(h)
+          })),
           meta: {
             timezone: 'Europe/Madrid',
-            lastUpdated: new Date().toISOString()
+            lastUpdated: new Date().toISOString(),
+            dualShiftEnabled: true
           }
         })
       }
@@ -72,12 +95,17 @@ export async function GET(request: NextRequest) {
           : new Date()
 
         const slots = await getAvailableTimeSlots(date, currentDateTime)
-        
+
         return NextResponse.json({
           success: true,
           data: {
             date,
             slots,
+            shiftBreakdown: {
+              lunch: slots.filter(s => s.shiftType === 'lunch'),
+              dinner: slots.filter(s => s.shiftType === 'dinner'),
+              gapPeriod: '16:00-18:30'
+            },
             totalSlots: slots.length,
             availableSlots: slots.filter(s => s.available).length,
             requestedAt: currentDateTime.toISOString()

@@ -20,7 +20,7 @@ import type { Customer } from '@/lib/validations/customer'
 
 interface CustomerNotesProps {
   customer: Customer
-  onUpdate: (field: string, value: any) => Promise<boolean>
+  onUpdate: (field: string, value: unknown) => Promise<boolean>
   canEdit: boolean
 }
 
@@ -146,7 +146,7 @@ export function CustomerNotes({
                   <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">No hay notas registradas para este cliente.</p>
                   {canEdit && (
-                    <p className="text-xs mt-1">Haz clic en "Editar" para agregar notas.</p>
+                    <p className="text-xs mt-1">Haz clic en &quot;Editar&quot; para agregar notas.</p>
                   )}
                 </div>
               )}

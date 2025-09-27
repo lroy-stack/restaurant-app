@@ -6,22 +6,36 @@ interface TimeSlot {
   time: string
   available: boolean
   reason?: string
+  shiftType?: 'lunch' | 'dinner' // Which service shift
 }
 
 interface BusinessHours {
   id: string
   day_of_week: number // 0=Sunday, 1=Monday, etc.
-  open_time: string   // HH:MM format
-  close_time: string  // HH:MM format
+  open_time: string   // HH:MM format (DINNER service)
+  close_time: string  // HH:MM format (DINNER service)
   is_open: boolean    // FIXED: Changed from is_closed to is_open (matches DB)
-  last_reservation_time: string
+  last_reservation_time: string // DINNER service
   advance_booking_minutes: number
   slot_duration_minutes: number
   max_party_size: number // NEW: Dynamic max party size
   buffer_minutes: number // NEW: Dynamic buffer between reservations
+  // NEW LUNCH FIELDS
+  lunch_enabled?: boolean
+  lunch_open_time?: string
+  lunch_close_time?: string
+  lunch_last_reservation_time?: string
+  lunch_advance_booking_minutes?: number
+  lunch_max_party_size?: number
+  lunch_buffer_minutes?: number
+  // API ENHANCEMENT FIELDS
+  hasLunchService?: boolean
+  hasDinnerService?: boolean
+  scheduleDisplay?: string
 }
 
 interface UseBusinessHoursReturn {
+  // Existing properties preserved
   timeSlots: TimeSlot[]
   businessHours: BusinessHours[]
   loading: boolean
@@ -36,6 +50,13 @@ interface UseBusinessHoursReturn {
   // NEW: Dynamic reservation settings
   maxPartySize: number
   bufferMinutes: number
+  // NEW: Dual shift specific properties
+  lunchSlots: TimeSlot[]
+  dinnerSlots: TimeSlot[]
+  hasLunchService: (date: string) => boolean
+  hasDinnerService: (date: string) => boolean
+  isInGapPeriod: (time: string) => boolean
+  getDualScheduleDisplay: (dayOfWeek: number) => string
 }
 
 export function useBusinessHours(selectedDate?: string): UseBusinessHoursReturn {
@@ -139,15 +160,15 @@ export function useBusinessHours(selectedDate?: string): UseBusinessHoursReturn 
     return firstValidDay?.buffer_minutes || 150
   }
 
-  // NEW: Check if a specific date should be disabled
+  // ENHANCED: Check if a specific date should be disabled (dual shift support)
   const isDateDisabled = (date: Date): boolean => {
     const dayOfWeek = date.getDay()
-    const closedDays = getClosedDays()
+    const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
 
-    // Check if day is closed
-    if (closedDays.includes(dayOfWeek)) {
-      return true
-    }
+    if (!dayHours) return true
+
+    // Neither lunch nor dinner service available
+    if (!dayHours.lunch_enabled && !dayHours.is_open) return true
 
     // Check if date is in the past
     const now = new Date()
@@ -159,37 +180,37 @@ export function useBusinessHours(selectedDate?: string): UseBusinessHoursReturn 
       return true
     }
 
-    // 🚀 CRITICAL FIX: For today, check if restaurant still has available hours
+    // Same day validation: Check if ANY service still has available time
     const isToday = date.toDateString() === now.toDateString()
     if (isToday) {
-      // Get business hours for today
-      const todayHours = businessHours.find(h => h.day_of_week === dayOfWeek && h.is_open)
-      if (!todayHours || !todayHours.last_reservation_time) {
-        return true // No hours configured or no last reservation time
-      }
+      const hasLunchTime = dayHours.lunch_enabled && isTimeAvailable(now, dayHours.lunch_last_reservation_time, dayHours.lunch_advance_booking_minutes)
+      const hasDinnerTime = dayHours.is_open && isTimeAvailable(now, dayHours.last_reservation_time, dayHours.advance_booking_minutes)
 
-      // Create today's last reservation time
-      const [hours, minutes] = todayHours.last_reservation_time.split(':')
-      const lastReservationTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hours), parseInt(minutes))
-
-      // Check if we still have time to make reservations today
-      const minAdvanceMs = getMinAdvanceMinutes() * 60 * 1000
-      const minTimeForReservation = new Date(lastReservationTime.getTime() - minAdvanceMs)
-
-      // If current time is past the minimum time needed for the last possible reservation, disable the day
-      return now > minTimeForReservation
+      return !hasLunchTime && !hasDinnerTime
     }
 
     return false
   }
 
-  // NEW: Get reason why a date is disabled
+  // NEW: Helper function to check if time is still available for booking today
+  const isTimeAvailable = (now: Date, lastReservationTime?: string, advanceMinutes = 30): boolean => {
+    if (!lastReservationTime) return false
+
+    const [hours, minutes] = lastReservationTime.split(':')
+    const lastResTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hours), parseInt(minutes))
+    const minAdvanceMs = advanceMinutes * 60 * 1000
+    const minTimeForReservation = new Date(lastResTime.getTime() - minAdvanceMs)
+
+    return now <= minTimeForReservation
+  }
+
+  // ENHANCED: Get reason why a date is disabled (dual shift support)
   const getDisabledReason = (date: Date): string => {
     const dayOfWeek = date.getDay()
-    const closedDays = getClosedDays()
+    const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
 
-    // Check if day is closed
-    if (closedDays.includes(dayOfWeek)) {
+    // Check if day has no services
+    if (!dayHours || (!dayHours.lunch_enabled && !dayHours.is_open)) {
       const dayNames = {
         0: 'domingos',
         1: 'lunes',
@@ -213,25 +234,90 @@ export function useBusinessHours(selectedDate?: string): UseBusinessHoursReturn 
       return 'No se pueden seleccionar fechas pasadas'
     }
 
-    // 🚀 CRITICAL FIX: Today-specific reason
+    // Today-specific reason (dual shift aware)
     const isToday = date.toDateString() === now.toDateString()
     if (isToday) {
-      const todayHours = businessHours.find(h => h.day_of_week === dayOfWeek && h.is_open)
-      if (!todayHours || !todayHours.last_reservation_time) {
-        return 'Sin horarios disponibles para hoy'
-      }
+      const hasLunchTime = dayHours.lunch_enabled && isTimeAvailable(now, dayHours.lunch_last_reservation_time, dayHours.lunch_advance_booking_minutes)
+      const hasDinnerTime = dayHours.is_open && isTimeAvailable(now, dayHours.last_reservation_time, dayHours.advance_booking_minutes)
 
-      const [hours, minutes] = todayHours.last_reservation_time.split(':')
-      const lastReservationTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hours), parseInt(minutes))
-      const minAdvanceMs = getMinAdvanceMinutes() * 60 * 1000
-      const minTimeForReservation = new Date(lastReservationTime.getTime() - minAdvanceMs)
-
-      if (now > minTimeForReservation) {
-        return `Ya no hay tiempo suficiente para reservar hoy. Última reserva: ${todayHours.last_reservation_time}`
+      if (!hasLunchTime && !hasDinnerTime) {
+        const services = []
+        if (dayHours.lunch_enabled) services.push(`almuerzo hasta ${dayHours.lunch_last_reservation_time}`)
+        if (dayHours.is_open) services.push(`cena hasta ${dayHours.last_reservation_time}`)
+        return `Ya no hay tiempo suficiente para reservar hoy. Servicios: ${services.join(', ')}`
       }
     }
 
     return ''
+  }
+
+  // NEW: Get lunch slots from current timeSlots
+  const getLunchSlots = (): TimeSlot[] => {
+    return timeSlots.filter(slot => slot.shiftType === 'lunch')
+  }
+
+  // NEW: Get dinner slots from current timeSlots
+  const getDinnerSlots = (): TimeSlot[] => {
+    return timeSlots.filter(slot => slot.shiftType === 'dinner')
+  }
+
+  // NEW: Check if restaurant has lunch service on specific date
+  const hasLunchService = (date: string): boolean => {
+    if (businessHours.length === 0) return false
+
+    const selectedDate = new Date(date)
+    const dayOfWeek = selectedDate.getDay()
+    const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
+
+    return dayHours ? (dayHours.lunch_enabled || false) : false
+  }
+
+  // NEW: Check if restaurant has dinner service on specific date
+  const hasDinnerService = (date: string): boolean => {
+    if (businessHours.length === 0) return false
+
+    const selectedDate = new Date(date)
+    const dayOfWeek = selectedDate.getDay()
+    const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
+
+    return dayHours ? dayHours.is_open : false
+  }
+
+  // NEW: Check if time is in gap period (16:00-18:30)
+  const isInGapPeriod = (time: string): boolean => {
+    const timeMinutes = timeToMinutes(time)
+    const gapStart = timeToMinutes('16:00')
+    const gapEnd = timeToMinutes('18:30')
+
+    return timeMinutes > gapStart && timeMinutes < gapEnd
+  }
+
+  // NEW: Helper function to convert HH:MM to minutes
+  const timeToMinutes = (time: string): number => {
+    const [hours, minutes] = time.split(':').map(Number)
+    return hours * 60 + minutes
+  }
+
+  // NEW: Get dual schedule display for specific day
+  const getDualScheduleDisplay = (dayOfWeek: number): string => {
+    const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
+    if (!dayHours) return 'Cerrado'
+
+    // Use API-provided scheduleDisplay if available
+    if (dayHours.scheduleDisplay) {
+      return dayHours.scheduleDisplay
+    }
+
+    // Fallback: format locally
+    const parts = []
+    if (dayHours.lunch_enabled && dayHours.lunch_open_time && dayHours.lunch_close_time) {
+      parts.push(`${dayHours.lunch_open_time}-${dayHours.lunch_close_time}`)
+    }
+    if (dayHours.is_open && dayHours.open_time && dayHours.close_time) {
+      parts.push(`${dayHours.open_time}-${dayHours.close_time}`)
+    }
+
+    return parts.join(' y ') || 'Cerrado'
   }
 
   // Fetch business hours configuration on mount
@@ -251,6 +337,7 @@ export function useBusinessHours(selectedDate?: string): UseBusinessHoursReturn 
   const bufferMinutes = useMemo(() => getBufferMinutes(), [businessHours])
 
   return {
+    // Existing properties preserved
     timeSlots,
     businessHours,
     loading,
@@ -264,6 +351,13 @@ export function useBusinessHours(selectedDate?: string): UseBusinessHoursReturn 
     getDisabledReason,
     // NEW: Dynamic reservation settings from business_hours - MEMOIZED
     maxPartySize,
-    bufferMinutes
+    bufferMinutes,
+    // NEW: Dual shift specific properties
+    lunchSlots: getLunchSlots(),
+    dinnerSlots: getDinnerSlots(),
+    hasLunchService,
+    hasDinnerService,
+    isInGapPeriod,
+    getDualScheduleDisplay
   }
 }

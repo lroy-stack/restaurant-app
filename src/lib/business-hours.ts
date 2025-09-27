@@ -10,18 +10,27 @@ import { createServiceClient } from '@/utils/supabase/server'
 export interface BusinessHours {
   id: string
   day_of_week: number // 0=Sunday, 1=Monday, etc.
-  open_time: string   // HH:MM format
-  close_time: string  // HH:MM format
-  is_closed: boolean
-  last_reservation_time: string // Last accepted reservation time
+  open_time: string   // HH:MM format (DINNER service)
+  close_time: string  // HH:MM format (DINNER service)
+  is_open: boolean    // FIXED: Changed from is_closed to is_open (matches DB)
+  last_reservation_time: string // Last accepted reservation time (DINNER)
   advance_booking_minutes: number // Minimum advance booking time
   slot_duration_minutes: number   // Duration of each time slot (15min)
+  // NEW LUNCH FIELDS
+  lunch_enabled?: boolean
+  lunch_open_time?: string
+  lunch_close_time?: string
+  lunch_last_reservation_time?: string
+  lunch_advance_booking_minutes?: number
+  lunch_max_party_size?: number
+  lunch_buffer_minutes?: number
 }
 
 export interface TimeSlot {
   time: string
   available: boolean
   reason?: string // Why unavailable
+  shiftType?: 'lunch' | 'dinner' // Which service shift
 }
 
 /**
@@ -89,7 +98,7 @@ function parseHoursOperation(hoursOperation: string): BusinessHours[] {
       day_of_week: day,
       open_time: day === 0 ? '00:00' : openTime, // Sunday closed
       close_time: day === 0 ? '00:00' : closeTime,
-      is_closed: day === 0, // Sunday closed
+      is_open: day !== 0, // Sunday closed (false), others open (true)
       last_reservation_time: day === 0 ? '00:00' : lastReservationTime,
       advance_booking_minutes: 30,
       slot_duration_minutes: 15
@@ -111,7 +120,7 @@ function getDefaultBusinessHours(): BusinessHours[] {
     day_of_week: day,
     open_time: day === 0 ? '00:00' : '18:00', // Sunday closed
     close_time: day === 0 ? '00:00' : '23:00',
-    is_closed: day === 0,
+    is_open: day !== 0,   // Sunday closed (false), others open (true)
     last_reservation_time: day === 0 ? '00:00' : '22:45', // 15min slots: last at 22:45
     advance_booking_minutes: 30,
     slot_duration_minutes: 15
@@ -120,75 +129,149 @@ function getDefaultBusinessHours(): BusinessHours[] {
 
 /**
  * Generates available time slots for a specific date
- * Implements enterprise-grade availability logic
+ * Implements enterprise-grade dual shift availability logic
  */
 export async function getAvailableTimeSlots(
   date: string,
   currentDateTime: Date = new Date()
 ): Promise<TimeSlot[]> {
-  
+
   const businessHours = await getBusinessHours()
   const selectedDate = new Date(date + 'T00:00:00')
   const dayOfWeek = selectedDate.getDay()
-  
+
   // Get business hours for selected day
   const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
-  
-  if (!dayHours || dayHours.is_closed) {
+
+  if (!dayHours || !dayHours.is_open) {
     return [{
       time: '',
       available: false,
       reason: 'Restaurant closed on this day'
     }]
   }
-  
+
   const slots: TimeSlot[] = []
-  const isToday = date === currentDateTime.toISOString().split('T')[0]
-  
-  // Parse business hours
-  const [openHour, openMinute] = dayHours.open_time.split(':').map(Number)
-  const [lastResHour, lastResMinute] = dayHours.last_reservation_time.split(':').map(Number)
-  
-  // Generate 15-minute slots (from database configuration)
-  const slotDuration = dayHours.slot_duration_minutes || 15
+
+  // LUNCH SHIFT GENERATION (13:00-15:45)
+  if (dayHours.lunch_enabled) {
+    const lunchSlots = generateTimeSlots({
+      openTime: dayHours.lunch_open_time!,
+      lastReservationTime: dayHours.lunch_last_reservation_time!,
+      slotDuration: dayHours.slot_duration_minutes || 15,
+      advanceMinutes: dayHours.lunch_advance_booking_minutes || 30,
+      shiftType: 'lunch',
+      date,
+      currentDateTime
+    })
+    slots.push(...lunchSlots)
+  }
+
+  // DINNER SHIFT GENERATION (18:30-22:45)
+  const dinnerSlots = generateTimeSlots({
+    openTime: dayHours.open_time,
+    lastReservationTime: dayHours.last_reservation_time,
+    slotDuration: dayHours.slot_duration_minutes || 15,
+    advanceMinutes: dayHours.advance_booking_minutes || 30,
+    shiftType: 'dinner',
+    date,
+    currentDateTime
+  })
+  slots.push(...dinnerSlots)
+
+  return slots.sort((a, b) => a.time.localeCompare(b.time))
+}
+
+/**
+ * NEW: generateTimeSlots helper with shift awareness
+ * Implementation with gap period validation (16:00-18:30 blocked)
+ */
+function generateTimeSlots(config: {
+  openTime: string,
+  lastReservationTime: string,
+  slotDuration: number,
+  advanceMinutes: number,
+  shiftType: 'lunch' | 'dinner',
+  date: string,
+  currentDateTime: Date
+}): TimeSlot[] {
+  const slots: TimeSlot[] = []
+  const isToday = config.date === config.currentDateTime.toISOString().split('T')[0]
+
+  // Parse time strings
+  const [openHour, openMinute] = config.openTime.split(':').map(Number)
+  const [lastResHour, lastResMinute] = config.lastReservationTime.split(':').map(Number)
+
   let currentSlotHour = openHour
   let currentSlotMinute = openMinute
-  
+
   while (
-    currentSlotHour < lastResHour || 
+    currentSlotHour < lastResHour ||
     (currentSlotHour === lastResHour && currentSlotMinute <= lastResMinute)
   ) {
     const timeString = `${currentSlotHour.toString().padStart(2, '0')}:${currentSlotMinute.toString().padStart(2, '0')}`
-    
+
     let available = true
     let reason = ''
-    
+
+    // Gap period validation (16:00-18:30)
+    try {
+      validateGapPeriod(timeString)
+    } catch (error) {
+      available = false
+      reason = error instanceof Error ? error.message : 'Time not available'
+    }
+
     // Check if slot is in the past (for today only)
-    if (isToday) {
-      const slotDateTime = new Date(date + `T${timeString}:00`)
-      const minimumBookingTime = new Date(currentDateTime.getTime() + (dayHours.advance_booking_minutes * 60 * 1000))
-      
+    if (isToday && available) {
+      const slotDateTime = new Date(config.date + `T${timeString}:00`)
+      const minimumBookingTime = new Date(config.currentDateTime.getTime() + (config.advanceMinutes * 60 * 1000))
+
       if (slotDateTime <= minimumBookingTime) {
         available = false
-        reason = `Requires ${dayHours.advance_booking_minutes} minutes advance booking`
+        reason = `Requires ${config.advanceMinutes} minutes advance booking`
       }
     }
-    
+
     slots.push({
       time: timeString,
       available,
-      reason
+      reason,
+      shiftType: config.shiftType
     })
-    
+
     // Increment by slot duration (15 minutes)
-    currentSlotMinute += slotDuration
+    currentSlotMinute += config.slotDuration
     if (currentSlotMinute >= 60) {
       currentSlotMinute = 0
       currentSlotHour += 1
     }
   }
-  
+
   return slots
+}
+
+/**
+ * GAP PERIOD VALIDATION (16:00-18:30)
+ * Restaurant closed between lunch and dinner service
+ */
+export function validateGapPeriod(time: string): boolean {
+  const timeMinutes = timeToMinutes(time)
+  const gapStart = timeToMinutes('16:00')
+  const gapEnd = timeToMinutes('18:30')
+
+  if (timeMinutes > gapStart && timeMinutes < gapEnd) {
+    throw new Error('Restaurant closed between lunch and dinner service')
+  }
+  return true
+}
+
+/**
+ * Helper: Convert HH:MM time to minutes since midnight
+ */
+function timeToMinutes(time: string): number {
+  const [hours, minutes] = time.split(':').map(Number)
+  return hours * 60 + minutes
 }
 
 /**
@@ -223,12 +306,19 @@ export async function validateTimeSlot(
 
 /**
  * Helper: Check if restaurant is open on specific date
+ * Updated for dual shift support - checks both lunch and dinner availability
  */
 export async function isRestaurantOpenOnDate(date: string): Promise<boolean> {
   const businessHours = await getBusinessHours()
   const selectedDate = new Date(date + 'T00:00:00')
   const dayOfWeek = selectedDate.getDay()
-  
+
   const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
-  return dayHours ? !dayHours.is_closed : false
+  if (!dayHours) return false
+
+  // Restaurant is open if either lunch OR dinner service is available
+  const hasLunchService = dayHours.lunch_enabled || false
+  const hasDinnerService = dayHours.is_open
+
+  return hasLunchService || hasDinnerService
 }

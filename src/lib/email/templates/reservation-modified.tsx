@@ -65,6 +65,7 @@ export const ReservationModifiedEmail = ({
       restaurantName={restaurantName}
       restaurantEmail={restaurantEmail}
       restaurantPhone={restaurantPhone}
+      branding={branding}
     >
       {/* Modern Modification Banner */}
       <Container style={modificationBanner}>
@@ -226,7 +227,7 @@ export const ReservationModifiedEmail = ({
 
         <Row>
           <Column style={{textAlign: 'center'}}>
-            <Button style={secondaryButton} href={urls?.menu || 'https://enigmaconalma.com/menu'}>
+            <Button style={secondaryButton} href={urls?.menu || 'https://almaenigma.vercel.app/menu'}>
               Ver Nuestra Carta
             </Button>
           </Column>

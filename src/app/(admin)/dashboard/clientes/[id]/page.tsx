@@ -132,7 +132,7 @@ export default function CustomerProfilePage() {
   }
 
   // Preview email function - SEPARATE from send function (NEVER touches sendCustomEmail)
-  const previewCustomEmail = async (emailData: any) => {
+  const previewCustomEmail = async (emailData: Record<string, unknown>) => {
     if (!customer) {
       toast.error('Cliente no encontrado')
       return false
@@ -210,7 +210,7 @@ export default function CustomerProfilePage() {
           <TabsContent value="overview" className="space-y-6">
             {/* HEADER COMPACTO */}
             <CustomerHeader
-              customer={customer as any}
+              customer={customer as Customer}
               loyaltyScore={loyaltyScore}
               customerTier={customerTier}
               onVipToggle={toggleVipStatus}
@@ -479,7 +479,7 @@ export default function CustomerProfilePage() {
 
           <TabsContent value="contact">
             <CustomerContactNew
-              customer={customer as any}
+              customer={customer as Customer}
               onUpdate={updateCustomerField}
               canEdit={true}
             />
@@ -496,7 +496,7 @@ export default function CustomerProfilePage() {
           <TabsContent value="settings">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <CustomerGdpr
-                customer={customer as any}
+                customer={customer as Customer}
                 onConsentUpdate={updateGdprConsent}
                 onExportData={exportCustomerData}
                 onDeleteData={() => console.log('Delete customer data')}

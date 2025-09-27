@@ -45,6 +45,7 @@ export const ReservationCancelledEmail = ({
       restaurantName={restaurantName}
       restaurantEmail={restaurantEmail}
       restaurantPhone={restaurantPhone}
+      branding={branding}
     >
       {/* Header simple */}
       <Section style={cancellationBanner}>
@@ -125,7 +126,7 @@ export const ReservationCancelledEmail = ({
 
       {/* Botón simple para nueva reserva */}
       <Section style={buttonContainer}>
-        <Button style={emailLayoutStyles.buttonPrimary} href={urls?.reservations || 'https://enigmaconalma.com/reservas'}>
+        <Button style={emailLayoutStyles.buttonPrimary} href={urls?.reservas || 'https://almaenigma.vercel.app/reservas'}>
           Hacer Nueva Reserva
         </Button>
       </Section>

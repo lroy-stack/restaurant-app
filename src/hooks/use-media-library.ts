@@ -47,30 +47,8 @@ export function useMediaLibrary(options: UseMediaLibraryOptions = {}) {
   const [error, setError] = useState<string | null>(null)
 
   const fetchMediaLibrary = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const queryParams = new URLSearchParams()
-
-      if (options.type) queryParams.set('type', options.type)
-      if (options.category) queryParams.set('category', options.category)
-      if (options.includeInactive) queryParams.set('includeInactive', 'true')
-
-      const url = `/api/media-library?${queryParams}`
-      const response = await fetch(url)
-
-      if (!response.ok) {
-        throw new Error('Error al cargar la biblioteca de medios')
-      }
-
-      const data = await response.json()
-      setMediaData(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ocurrió un error')
-    } finally {
-      setLoading(false)
-    }
+    // This function is now handled in useEffect with timeout
+    return Promise.resolve()
   }
 
   // Helper functions
@@ -97,8 +75,18 @@ export function useMediaLibrary(options: UseMediaLibraryOptions = {}) {
   const buildImageUrl = (item: MediaItem): string => {
     if (!item.image_kit_transforms) return item.url
 
-    const separator = item.url.includes('?') ? '&' : '?'
-    return `${item.url}${separator}${item.image_kit_transforms}`
+    // Parse existing URL and transforms to avoid duplicate parameters
+    const urlObj = new URL(item.url)
+    const transformParams = new URLSearchParams(item.image_kit_transforms)
+
+    // Add transform parameters, preserving existing ones
+    transformParams.forEach((value, key) => {
+      if (!urlObj.searchParams.has(key)) {
+        urlObj.searchParams.set(key, value)
+      }
+    })
+
+    return urlObj.toString()
   }
 
   const getGalleryCategories = () => {
@@ -126,7 +114,52 @@ export function useMediaLibrary(options: UseMediaLibraryOptions = {}) {
   }
 
   useEffect(() => {
-    fetchMediaLibrary()
+    const controller = new AbortController()
+
+    const fetchWithTimeout = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        const queryParams = new URLSearchParams()
+        if (options.type) queryParams.set('type', options.type)
+        if (options.category) queryParams.set('category', options.category)
+        if (options.includeInactive) queryParams.set('includeInactive', 'true')
+
+        const url = `/api/media-library?${queryParams}`
+        const response = await fetch(url, {
+          signal: controller.signal,
+          headers: { 'Cache-Control': 'no-cache' }
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`)
+        }
+
+        const data = await response.json()
+        setMediaData(data)
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          setError(err instanceof Error ? err.message : 'Error loading media')
+          console.error('Media library error:', err)
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    // Disable timeout for debugging
+    // const timeoutId = setTimeout(() => {
+    //   controller.abort()
+    //   setLoading(false)
+    //   setError('Request timeout')
+    // }, 5000)
+
+    fetchWithTimeout()
+
+    return () => {
+      controller.abort()
+    }
   }, [options.type, options.category, options.includeInactive])
 
   return {

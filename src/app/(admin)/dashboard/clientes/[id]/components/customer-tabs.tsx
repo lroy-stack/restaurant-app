@@ -36,7 +36,7 @@ interface CustomerTabsProps {
   customer: Customer
   metrics: CustomerMetrics
   reservationStats: ReservationStats
-  onUpdateCustomerField: (field: string, value: any) => Promise<boolean>
+  onUpdateCustomerField: (field: string, value: unknown) => Promise<boolean>
   onUpdateGdprConsent: (consentType: string, granted: boolean) => Promise<void>
   onExportData: () => Promise<void>
   onDeleteData: () => Promise<void>

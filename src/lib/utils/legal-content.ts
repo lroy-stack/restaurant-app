@@ -26,12 +26,12 @@ function generateSectionId(title: string, index: number): string {
  * Process legal content for Table of Contents generation
  * Server-side utility function for content structure processing
  */
-export function processContentForTOC(content: any): ContentSection[] {
+export function processContentForTOC(content: { sections?: unknown[] }): ContentSection[] {
   if (!content || !content.sections) {
     return []
   }
 
-  return content.sections.map((section: any, index: number) => ({
+  return content.sections.map((section: Record<string, unknown>, index: number) => ({
     id: section.id || generateSectionId(section.title || `Section ${index + 1}`, index),
     title: section.title || `Section ${index + 1}`,
     level: section.level || 1,

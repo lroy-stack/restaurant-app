@@ -1,5 +1,5 @@
 import { createServiceClient } from '@/utils/supabase/server'
-import { buildProductionUrl } from '../email/config/emailConfig'
+import { buildTokenUrl } from '../email/config/emailConfig'
 
 /**
  * SERVER-ONLY Token Service
@@ -220,6 +220,6 @@ export class ServerReservationTokenService {
    */
   static getManagementUrl(token: string): string {
     // 🚨 CRITICAL: Always use production URL for email links
-    return buildProductionUrl('/mi-reserva', { token });
+    return buildTokenUrl(token);
   }
 }

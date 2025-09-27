@@ -13,8 +13,6 @@ import {
   Calendar,
   Star,
   Shield,
-  Edit2,
-  Check,
   X,
   Clock
 } from 'lucide-react'
@@ -84,7 +82,7 @@ export function CustomerHeader({
             : 'Estado VIP otorgado correctamente'
         )
       }
-    } catch (error) {
+    } catch {
       toast.error('Error al cambiar estado VIP')
     } finally {
       setIsTogglingVip(false)

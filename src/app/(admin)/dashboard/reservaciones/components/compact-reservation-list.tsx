@@ -29,6 +29,7 @@ import {
   Mail,
   CheckCircle,
   AlertCircle,
+  AlertTriangle,
   XCircle,
   MoreVertical,
   Star,
@@ -72,6 +73,7 @@ interface Reservation {
   time: string
   status: 'PENDING' | 'CONFIRMED' | 'SEATED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW'
   specialRequests?: string
+  dietaryNotes?: string
   hasPreOrder: boolean
   table_ids: string[] // ✅ NEW: Array of table IDs
   tableId?: string // Legacy compatibility
@@ -722,7 +724,7 @@ export function CompactReservationList({
                           </TableRow>
 
                           {/* Mobile Expanded Row - DEBAJO DE CADA RESERVA INDIVIDUAL */}
-                          {(reservation.hasPreOrder && reservation.reservation_items?.length > 0 || reservation.specialRequests) && (
+                          {(reservation.hasPreOrder && reservation.reservation_items?.length > 0 || reservation.specialRequests || reservation.dietaryNotes) && (
                             <TableRow className="md:hidden border-none">
                               <TableCell colSpan={bulkMode ? 9 : 8} className="py-2 pl-8">
                                 <div className="flex flex-col gap-2 text-xs text-muted-foreground border-l-2 border-muted pl-3">
@@ -756,6 +758,14 @@ export function CompactReservationList({
                                     <div className="flex items-start gap-2 text-accent">
                                       <MessageSquare className="h-3 w-3 mt-0.5" />
                                       <span className="text-xs">{reservation.specialRequests}</span>
+                                    </div>
+                                  )}
+
+                                  {/* Dietary notes expanded */}
+                                  {reservation.dietaryNotes && (
+                                    <div className="flex items-start gap-2 text-red-600">
+                                      <AlertTriangle className="h-3 w-3 mt-0.5" />
+                                      <span className="text-xs">{reservation.dietaryNotes}</span>
                                     </div>
                                   )}
                                 </div>

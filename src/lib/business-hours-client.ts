@@ -16,7 +16,7 @@ export interface BusinessHours {
   day_of_week: number // 0=Sunday, 1=Monday, etc.
   open_time: string   // HH:MM format
   close_time: string  // HH:MM format
-  is_closed: boolean
+  is_open: boolean    // FIXED: Changed from is_closed to is_open (matches DB)
   last_reservation_time: string // Last accepted reservation time
   advance_booking_minutes: number // Minimum advance booking time
   slot_duration_minutes: number   // Duration of each time slot (15min)
@@ -208,7 +208,7 @@ export async function isRestaurantOpenOnDate(date: string): Promise<boolean> {
     const dayOfWeek = selectedDate.getDay()
     
     const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
-    return dayHours ? !dayHours.is_closed : false
+    return dayHours ? dayHours.is_open : false
   } catch (error) {
     console.error('❌ [CLIENT] Error checking if open:', error)
     // Conservative: Assume closed on Sunday
@@ -228,7 +228,7 @@ function getDefaultBusinessHours(): BusinessHours[] {
     day_of_week: day,
     open_time: day === 0 ? '00:00' : '18:00', // Sunday closed
     close_time: day === 0 ? '00:00' : '23:00',
-    is_closed: day === 0,
+    is_open: day !== 0,   // Sunday closed (false), others open (true)
     last_reservation_time: day === 0 ? '00:00' : '22:45', // 15min slots: last at 22:45
     advance_booking_minutes: 30,
     slot_duration_minutes: 15

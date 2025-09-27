@@ -9,20 +9,10 @@ import {
   Calendar,
   Clock,
   Users,
-  MapPin,
-  MessageSquare,
   ExternalLink,
   Plus,
-  Filter,
   ChevronDown,
   ChevronUp,
-  Phone,
-  Globe,
-  MessageCircle,
-  Mail,
-  Utensils,
-  Euro,
-  ShoppingCart
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -308,7 +298,7 @@ export function CustomerReservations({
             {reservation.specialRequests && (
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <MessageSquare className="h-4 w-4 text-blue-600" />
+                  <Calendar className="h-4 w-4 text-blue-600" />
                   <span className="text-sm font-medium">Solicitudes Especiales</span>
                 </div>
                 <p className="text-sm text-muted-foreground pl-6 bg-blue-50 p-2 rounded">

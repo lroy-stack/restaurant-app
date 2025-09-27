@@ -106,6 +106,7 @@ export const CustomMessageEmail = (data: CustomEmailData) => {
       restaurantName={data.restaurantName}
       restaurantEmail={data.restaurantEmail}
       restaurantPhone={data.restaurantPhone}
+      branding={data.branding}
     >
       {/* Message Type Badge */}
       <Section style={badgeContainer}>

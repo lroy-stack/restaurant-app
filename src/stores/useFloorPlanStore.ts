@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { toast } from 'sonner'
-import { Node, Edge, Viewport } from '@xyflow/react'
+import { Edge, Viewport } from '@xyflow/react'
 import {
   FloorPlanNode,
   ElementType,
@@ -19,7 +19,6 @@ import {
   floorPlanElementsService,
   DatabaseFloorPlanElement
 } from '@/lib/services/floor-plan-elements'
-import { useTableStore } from './useTableStore'
 
 // Helper function to validate UUID format
 function isValidUUID(uuid: string): boolean {
@@ -52,7 +51,7 @@ interface FloorPlanStore {
 
   // Actions - Element Creation
   addElement: (type: ElementType, position: { x: number, y: number }) => Promise<void>
-  addTableFromData: (tableData: any, position: { x: number, y: number }) => void
+  addTableFromData: (tableData: Record<string, unknown>, position: { x: number, y: number }) => void
 
   // Actions - Layout Management
   loadLayout: () => Promise<void>
@@ -78,7 +77,7 @@ interface FloorPlanStore {
   groupNodes: (nodeIds: string[]) => void
 
   // Actions - Migration
-  migrateFromGridLayout: (gridLayouts: any) => void
+  migrateFromGridLayout: (gridLayouts: Record<string, unknown>) => void
 
   // Helper Actions
   autoSave: () => void
@@ -268,7 +267,7 @@ export const useFloorPlanStore = create<FloorPlanStore>()(
           const { tables } = await response.json()
 
           // Convert tables to React Flow nodes
-          const tableNodes = tables.map((table: any) => {
+          const tableNodes = tables.map((table: Record<string, unknown>) => {
             // Use saved position if available, otherwise assign default position
             const position = {
               x: table.position_x || (Math.random() * 800 + 100),
@@ -363,7 +362,7 @@ export const useFloorPlanStore = create<FloorPlanStore>()(
           const elementsToSave = nodes
             .filter(node => node.data?.elementType !== 'table')
             .map(node => {
-              const element: any = {
+              const element: Record<string, unknown> = {
                 element_type: node.data.elementType,
                 position_x: node.position.x,
                 position_y: node.position.y,
@@ -485,7 +484,7 @@ export const useFloorPlanStore = create<FloorPlanStore>()(
         toast.success(`${duplicatedNodes.length} elementos duplicados`)
       },
 
-      groupNodes: (nodeIds) => {
+      groupNodes: () => {
         // TODO: Implement grouping functionality
         toast.info('Funcionalidad de agrupación próximamente')
       },

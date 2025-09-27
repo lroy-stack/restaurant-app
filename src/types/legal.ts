@@ -336,7 +336,7 @@ export interface GDPRFormData {
 // API RESPONSE TYPES
 // ============================================
 
-export interface LegalAPIResponse<T = any> {
+export interface LegalAPIResponse<T = unknown> {
   success: boolean
   data?: T
   error?: string
@@ -386,7 +386,7 @@ export const LEGAL_CONSTANTS = {
   }
 } as const
 
-export default {
+const legalExports = {
   LegalDocumentType,
   Language,
   ConsentMethod,
@@ -407,6 +407,8 @@ export default {
   CreateAuditLogSchema,
   LEGAL_CONSTANTS
 }
+
+export default legalExports
 
 // ============================================
 // MISSING TYPE EXPORTS (FIX GDPR IMPORTS)

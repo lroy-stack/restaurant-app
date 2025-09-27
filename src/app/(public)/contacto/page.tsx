@@ -39,16 +39,17 @@ export default function ContactoPage() {
   const { getHeroImage, buildImageUrl, loading: mediaLoading } = useMediaLibrary({ type: 'hero' })
   const heroImage = getHeroImage('contacto')
   const { restaurant, loading, error } = useRestaurant()
-  const { businessHours, loading: hoursLoading } = useBusinessHours()
+  const { businessHours, loading: hoursLoading, getDualScheduleDisplay } = useBusinessHours()
 
-  // Enhanced business hours formatting with current status
+  // ENHANCED: Dual shift business hours formatting with current status
   const getBusinessHoursData = () => {
     if (!businessHours || businessHours.length === 0) {
       return {
         schedule: restaurant?.hours_operation || "Consultar horarios",
         isCurrentlyOpen: false,
-        nextOpenTime: null,
-        scheduleDetails: []
+        scheduleDetails: [],
+        dualShiftInfo: 'Almuerzo y cena disponibles',
+        gapInfo: 'Cerrado 16:00-18:30 (preparación)'
       }
     }
 
@@ -64,52 +65,86 @@ export default function ContactoPage() {
 
     // Filter valid days only (0-6) and sort
     const validHours = businessHours.filter(h => h.day_of_week >= 0 && h.day_of_week <= 6)
-    const openDays = validHours.filter(h => h.is_open).sort((a, b) => a.day_of_week - b.day_of_week)
-    const closedDays = validHours.filter(h => !h.is_open).map(h => daysMap[h.day_of_week as keyof typeof daysMap]).filter(Boolean)
+    const openDays = validHours.filter(h => h.is_open || h.lunch_enabled).sort((a, b) => a.day_of_week - b.day_of_week)
+    const closedDays = validHours.filter(h => !h.is_open && !h.lunch_enabled).map(h => daysMap[h.day_of_week as keyof typeof daysMap]).filter(Boolean)
 
-    // Check current status
+    // Check current status (dual shift aware)
     const now = new Date()
     const currentDay = now.getDay()
     const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
 
     const todayHours = validHours.find(h => h.day_of_week === currentDay)
-    const isCurrentlyOpen = todayHours?.is_open &&
-      currentTime >= (todayHours.open_time || '00:00') &&
-      currentTime <= (todayHours.close_time || '23:59')
+    let isCurrentlyOpen = false
+    if (todayHours) {
+      // Check if in lunch service
+      const inLunchService = todayHours.lunch_enabled &&
+        currentTime >= (todayHours.lunch_open_time || '00:00') &&
+        currentTime <= (todayHours.lunch_close_time || '23:59')
 
-    // Create detailed schedule
-    const scheduleDetails = validHours.map(h => ({
-      day: daysMap[h.day_of_week as keyof typeof daysMap],
-      isOpen: h.is_open,
-      hours: h.is_open ? `${h.open_time} - ${h.close_time}` : 'Cerrado',
-      isToday: h.day_of_week === currentDay
-    }))
+      // Check if in dinner service
+      const inDinnerService = todayHours.is_open &&
+        currentTime >= (todayHours.open_time || '00:00') &&
+        currentTime <= (todayHours.close_time || '23:59')
 
-    // Format main schedule text
-    let schedule = ""
-    if (openDays.length === 0) {
-      schedule = "Cerrado temporalmente"
-    } else if (openDays.length === 1) {
-      const dayName = daysMap[openDays[0].day_of_week as keyof typeof daysMap]
-      schedule = `${dayName}: ${openDays[0].open_time} - ${openDays[0].close_time}`
-    } else if (openDays.length > 1) {
-      const firstDayName = daysMap[openDays[0].day_of_week as keyof typeof daysMap]
-      const lastDayName = daysMap[openDays[openDays.length - 1].day_of_week as keyof typeof daysMap]
+      isCurrentlyOpen = inLunchService || inDinnerService
+    }
 
-      if (firstDayName && lastDayName) {
-        schedule = `${firstDayName}-${lastDayName}: ${openDays[0].open_time} - ${openDays[0].close_time}`
+    // Create detailed schedule with dual shift support
+    const scheduleDetails = validHours.map(h => {
+      const dayName = daysMap[h.day_of_week as keyof typeof daysMap]
+      let hours = ''
+
+      if (!h.is_open && !h.lunch_enabled) {
+        hours = 'Cerrado'
+      } else {
+        // Use getDualScheduleDisplay for consistent formatting
+        hours = getDualScheduleDisplay(h.day_of_week)
       }
-    }
 
-    if (closedDays.length > 0) {
-      schedule = `${schedule} • ${closedDays.join(', ')}: Cerrado`
-    }
+      return {
+        day: dayName,
+        isOpen: h.is_open || h.lunch_enabled,
+        hours,
+        isToday: h.day_of_week === currentDay,
+        hasLunchService: h.lunch_enabled || false,
+        hasDinnerService: h.is_open
+      }
+    })
+
+    // Group days with same dual schedule for main display
+    const scheduleGroups = groupBySchedule(openDays)
+    const schedule = scheduleGroups.map(group =>
+      `${group.days}: ${group.schedule}`
+    ).join(' • ')
 
     return {
-      schedule,
+      schedule: schedule || 'Consultar horarios',
       isCurrentlyOpen,
-      scheduleDetails
+      scheduleDetails,
+      dualShiftInfo: 'Almuerzo y cena disponibles',
+      gapInfo: 'Cerrado 16:00-18:30 (preparación)'
     }
+  }
+
+  // NEW: Group days with same lunch+dinner schedule
+  const groupBySchedule = (businessHours: any[]) => {
+    return businessHours.reduce((groups: any[], hours) => {
+      const schedule = getDualScheduleDisplay(hours.day_of_week)
+      const existing = groups.find(g => g.schedule === schedule)
+      const dayName = {
+        0: 'Dom', 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb'
+      }[hours.day_of_week]
+
+      if (existing) {
+        existing.days.push(dayName)
+      } else {
+        groups.push({
+          schedule,
+          days: [dayName]
+        })
+      }
+      return groups
+    }, [])
   }
 
   const businessHoursData = getBusinessHoursData()
@@ -285,9 +320,20 @@ export default function ContactoPage() {
                             )}
                           </div>
 
-                          <p className="text-xs sm:text-sm text-primary mt-3 font-medium">
-                            💡 Recomendamos reservar con antelación
-                          </p>
+                          {/* ✅ NEW: Dual shift info and gap period */}
+                          <div className="mt-4 space-y-2">
+                            <div className="flex items-center gap-2 text-xs sm:text-sm text-orange-600 font-medium">
+                              <span>🍽️</span>
+                              <span>{businessHoursData.dualShiftInfo}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs sm:text-sm text-amber-600">
+                              <span>⏰</span>
+                              <span>{businessHoursData.gapInfo}</span>
+                            </div>
+                            <p className="text-xs sm:text-sm text-primary font-medium">
+                              💡 Recomendamos reservar con antelación
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </CardContent>

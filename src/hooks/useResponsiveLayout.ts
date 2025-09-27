@@ -46,13 +46,31 @@ export const useUIStore = create<UIStore>()(
         // - Tablet vertical (768x1024) → 'tablet'
         // - Mobile (375x667) → 'mobile'
 
-        const breakpoint = width < 768
+        const newBreakpoint = width < 768
           ? 'mobile'
           : isTabletSize && (height < 900 || isLandscape)
             ? 'tablet'
             : 'desktop'
 
-        set({ breakpoint })
+        const currentState = get()
+        const previousBreakpoint = currentState.breakpoint
+
+        // 🔧 FIX: Auto-sync sidebar state with breakpoint changes
+        // When transitioning TO desktop → auto-expand sidebar
+        // When transitioning FROM desktop → close sidebar
+        if (newBreakpoint !== previousBreakpoint) {
+          if (newBreakpoint === 'desktop') {
+            // Desktop: sidebar should be visible (not necessarily open for overlay)
+            // Don't force sidebarOpen=true because desktop uses shouldShowSidebar logic
+            set({ breakpoint: newBreakpoint })
+          } else if (previousBreakpoint === 'desktop') {
+            // Leaving desktop: close any floating sidebar
+            set({ breakpoint: newBreakpoint, sidebarOpen: false })
+          } else {
+            // Other transitions: just update breakpoint
+            set({ breakpoint: newBreakpoint })
+          }
+        }
       },
       
       shouldShowOverlay: () => {
@@ -139,5 +157,25 @@ export const useMediaQuery = (query: string) => {
   }, [query])
 
   return matches
+}
+
+// 🔧 FIX: Header navigation hook - was missing from exports
+// PUBLIC WEBSITE navigation logic (different from dashboard admin)
+export const useNavigationBreakpoints = () => {
+  const { isMobile, isTablet, isDesktop, breakpoint } = useResponsiveLayout()
+
+  // PUBLIC SITE: Different thresholds than dashboard
+  // Mobile + Tablet = hamburger menu, Desktop = full nav
+  const shouldShowDesktopNav = isDesktop
+  const shouldShowMobileNav = isMobile || isTablet
+  const isTabletHorizontal = isTablet && typeof window !== 'undefined' &&
+    window.innerWidth > window.innerHeight
+
+  return {
+    shouldShowDesktopNav,
+    shouldShowMobileNav,
+    currentBreakpoint: breakpoint,
+    isTabletHorizontal
+  }
 }
 

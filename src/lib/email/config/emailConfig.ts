@@ -43,13 +43,9 @@ export interface EmailConfig {
  * This ensures email links work from any development/staging environment
  */
 export function getEmailConfig(): EmailConfig {
-  // 🚨 EMAILS ALWAYS USE PRODUCTION URL - Never localhost/staging
-  // Current: https://almaenigma.vercel.app (Vercel deployment)
-  // Future: https://enigmaconalma.com (Final domain)
-  // UNIFIED: Use same env var everywhere to avoid confusion
-  const baseUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL ||
-                  process.env.NEXT_PUBLIC_SITE_URL ||
-                  'https://almaenigma.vercel.app'
+  // 🚨 EMAILS ALWAYS USE PRODUCTION URL - HARDCODED FOR RELIABILITY
+  // NO FALLBACKS - PRODUCTION URL GUARANTEED
+  const baseUrl = 'https://almaenigma.vercel.app'
 
   return {
     urls: {

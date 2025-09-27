@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
-import { buildProductionUrl } from '../email/config/emailConfig'
+import { buildTokenUrl } from '../email/config/emailConfig'
 
 export interface TokenValidationResult {
   valid: boolean
@@ -126,7 +126,7 @@ export class ReservationTokenService {
    */
   static getManagementUrl(token: string): string {
     // 🚨 CRITICAL: Always use production URL for email links
-    return buildProductionUrl('/mi-reserva', { token });
+    return buildTokenUrl(token);
   }
 
   static async updateReservation(

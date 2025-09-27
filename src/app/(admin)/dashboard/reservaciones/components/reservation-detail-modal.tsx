@@ -49,6 +49,7 @@ interface Reservation {
   time: string
   status: 'PENDING' | 'CONFIRMED' | 'SEATED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW'
   specialRequests?: string
+  dietaryNotes?: string
   hasPreOrder: boolean
   table_ids: string[] // ✅ NEW: Array of table IDs
   tableId?: string // Legacy compatibility
@@ -308,8 +309,8 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
             </div>
           </div>
 
-          {/* Special Requests & Pre-order */}
-          {(reservation.specialRequests || reservation.hasPreOrder) && (
+          {/* Special Requests, Dietary Notes & Pre-order */}
+          {(reservation.specialRequests || reservation.dietaryNotes || reservation.hasPreOrder) && (
             <>
               <div className="border-t" />
               <div className="space-y-4">
@@ -321,6 +322,16 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
                     <div>
                       <p className="text-sm font-medium text-foreground mb-1">Solicitudes Especiales</p>
                       <p className="text-sm text-gray-700">{reservation.specialRequests}</p>
+                    </div>
+                  </div>
+                )}
+
+                {reservation.dietaryNotes && (
+                  <div className="flex items-start gap-3 p-4 bg-red-50 rounded-lg">
+                    <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground mb-1">Peticiones Dietéticas</p>
+                      <p className="text-sm text-gray-700">{reservation.dietaryNotes}</p>
                     </div>
                   </div>
                 )}
