@@ -12,8 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import ModernProductSelector from '@/components/ui/modern-product-selector'
 import { toast } from 'sonner'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import {
@@ -220,7 +219,6 @@ interface PreOrderEditorRef {
 const PreOrderEditor = forwardRef<PreOrderEditorRef, PreOrderEditorProps>(
   ({ menuItems, currentReservationItems, onItemsChange, loadingMenuItems }, ref) => {
   const [isAddingItem, setIsAddingItem] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
 
   // Convert ReservationItem[] to working format for editing
   const [workingItems, setWorkingItems] = useState<PreOrderItem[]>([])
@@ -249,13 +247,13 @@ const PreOrderEditor = forwardRef<PreOrderEditorRef, PreOrderEditorProps>(
     getCurrentItems: () => workingItems // Direct access to current state
   }), [workingItems, onItemsChange])
 
-  // Agregar nuevo item
+  // Agregar/remover item (toggle behavior)
   const addPreOrderItem = (menuItem: MenuItem) => {
     const existingItem = workingItems.find(item => item.menuItemId === menuItem.id)
 
     if (existingItem) {
-      // Incrementar cantidad si ya existe
-      updateQuantity(menuItem.id, existingItem.quantity + 1)
+      // Si ya existe, remover (deseleccionar)
+      removeItem(menuItem.id)
     } else {
       // Agregar nuevo item
       const newItem: PreOrderItem = {
@@ -266,8 +264,7 @@ const PreOrderEditor = forwardRef<PreOrderEditorRef, PreOrderEditorProps>(
       const newItems = [...workingItems, newItem]
       updateWorkingItems(newItems)
     }
-    setIsAddingItem(false)
-    setSearchTerm('')
+    // Modal permanece abierto para selección múltiple
   }
 
   // Actualizar cantidad
@@ -310,20 +307,10 @@ const PreOrderEditor = forwardRef<PreOrderEditorRef, PreOrderEditorProps>(
     }, 0)
   }
 
-  // Filtrar y agrupar items por categoría para el selector
-  const groupedMenuItems = useMemo(() => {
-    const filteredItems = menuItems.filter(item =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      item.menu_categories.type !== 'BEVERAGE' // Excluir bebidas de pre-orden
-    )
-
-    return filteredItems.reduce((groups, item) => {
-      const type = item.menu_categories.type
-      if (!groups[type]) groups[type] = []
-      groups[type].push(item)
-      return groups
-    }, {} as Record<string, MenuItem[]>)
-  }, [menuItems, searchTerm])
+  // Get selected product IDs for highlighting in selector
+  const selectedProductIds = useMemo(() => {
+    return workingItems.map(item => item.menuItemId)
+  }, [workingItems])
 
   return (
     <div className="space-y-4">
@@ -414,85 +401,27 @@ const PreOrderEditor = forwardRef<PreOrderEditorRef, PreOrderEditorProps>(
 
 
       {/* Botón agregar producto */}
-      <Popover open={isAddingItem} onOpenChange={(open) => {
-        setIsAddingItem(open)
-        if (!open) setSearchTerm('')
-      }}>
-        <PopoverTrigger asChild>
-          <Button type="button" variant="outline" className="w-full" disabled={loadingMenuItems}>
-            <Plus className="h-4 w-4 mr-2" />
-            {loadingMenuItems ? 'Cargando menú...' : `Agregar Producto (${menuItems.length} disponibles)`}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full max-w-md sm:max-w-lg md:max-w-2xl p-0" side="bottom">
-          <Command className="max-h-[50vh] sm:max-h-[60vh]">
-            <CommandInput
-              placeholder="Buscar productos..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <div className="overflow-y-auto">
-              <CommandEmpty>
-                {loadingMenuItems ? 'Cargando productos...' : 'No se encontraron productos.'}
-              </CommandEmpty>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        disabled={loadingMenuItems}
+        onClick={() => setIsAddingItem(true)}
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        {loadingMenuItems ? 'Cargando menú...' : `Agregar Producto (${menuItems.length} disponibles)`}
+      </Button>
 
-              {loadingMenuItems ? (
-                <div className="p-4 text-center">
-                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Cargando menú...
-                  </div>
-                </div>
-              ) : !loadingMenuItems && Object.keys(groupedMenuItems).length === 0 ? (
-                <div className="p-4 text-center text-muted-foreground">
-                  <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-                  <p>No hay productos disponibles</p>
-                  <p className="text-xs">Verifique la configuración del menú</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-0">
-                  {Object.entries(groupedMenuItems).map(([type, items]) => {
-                    const typeLabel = type === 'FOOD' ? 'Platos' : 'Vinos'
-                    const IconComponent = type === 'WINE' ? Wine : Utensils
-
-                    return (
-                      <div key={type} className="border-r border-border last:border-r-0">
-                        <div className="sticky top-0 bg-background border-b px-3 py-2">
-                          <div className="flex items-center gap-2 font-medium text-sm">
-                            <IconComponent className="h-4 w-4 text-primary" />
-                            {typeLabel} ({items.length})
-                          </div>
-                        </div>
-                        <div className="p-1">
-                          {items.map((menuItem) => (
-                            <div
-                              key={menuItem.id}
-                              onClick={() => addPreOrderItem(menuItem)}
-                              className="p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer rounded-md transition-colors border-b border-border/50 last:border-b-0"
-                            >
-                              <div className="flex flex-col gap-1">
-                                <div className="flex justify-between items-start">
-                                  <span className="font-medium text-sm leading-tight">{menuItem.name}</span>
-                                  <span className="text-sm font-semibold text-primary ml-2 flex-shrink-0">
-                                    €{menuItem.price.toFixed(2)}
-                                  </span>
-                                </div>
-                                <Badge variant="outline" className="text-xs w-fit">
-                                  {menuItem.menu_categories.name}
-                                </Badge>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          </Command>
-        </PopoverContent>
-      </Popover>
+      {/* Modern Product Selector */}
+      <ModernProductSelector
+        isOpen={isAddingItem}
+        onClose={() => setIsAddingItem(false)}
+        onSelectProduct={addPreOrderItem}
+        menuItems={menuItems}
+        selectedProductIds={selectedProductIds}
+        loadingMenuItems={loadingMenuItems}
+        title="Agregar Productos al Pre-Orden"
+      />
 
       {workingItems.length === 0 && (
         <div className="text-center py-6 text-muted-foreground">
