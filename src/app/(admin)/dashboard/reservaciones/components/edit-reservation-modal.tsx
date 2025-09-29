@@ -424,8 +424,8 @@ const PreOrderEditor = forwardRef<PreOrderEditorRef, PreOrderEditorProps>(
             {loadingMenuItems ? 'Cargando menú...' : `Agregar Producto (${menuItems.length} disponibles)`}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[400px] p-0">
-          <Command className="max-h-[300px]">
+        <PopoverContent className="w-full max-w-md sm:max-w-lg md:max-w-2xl p-0" side="bottom">
+          <Command className="max-h-[50vh] sm:max-h-[60vh]">
             <CommandInput
               placeholder="Buscar productos..."
               value={searchTerm}
@@ -450,40 +450,44 @@ const PreOrderEditor = forwardRef<PreOrderEditorRef, PreOrderEditorProps>(
                   <p className="text-xs">Verifique la configuración del menú</p>
                 </div>
               ) : (
-                Object.entries(groupedMenuItems).map(([type, items]) => {
-                  const typeLabel = type === 'FOOD' ? 'Comida' :
-                                  type === 'WINE' ? 'Vinos' : 'Bebidas'
-                  const IconComponent = type === 'WINE' ? Wine :
-                                      type === 'BEVERAGE' ? Coffee : Utensils
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-0">
+                  {Object.entries(groupedMenuItems).map(([type, items]) => {
+                    const typeLabel = type === 'FOOD' ? 'Platos' : 'Vinos'
+                    const IconComponent = type === 'WINE' ? Wine : Utensils
 
-                  return (
-                    <CommandGroup key={type}>
-                      <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground flex items-center gap-2">
-                        <IconComponent className="h-4 w-4" />
-                        {typeLabel} ({items.length})
-                      </div>
-                      {items.map((menuItem) => (
-                        <CommandItem
-                          key={menuItem.id}
-                          value={menuItem.name}
-                          onSelect={() => addPreOrderItem(menuItem)}
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{menuItem.name}</span>
-                              <Badge variant="outline" className="text-xs">
-                                {menuItem.menu_categories.name}
-                              </Badge>
-                            </div>
-                            <span className="text-sm font-medium">
-                              €{menuItem.price.toFixed(2)}
-                            </span>
+                    return (
+                      <div key={type} className="border-r border-border last:border-r-0">
+                        <div className="sticky top-0 bg-background border-b px-3 py-2">
+                          <div className="flex items-center gap-2 font-medium text-sm">
+                            <IconComponent className="h-4 w-4 text-primary" />
+                            {typeLabel} ({items.length})
                           </div>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  )
-                })
+                        </div>
+                        <div className="p-1">
+                          {items.map((menuItem) => (
+                            <div
+                              key={menuItem.id}
+                              onClick={() => addPreOrderItem(menuItem)}
+                              className="p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer rounded-md transition-colors border-b border-border/50 last:border-b-0"
+                            >
+                              <div className="flex flex-col gap-1">
+                                <div className="flex justify-between items-start">
+                                  <span className="font-medium text-sm leading-tight">{menuItem.name}</span>
+                                  <span className="text-sm font-semibold text-primary ml-2 flex-shrink-0">
+                                    €{menuItem.price.toFixed(2)}
+                                  </span>
+                                </div>
+                                <Badge variant="outline" className="text-xs w-fit">
+                                  {menuItem.menu_categories.name}
+                                </Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               )}
             </div>
           </Command>
