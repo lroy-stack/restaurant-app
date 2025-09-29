@@ -23,11 +23,11 @@ export default function HomePage() {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-black/20 z-10" />
           {/* Optimized hero image with proper loading */}
-          <img
-            src="https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1754141731421"
-            alt="Enigma Cocina Con Alma - Restaurante en Calpe"
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: '65% center' }}
+          <div
+            className="w-full h-full bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: 'url(https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1754141731421)'
+            }}
           />
         </div>
         
