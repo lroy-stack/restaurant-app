@@ -4,6 +4,7 @@
 
 import { ReactNode } from 'react'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -20,6 +21,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { useLegalImage } from '@/hooks/use-legal-image'
 import { TableOfContents } from './TableOfContents'
 // import { VersionSelector } from './VersionSelector' // Temporarily disabled due to SSR conflicts
 import { PrintButton } from './PrintButton'
@@ -142,6 +144,7 @@ export function LegalPageLayout({
 }: LegalPageLayoutProps) {
   const docInfo = DOCUMENT_TYPE_INFO[content.document_type]
   const IconComponent = docInfo.icon
+  const logoConfig = useLegalImage()
 
   // Format dates for display
   const formatDate = (dateString: string) => {
@@ -165,75 +168,85 @@ export function LegalPageLayout({
   return (
     <div className={cn('min-h-screen bg-background', className)}>
       {/* Header Section */}
-      <section className="relative bg-gradient-to-br from-primary/5 to-secondary/5 py-8 sm:py-12 -mt-16 pt-20">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden -mt-16 pt-16">
+        {/* Background with hero image */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-black/40 z-10" />
+          <div
+            className="w-full h-full bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url(${logoConfig.src})`
+            }}
+          />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-20 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
           {/* Back Navigation */}
-          <div className="mb-6">
+          <div className="absolute top-4 left-4">
             <Link href={backUrl}>
-              <Button variant="ghost" className="mb-4 hover:bg-primary/10">
+              <Button variant="ghost" className="hover:bg-white/10 text-white border-white/30">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 {language === 'es' ? 'Volver' : 'Back'}
               </Button>
             </Link>
           </div>
 
-          <div className="max-w-4xl mx-auto">
-            {/* Document Type Badge */}
-            <Badge variant="outline" className="mb-4">
-              <IconComponent className={cn("h-3 w-3 mr-1", docInfo.colorClass)} />
-              {docInfo.title[language]}
-            </Badge>
+          {/* Document Type Badge */}
+          <Badge variant="outline" className="mb-6 text-white border-white/50 bg-black/60 backdrop-blur-sm">
+            <IconComponent className={cn("h-3 w-3 mr-1", "text-white")} />
+            {docInfo.title[language]}
+          </Badge>
 
-            {/* Title */}
-            <h1 className="enigma-hero-title mb-4">
-              {content.title}
-            </h1>
+          {/* Title */}
+          <h1 className="enigma-hero-title mb-6">
+            {content.title}
+          </h1>
 
-            {/* Description */}
-            <p className="enigma-hero-subtitle mb-6">
-              {docInfo.description[language]}
-            </p>
+          {/* Description */}
+          <p className="enigma-hero-subtitle mb-8 opacity-90">
+            {docInfo.description[language]}
+          </p>
 
-            {/* Metadata Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <div>
-                  <div className="font-medium">
-                    {language === 'es' ? 'Vigente desde' : 'Effective from'}
-                  </div>
-                  <div>{formatDate(content.effective_date)}</div>
+          {/* Metadata Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm opacity-80">
+            <div className="flex items-center gap-2 text-white/90 justify-center">
+              <Clock className="h-4 w-4" />
+              <div>
+                <div className="font-medium">
+                  {language === 'es' ? 'Vigente desde' : 'Effective from'}
                 </div>
+                <div>{formatDate(content.effective_date)}</div>
               </div>
+            </div>
 
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <FileText className="h-4 w-4" />
-                <div>
-                  <div className="font-medium">
-                    {language === 'es' ? 'Versión' : 'Version'}
-                  </div>
-                  <div>{content.version}</div>
+            <div className="flex items-center gap-2 text-white/90 justify-center">
+              <FileText className="h-4 w-4" />
+              <div>
+                <div className="font-medium">
+                  {language === 'es' ? 'Versión' : 'Version'}
                 </div>
+                <div>{content.version}</div>
               </div>
+            </div>
 
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Languages className="h-4 w-4" />
-                <div>
-                  <div className="font-medium">
-                    {language === 'es' ? 'Idioma' : 'Language'}
-                  </div>
-                  <div>{language === 'es' ? 'Español' : 'English'}</div>
+            <div className="flex items-center gap-2 text-white/90 justify-center">
+              <Languages className="h-4 w-4" />
+              <div>
+                <div className="font-medium">
+                  {language === 'es' ? 'Idioma' : 'Language'}
                 </div>
+                <div>{language === 'es' ? 'Español' : 'English'}</div>
               </div>
+            </div>
 
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Shield className="h-4 w-4" />
-                <div>
-                  <div className="font-medium">
-                    {language === 'es' ? 'Cumplimiento' : 'Compliance'}
-                  </div>
-                  <div>GDPR/AEPD 2025</div>
+            <div className="flex items-center gap-2 text-white/90 justify-center">
+              <Shield className="h-4 w-4" />
+              <div>
+                <div className="font-medium">
+                  {language === 'es' ? 'Cumplimiento' : 'Compliance'}
                 </div>
+                <div>GDPR/AEPD 2025</div>
               </div>
             </div>
           </div>
