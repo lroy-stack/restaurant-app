@@ -18,7 +18,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import QRCodeStyling from 'qr-code-styling'
 import { jsPDF } from 'jspdf'
 import 'jspdf-autotable'
-import * as XLSX from 'xlsx'
+// XLSX removed for security - export functionality replaced with CSV
 import { 
   QrCode,
   Download,

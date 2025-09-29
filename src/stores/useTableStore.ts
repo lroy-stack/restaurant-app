@@ -13,6 +13,12 @@ interface TableData {
   currentStatus?: 'available' | 'reserved' | 'occupied' | 'maintenance' | 'temporally_closed'
   statusNotes?: string
   estimatedFreeTime?: string
+  // Position fields from database
+  position_x?: number
+  position_y?: number
+  width?: number
+  height?: number
+  rotation?: number
   // 🔥 NUEVO: Añadir campo para mostrar información de reserva
   currentReservation?: {
     customerName: string
@@ -32,6 +38,7 @@ interface TableStore {
   toggleTable: (tableId: string, isActive: boolean) => Promise<void>
   toggleZone: (location: string, activate: boolean) => Promise<void>
   updateTableStatus: (tableId: string, status: string, notes?: string, estimatedFreeTime?: string) => Promise<void>
+  updateTablePosition: (tableId: string, position_x: number, position_y: number) => Promise<void>
 }
 
 export const useTableStore = create<TableStore>()(
@@ -224,6 +231,53 @@ export const useTableStore = create<TableStore>()(
         } catch (error) {
           console.error('Error updating table status:', error)
           toast.error('Error al actualizar el estado de la mesa')
+          throw error
+        }
+      },
+
+      // ✅ ENHANCED: Position update with validation and precision handling
+      updateTablePosition: async (tableId: string, position_x: number, position_y: number) => {
+        try {
+          // Sanitize precision to avoid DB numeric issues
+          const sanitizedX = Math.round(position_x * 100) / 100
+          const sanitizedY = Math.round(position_y * 100) / 100
+
+          // Validate bounds
+          const validatedX = Math.max(0, Math.min(sanitizedX, 2000))
+          const validatedY = Math.max(0, Math.min(sanitizedY, 1500))
+
+          const response = await fetch(`/api/tables/${tableId}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept-Profile': 'restaurante',
+              'Content-Profile': 'restaurante'
+            },
+            body: JSON.stringify({
+              position_x: validatedX,
+              position_y: validatedY
+            })
+          })
+
+          if (!response.ok) {
+            throw new Error('Failed to update table position')
+          }
+
+          // Update store immediately with validated values
+          set((state) => ({
+            tables: state.tables.map(table =>
+              table.id === tableId
+                ? { ...table, position_x: validatedX, position_y: validatedY }
+                : table
+            )
+          }))
+
+          const table = get().tables.find(t => t.id === tableId)
+          toast.success(`Mesa ${table?.number} reposicionada`)
+
+        } catch (error) {
+          console.error('Error updating table position:', error)
+          toast.error('Error al mover la mesa')
           throw error
         }
       }

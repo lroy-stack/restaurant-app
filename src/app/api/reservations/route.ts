@@ -62,7 +62,7 @@ async function validateTimeSlot(date: string, time: string): Promise<{ valid: bo
 
         // DUAL SHIFT VALIDATION: Check both lunch and dinner services
         let isValidTime = false
-        let availableHours = []
+        const availableHours = []
 
         // Check lunch service (if enabled)
         if (dayHours.lunch_enabled && dayHours.lunch_open_time && dayHours.lunch_close_time) {

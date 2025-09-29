@@ -6,6 +6,23 @@ import { TableStatusPanel } from './table-status-panel'
 import { TableAnalytics } from './table-analytics'
 import { TableConfiguration } from './table-configuration'
 import { EnhancedQRManager } from './enhanced-qr-manager'
+import dynamic from 'next/dynamic'
+
+// Dynamic import for floor plan to handle SSR compatibility with Konva
+const FloorPlanView = dynamic(
+  () => import('./floor-plan-v2/FloorPlanView'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96 bg-muted/30 rounded-lg">
+        <div className="text-center space-y-2">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-sm text-muted-foreground">Cargando planta visual...</p>
+        </div>
+      </div>
+    )
+  }
+)
 
 interface TableData {
   id: string
@@ -43,8 +60,9 @@ export function TableTabs({ tables = [], defaultTab = 'status' }: TableTabsProps
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-      <TabsList className="grid w-full grid-cols-4">
+      <TabsList className="grid w-full grid-cols-5">
         <TabsTrigger value="status">Estados</TabsTrigger>
+        <TabsTrigger value="floor-plan">Planta</TabsTrigger>
         <TabsTrigger value="analytics">Análisis</TabsTrigger>
         <TabsTrigger value="config">Configuración</TabsTrigger>
         <TabsTrigger value="qrcodes">QR Codes</TabsTrigger>
@@ -53,6 +71,10 @@ export function TableTabs({ tables = [], defaultTab = 'status' }: TableTabsProps
 
       <TabsContent value="status" className="space-y-4">
         <TableStatusPanel tables={tables} />
+      </TabsContent>
+
+      <TabsContent value="floor-plan" className="space-y-4">
+        <FloorPlanView tables={tables} />
       </TabsContent>
 
       <TabsContent value="analytics" className="space-y-4">

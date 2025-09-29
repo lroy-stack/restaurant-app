@@ -11,6 +11,12 @@ interface TableUpdateData {
   currentStatus?: 'available' | 'reserved' | 'occupied' | 'maintenance'
   statusNotes?: string | null
   estimatedFreeTime?: string | null
+  // Position fields for drag and drop functionality
+  position_x?: number
+  position_y?: number
+  width?: number
+  height?: number
+  rotation?: number
 }
 
 export async function GET(
@@ -97,6 +103,43 @@ export async function PATCH(
           { status: 400 }
         )
       }
+    }
+
+    // Validate position if provided
+    if (updateData.position_x !== undefined && isNaN(updateData.position_x)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid position_x value' },
+        { status: 400 }
+      )
+    }
+
+    if (updateData.position_y !== undefined && isNaN(updateData.position_y)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid position_y value' },
+        { status: 400 }
+      )
+    }
+
+    // Validate dimensions if provided
+    if (updateData.width !== undefined && (updateData.width < 40 || updateData.width > 300)) {
+      return NextResponse.json(
+        { success: false, error: 'Width must be between 40 and 300 pixels' },
+        { status: 400 }
+      )
+    }
+
+    if (updateData.height !== undefined && (updateData.height < 40 || updateData.height > 200)) {
+      return NextResponse.json(
+        { success: false, error: 'Height must be between 40 and 200 pixels' },
+        { status: 400 }
+      )
+    }
+
+    if (updateData.rotation !== undefined && (updateData.rotation < 0 || updateData.rotation >= 360)) {
+      return NextResponse.json(
+        { success: false, error: 'Rotation must be between 0 and 360 degrees' },
+        { status: 400 }
+      )
     }
 
     // Add updatedAt timestamp

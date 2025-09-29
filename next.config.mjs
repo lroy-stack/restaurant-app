@@ -5,6 +5,15 @@ const withBundleAnalyzer = bundleAnalyzer({
 })
 
 const nextConfig = {
+  // Webpack configuration for Konva canvas module
+  webpack: (config, { isServer }) => {
+    // Add externals for canvas module (required by Konva)
+    if (!isServer) {
+      config.externals = config.externals || []
+      config.externals.push('canvas')
+    }
+    return config
+  },
   experimental: {
     optimizePackageImports: [
       "@radix-ui/react-icons",
@@ -15,7 +24,8 @@ const nextConfig = {
       "react-grid-layout",
       "@xyflow/react",
       "react-big-calendar",
-      "recharts"
+      "recharts",
+      "react-konva" // Add react-konva for optimization
     ],
     turbopack: {
       rules: {

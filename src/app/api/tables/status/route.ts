@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       .from('tables')
       .select(`
         *,
-        reservations(id,customerName,partySize,time,date,status)
+        reservations(id,customerName,partySize,time,date,status,tableId,table_ids)
       `)
       .order('number')
 
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       if (table.reservations && table.reservations.length > 0) {
         const now = new Date()
         
-        // Find active reservation with correct business logic
+        // CRITICAL: Find active reservation using ONLY table_ids[] (NOT legacy tableId)
         const activeReservation = table.reservations.find((res: any) => {
           // 🚀 CRITICAL FIX: Use Spain timezone helper for accurate comparison
           const nowMadrid = getSpainDate()
@@ -63,6 +63,11 @@ export async function GET(request: NextRequest) {
           const todayMadrid = nowMadrid.toDateString()
           const resDateMadrid = resDateTime.toDateString()
           const isToday = resDateMadrid === todayMadrid
+
+          // ✅ CRITICAL: Check ONLY table_ids[] array - NO FALLBACK to tableId
+          const isTableAssigned = res.table_ids?.includes(table.id)
+
+          if (!isTableAssigned) return false
 
           // 🚀 FIXED: SEATED = OCUPADA (SOLO para HOY en timezone Madrid)
           if (res.status === 'SEATED' && isToday) {

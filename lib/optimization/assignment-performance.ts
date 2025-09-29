@@ -49,7 +49,9 @@ export class AssignmentCacheManager {
     }
 
     // Cache for 2 minutes during peak hours, 5 minutes during off-peak
-    const hour = parseInt(timeSlot.split(':')[0])
+    const timeSlotFirstPart = timeSlot.split(':')[0]
+    if (!timeSlotFirstPart) throw new Error('Invalid timeSlot format')
+    const hour = parseInt(timeSlotFirstPart)
     const isPeakHour = hour >= 18 && hour <= 22
     const ttl = isPeakHour ? 120 : 300
 
@@ -176,7 +178,13 @@ export class AssignmentCacheManager {
   }
 
   async getCacheStats(): Promise<Record<string, number>> {
-    return await this.redis.hgetall('cache_stats')
+    const result = await this.redis.hgetall('cache_stats')
+    // Convert string values to numbers for proper typing
+    const numberResult: Record<string, number> = {}
+    for (const [key, value] of Object.entries(result)) {
+      numberResult[key] = parseInt(value) || 0
+    }
+    return numberResult
   }
 }
 
@@ -312,7 +320,9 @@ export class AlgorithmPerformanceOptimizer {
     let bestScore = 0
 
     for (let i = 0; i < Math.min(tables.length, maxIterations); i++) {
-      const result = scoringFunction(tables[i])
+      const table = tables[i]
+      if (!table) continue
+      const result = scoringFunction(table)
       scored.push(result)
 
       if (result.score > bestScore) {
@@ -406,7 +416,9 @@ export class AlgorithmPerformanceOptimizer {
       // Cleanup cache if it gets too large
       if (this.memoCache.size > 1000) {
         const firstKey = this.memoCache.keys().next().value
-        this.memoCache.delete(firstKey)
+        if (firstKey !== undefined) {
+          this.memoCache.delete(firstKey)
+        }
       }
 
       return result
@@ -525,7 +537,8 @@ export class PerformanceMonitor {
       .filter(([, perf]) => perf.count >= 3 && perf.avgTime < 200)
       .sort(([, a], [, b]) => b.avgUtilization - a.avgUtilization)
 
-    return (candidates[0]?.[0] as 'optimal' | 'balanced' | 'historical') || 'optimal'
+    const firstCandidate = candidates[0]
+    return (firstCandidate?.[0] as 'optimal' | 'balanced' | 'historical') || 'optimal'
   }
 }
 

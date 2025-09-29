@@ -26,19 +26,19 @@ export interface AssignmentSuccessMetrics {
 export interface ValidationCriteria {
   // Algorithm Performance Validation
   performanceThresholds: {
-    maxResponseTime: 200 // milliseconds
-    maxAlgorithmTime: 150 // milliseconds
-    maxDatabaseTime: 50 // milliseconds
-    minCacheHitRate: 0.80 // 80%
-    minConfidenceScore: 0.85 // 85%
+    maxResponseTime: number // milliseconds
+    maxAlgorithmTime: number // milliseconds
+    maxDatabaseTime: number // milliseconds
+    minCacheHitRate: number // 0.0-1.0
+    minConfidenceScore: number // 0.0-1.0
   }
 
   // Business Impact Validation
   businessTargets: {
-    minUtilizationIncrease: 0.15 // 15%
-    minRevenueIncrease: 0.12 // 12%
-    maxWasteThreshold: 0.15 // 15% max empty seats
-    minCustomerSatisfaction: 4.5 // out of 5
+    minUtilizationIncrease: number // percentage
+    minRevenueIncrease: number // percentage
+    maxWasteThreshold: number // percentage max empty seats
+    minCustomerSatisfaction: number // out of 5
   }
 
   // Data Quality Validation

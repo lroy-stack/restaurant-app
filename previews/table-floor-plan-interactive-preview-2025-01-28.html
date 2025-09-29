@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enigma Floor Plan - Interactive Table Management Preview</title>
+    <style>
+        /* Enigma Design Tokens - Atlantic Theme */
+        :root {
+            --radius: 0.75rem;
+            --background: oklch(0.985 0.002 210);
+            --foreground: oklch(0.13 0.028 200);
+            --card: oklch(1 0 0);
+            --card-foreground: oklch(0.13 0.028 200);
+            --primary: oklch(0.45 0.15 200);
+            --primary-foreground: oklch(0.985 0.002 210);
+            --secondary: oklch(0.92 0.02 120);
+            --secondary-foreground: oklch(0.25 0.05 130);
+            --muted: oklch(0.96 0.005 210);
+            --muted-foreground: oklch(0.45 0.025 200);
+            --accent: oklch(0.6 0.18 40);
+            --accent-foreground: oklch(0.985 0.002 210);
+            --destructive: oklch(0.55 0.22 25);
+            --destructive-foreground: oklch(0.985 0.002 210);
+            --border: oklch(0.88 0.01 210);
+            --input: oklch(0.94 0.005 210);
+            --ring: oklch(0.45 0.15 200);
+
+            /* Table Status Colors */
+            --status-available: #9FB289;
+            --status-reserved: #CB5910;
+            --status-occupied: #E53E3E;
+            --status-maintenance: #6B7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background);
+            color: var(--foreground);
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            grid-template-areas:
+                "header"
+                "main";
+        }
+
+        /* Header Section */
+        .header {
+            grid-area: header;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-title {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .header-title h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--foreground);
+        }
+
+        .header-title p {
+            font-size: 0.875rem;
+            color: var(--muted-foreground);
+        }
+
+        .header-stats {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--muted-foreground);
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            background: #10B981;
+            border-radius: 50%;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .zone-filter {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .zone-filter label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--foreground);
+        }
+
+        .zone-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--background);
+            color: var(--foreground);
+            font-size: 0.875rem;
+            cursor: pointer;
+            min-width: 180px;
+        }
+
+        .zone-select:focus {
+            outline: 2px solid var(--ring);
+            outline-offset: 2px;
+        }
+
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .zoom-btn {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--background);
+            color: var(--foreground);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            min-height: 36px;
+        }
+
+        .zoom-btn:hover {
+            background: var(--muted);
+        }
+
+        .zoom-level {
+            font-size: 0.875rem;
+            color: var(--muted-foreground);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+        }
+
+        /* Main Canvas Container */
+        .main-content {
+            grid-area: main;
+            position: relative;
+            overflow: hidden;
+            background: var(--muted);
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: calc(100vh - 140px);
+            cursor: grab;
+        }
+
+        .canvas-container.dragging {
+            cursor: grabbing;
+        }
+
+        .floor-plan-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            cursor: default;
+        }
+
+        /* Table Elements */
+        .table-element {
+            position: absolute;
+            cursor: pointer;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .table-element:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .table-element.dragging {
+            opacity: 0.8;
+            z-index: 20;
+            cursor: grabbing;
+        }
+
+        .table-circle {
+            border-radius: 50%;
+        }
+
+        .table-rectangle {
+            border-radius: 6px;
+        }
+
+        /* Table Status Colors */
+        .status-available { background: var(--status-available); }
+        .status-reserved { background: var(--status-reserved); }
+        .status-occupied { background: var(--status-occupied); }
+        .status-maintenance { background: var(--status-maintenance); }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            max-width: 400px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--foreground);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--muted-foreground);
+            padding: 0.25rem;
+            border-radius: 4px;
+        }
+
+        .modal-close:hover {
+            background: var(--muted);
+        }
+
+        .modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            color: var(--muted-foreground);
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-size: 0.875rem;
+            color: var(--foreground);
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-badge.available {
+            background: var(--status-available);
+            color: white;
+        }
+
+        .status-badge.reserved {
+            background: var(--status-reserved);
+            color: white;
+        }
+
+        .status-badge.occupied {
+            background: var(--status-occupied);
+            color: white;
+        }
+
+        .status-badge.maintenance {
+            background: var(--status-maintenance);
+            color: white;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+
+            .header-title h1 {
+                font-size: 1.5rem;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+
+            .toolbar-left {
+                justify-content: space-between;
+            }
+
+            .legend {
+                order: 1;
+            }
+
+            .zoom-controls {
+                order: 2;
+                justify-content: center;
+            }
+
+            .zone-filter {
+                order: 0;
+                flex: 1;
+            }
+
+            .zone-select {
+                flex: 1;
+                min-width: auto;
+            }
+
+            .table-element {
+                min-width: 44px;
+                min-height: 44px;
+            }
+
+            .canvas-container {
+                min-height: calc(100vh - 180px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 0.75rem 1rem;
+            }
+
+            .toolbar {
+                padding: 0.5rem 1rem;
+            }
+
+            .legend {
+                justify-content: center;
+            }
+
+            .modal-content {
+                padding: 1rem;
+                width: 95%;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--muted-foreground);
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--muted);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Performance optimizations */
+        .will-change-transform {
+            will-change: transform;
+        }
+
+        .gpu-accelerated {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>Gestión de Mesas - Vista de Planta</h1>
+                    <p id="stats-summary">34 mesas total • 28 activas • 6 temporalmente cerradas</p>
+                </div>
+                <div class="header-stats">
+                    <div class="status-indicator"></div>
+                    <span>En tiempo real</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="zone-filter">
+                    <label for="zone-select">Zona:</label>
+                    <select id="zone-select" class="zone-select">
+                        <option value="all">Todas las zonas</option>
+                        <option value="TERRACE_CAMPANARI">Terraza Campanari</option>
+                        <option value="SALA_PRINCIPAL">Sala Principal</option>
+                        <option value="SALA_VIP">Sala VIP</option>
+                        <option value="TERRACE_JUSTICIA">Terraza Justicia</option>
+                    </select>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--status-available);"></div>
+                        <span>Disponible</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--status-reserved);"></div>
+                        <span>Reservada</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--status-occupied);"></div>
+                        <span>Ocupada</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--status-maintenance);"></div>
+                        <span>Mantenimiento</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="zoom-controls">
+                <button id="zoom-out" class="zoom-btn" title="Alejar">−</button>
+                <div id="zoom-level" class="zoom-level">100%</div>
+                <button id="zoom-in" class="zoom-btn" title="Acercar">+</button>
+                <button id="fit-screen" class="zoom-btn" title="Ajustar a pantalla">⌂</button>
+            </div>
+        </div>
+
+        <!-- Main Canvas Container -->
+        <main class="main-content">
+            <div id="canvas-container" class="canvas-container">
+                <div id="floor-plan-canvas" class="floor-plan-canvas">
+                    <!-- Tables will be dynamically inserted here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Table Details -->
+    <div id="table-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title" class="modal-title">Mesa T1</h2>
+                <button id="modal-close" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="info-row">
+                    <span class="info-label">Estado:</span>
+                    <span id="modal-status" class="status-badge available">Disponible</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Capacidad:</span>
+                    <span id="modal-capacity" class="info-value">4 personas</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Zona:</span>
+                    <span id="modal-location" class="info-value">Terraza Campanari</span>
+                </div>
+                <div id="reservation-info" class="info-row" style="display: none;">
+                    <span class="info-label">Reserva:</span>
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                        <span id="modal-customer" class="info-value">García, Ana</span>
+                        <span id="modal-time" style="font-size: 0.75rem; color: var(--muted-foreground);">20:30 - 4 personas</span>
+                    </div>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Código QR:</span>
+                    <span id="modal-qr" class="info-value">QR_T1_2024</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === ENIGMA TABLE FLOOR PLAN MANAGER ===
+        class EnigmaFloorPlanManager {
+            constructor() {
+                this.tables = [];
+                this.currentZone = 'all';
+                this.zoomLevel = 1;
+                this.isPanning = false;
+                this.dragState = {
+                    isDragging: false,
+                    currentTable: null,
+                    startX: 0,
+                    startY: 0,
+                    initialTableX: 0,
+                    initialTableY: 0
+                };
+                this.panState = {
+                    startX: 0,
+                    startY: 0,
+                    initialCanvasX: 0,
+                    initialCanvasY: 0
+                };
+
+                this.canvasContainer = document.getElementById('canvas-container');
+                this.canvas = document.getElementById('floor-plan-canvas');
+                this.modal = document.getElementById('table-modal');
+
+                this.initializeCanvas();
+                this.generateMockTables();
+                this.renderTables();
+                this.attachEventListeners();
+                this.updateStats();
+            }
+
+            // Initialize canvas with proper sizing
+            initializeCanvas() {
+                const container = this.canvasContainer;
+                const canvas = this.canvas;
+
+                // Set canvas size - generous size for 34 tables
+                canvas.style.width = '1200px';
+                canvas.style.height = '800px';
+
+                // Center the canvas initially
+                this.centerCanvas();
+
+                // Handle window resize
+                window.addEventListener('resize', () => {
+                    this.centerCanvas();
+                });
+            }
+
+            // Center canvas in container
+            centerCanvas() {
+                const container = this.canvasContainer;
+                const canvas = this.canvas;
+                const containerRect = container.getBoundingClientRect();
+                const canvasRect = canvas.getBoundingClientRect();
+
+                const centerX = (containerRect.width - 1200 * this.zoomLevel) / 2;
+                const centerY = (containerRect.height - 800 * this.zoomLevel) / 2;
+
+                canvas.style.transform = `translate(${centerX}px, ${centerY}px) scale(${this.zoomLevel})`;
+                canvas.style.transformOrigin = '0 0';
+            }
+
+            // Generate realistic mock table data based on Enigma schema
+            generateMockTables() {
+                const zones = {
+                    'TERRACE_CAMPANARI': { name: 'Terraza Campanari', count: 8 },
+                    'SALA_PRINCIPAL': { name: 'Sala Principal', count: 16 },
+                    'SALA_VIP': { name: 'Sala VIP', count: 6 },
+                    'TERRACE_JUSTICIA': { name: 'Terraza Justicia', count: 4 }
+                };
+
+                const statuses = ['available', 'reserved', 'occupied', 'maintenance'];
+                const statusWeights = [0.5, 0.25, 0.15, 0.1]; // Realistic distribution
+
+                let tableId = 1;
+                let tables = [];
+
+                Object.entries(zones).forEach(([zoneKey, zoneData]) => {
+                    const zonePrefix = zoneKey === 'SALA_PRINCIPAL' ? 'S' :
+                                     zoneKey === 'SALA_VIP' ? 'V' :
+                                     zoneKey === 'TERRACE_CAMPANARI' ? 'TC' : 'TJ';
+
+                    for (let i = 0; i < zoneData.count; i++) {
+                        const capacity = [2, 4, 6, 8][Math.floor(Math.random() * 4)];
+                        const status = this.weightedRandomChoice(statuses, statusWeights);
+
+                        // Generate positions based on zone layout
+                        const position = this.generateZonePosition(zoneKey, i, zoneData.count);
+
+                        const table = {
+                            id: `table_${tableId}`,
+                            number: `${zonePrefix}${i + 1}`,
+                            capacity: capacity,
+                            location: zoneKey,
+                            locationName: zoneData.name,
+                            position: position,
+                            currentStatus: status,
+                            isActive: Math.random() > 0.15, // 85% active
+                            qrCode: `QR_${zonePrefix}${i + 1}_2024`,
+                            currentReservation: status === 'reserved' || status === 'occupied' ?
+                                this.generateMockReservation() : null
+                        };
+
+                        tables.push(table);
+                        tableId++;
+                    }
+                });
+
+                this.tables = tables;
+            }
+
+            // Generate realistic positions for each zone
+            generateZonePosition(zone, index, totalInZone) {
+                const margin = 60;
+                const spacing = 120;
+
+                switch (zone) {
+                    case 'TERRACE_CAMPANARI': // Top area
+                        return {
+                            x: margin + (index % 4) * spacing * 2,
+                            y: margin + Math.floor(index / 4) * spacing
+                        };
+
+                    case 'SALA_PRINCIPAL': // Center area - grid layout
+                        return {
+                            x: margin + (index % 4) * spacing * 1.5,
+                            y: 200 + Math.floor(index / 4) * spacing
+                        };
+
+                    case 'SALA_VIP': // Right side
+                        return {
+                            x: 800 + (index % 2) * spacing,
+                            y: 150 + Math.floor(index / 2) * spacing * 1.2
+                        };
+
+                    case 'TERRACE_JUSTICIA': // Bottom area
+                        return {
+                            x: 200 + index * spacing * 1.5,
+                            y: 650
+                        };
+
+                    default:
+                        return { x: 100 + index * 100, y: 100 };
+                }
+            }
+
+            // Weighted random choice for realistic status distribution
+            weightedRandomChoice(items, weights) {
+                const random = Math.random();
+                let weightSum = 0;
+
+                for (let i = 0; i < items.length; i++) {
+                    weightSum += weights[i];
+                    if (random <= weightSum) {
+                        return items[i];
+                    }
+                }
+                return items[items.length - 1];
+            }
+
+            // Generate mock reservation data
+            generateMockReservation() {
+                const customers = [
+                    'García, Ana', 'Martínez, Carlos', 'López, María',
+                    'Rodríguez, Juan', 'Fernández, Isabel', 'Sánchez, Pedro',
+                    'Pérez, Laura', 'Gómez, Miguel', 'Jiménez, Carmen'
+                ];
+
+                const times = ['19:00', '19:30', '20:00', '20:30', '21:00', '21:30'];
+
+                return {
+                    customerName: customers[Math.floor(Math.random() * customers.length)],
+                    time: times[Math.floor(Math.random() * times.length)],
+                    partySize: [2, 3, 4, 5, 6][Math.floor(Math.random() * 5)]
+                };
+            }
+
+            // Render all tables on the canvas
+            renderTables() {
+                // Clear existing tables
+                this.canvas.innerHTML = '';
+
+                // Filter tables by current zone
+                const visibleTables = this.currentZone === 'all' ?
+                    this.tables :
+                    this.tables.filter(table => table.location === this.currentZone);
+
+                visibleTables.forEach(table => {
+                    if (table.isActive) {
+                        this.createTableElement(table);
+                    }
+                });
+            }
+
+            // Create DOM element for a single table
+            createTableElement(table) {
+                const tableEl = document.createElement('div');
+                tableEl.className = 'table-element';
+                tableEl.id = table.id;
+                tableEl.dataset.tableId = table.id;
+
+                // Determine shape based on capacity (PRP requirement)
+                const isCircle = table.capacity <= 4;
+                tableEl.classList.add(isCircle ? 'table-circle' : 'table-rectangle');
+
+                // Apply status color
+                tableEl.classList.add(`status-${table.currentStatus}`);
+
+                // Size based on capacity
+                const size = table.capacity <= 2 ? 50 :
+                           table.capacity <= 4 ? 60 :
+                           table.capacity <= 6 ? 80 : 100;
+
+                // Position and style
+                tableEl.style.left = `${table.position.x}px`;
+                tableEl.style.top = `${table.position.y}px`;
+                tableEl.style.width = `${size}px`;
+                tableEl.style.height = `${size}px`;
+
+                // Table label
+                tableEl.textContent = table.number;
+
+                // Add touch-friendly attributes
+                tableEl.style.minWidth = '44px';
+                tableEl.style.minHeight = '44px';
+
+                // Attach event listeners
+                this.attachTableEventListeners(tableEl, table);
+
+                this.canvas.appendChild(tableEl);
+            }
+
+            // Attach event listeners to table elements
+            attachTableEventListeners(tableEl, table) {
+                // Mouse events
+                tableEl.addEventListener('mousedown', (e) => this.handlePointerStart(e, table));
+                tableEl.addEventListener('click', (e) => {
+                    if (!this.dragState.isDragging) {
+                        this.openTableModal(table);
+                    }
+                });
+
+                // Touch events for mobile
+                tableEl.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.handlePointerStart(e, table);
+                }, { passive: false });
+
+                // Prevent context menu on long press
+                tableEl.addEventListener('contextmenu', (e) => e.preventDefault());
+            }
+
+            // Handle pointer start (mouse/touch)
+            handlePointerStart(e, table) {
+                const pointer = e.touches ? e.touches[0] : e;
+
+                this.dragState = {
+                    isDragging: false, // Will be set to true on first move
+                    currentTable: table,
+                    startX: pointer.clientX,
+                    startY: pointer.clientY,
+                    initialTableX: table.position.x,
+                    initialTableY: table.position.y
+                };
+
+                // Add global move and end listeners
+                document.addEventListener('mousemove', this.handlePointerMove);
+                document.addEventListener('mouseup', this.handlePointerEnd);
+                document.addEventListener('touchmove', this.handlePointerMove, { passive: false });
+                document.addEventListener('touchend', this.handlePointerEnd);
+
+                e.stopPropagation();
+            }
+
+            // Handle pointer move (dragging)
+            handlePointerMove = (e) => {
+                if (!this.dragState.currentTable) return;
+
+                const pointer = e.touches ? e.touches[0] : e;
+                const deltaX = pointer.clientX - this.dragState.startX;
+                const deltaY = pointer.clientY - this.dragState.startY;
+
+                // Start dragging if moved more than threshold
+                if (!this.dragState.isDragging && (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5)) {
+                    this.dragState.isDragging = true;
+                    const tableEl = document.getElementById(this.dragState.currentTable.id);
+                    tableEl.classList.add('dragging');
+                    this.canvasContainer.classList.add('dragging');
+                }
+
+                if (this.dragState.isDragging) {
+                    // Update table position
+                    const newX = this.dragState.initialTableX + deltaX / this.zoomLevel;
+                    const newY = this.dragState.initialTableY + deltaY / this.zoomLevel;
+
+                    // Update table data
+                    this.dragState.currentTable.position.x = Math.max(0, Math.min(1150, newX));
+                    this.dragState.currentTable.position.y = Math.max(0, Math.min(750, newY));
+
+                    // Update DOM element
+                    const tableEl = document.getElementById(this.dragState.currentTable.id);
+                    tableEl.style.left = `${this.dragState.currentTable.position.x}px`;
+                    tableEl.style.top = `${this.dragState.currentTable.position.y}px`;
+                }
+
+                if (e.touches) {
+                    e.preventDefault();
+                }
+            }
+
+            // Handle pointer end (drop)
+            handlePointerEnd = (e) => {
+                if (this.dragState.currentTable) {
+                    const tableEl = document.getElementById(this.dragState.currentTable.id);
+                    tableEl.classList.remove('dragging');
+                    this.canvasContainer.classList.remove('dragging');
+                }
+
+                // Reset drag state after a brief delay to prevent click events
+                setTimeout(() => {
+                    this.dragState = {
+                        isDragging: false,
+                        currentTable: null,
+                        startX: 0,
+                        startY: 0,
+                        initialTableX: 0,
+                        initialTableY: 0
+                    };
+                }, 10);
+
+                // Remove global listeners
+                document.removeEventListener('mousemove', this.handlePointerMove);
+                document.removeEventListener('mouseup', this.handlePointerEnd);
+                document.removeEventListener('touchmove', this.handlePointerMove);
+                document.removeEventListener('touchend', this.handlePointerEnd);
+            }
+
+            // Open table details modal
+            openTableModal(table) {
+                document.getElementById('modal-title').textContent = `Mesa ${table.number}`;
+                document.getElementById('modal-capacity').textContent = `${table.capacity} personas`;
+                document.getElementById('modal-location').textContent = table.locationName;
+                document.getElementById('modal-qr').textContent = table.qrCode;
+
+                // Update status badge
+                const statusBadge = document.getElementById('modal-status');
+                statusBadge.className = `status-badge ${table.currentStatus}`;
+                statusBadge.textContent = this.getStatusLabel(table.currentStatus);
+
+                // Show/hide reservation info
+                const reservationInfo = document.getElementById('reservation-info');
+                if (table.currentReservation) {
+                    document.getElementById('modal-customer').textContent = table.currentReservation.customerName;
+                    document.getElementById('modal-time').textContent =
+                        `${table.currentReservation.time} - ${table.currentReservation.partySize} personas`;
+                    reservationInfo.style.display = 'flex';
+                } else {
+                    reservationInfo.style.display = 'none';
+                }
+
+                this.modal.classList.add('active');
+            }
+
+            // Get localized status label
+            getStatusLabel(status) {
+                const labels = {
+                    available: 'Disponible',
+                    reserved: 'Reservada',
+                    occupied: 'Ocupada',
+                    maintenance: 'Mantenimiento'
+                };
+                return labels[status] || status;
+            }
+
+            // Close modal
+            closeModal() {
+                this.modal.classList.remove('active');
+            }
+
+            // Filter tables by zone
+            filterByZone(zone) {
+                this.currentZone = zone;
+                this.renderTables();
+                this.updateStats();
+            }
+
+            // Update statistics
+            updateStats() {
+                const visibleTables = this.currentZone === 'all' ?
+                    this.tables :
+                    this.tables.filter(table => table.location === this.currentZone);
+
+                const activeTables = visibleTables.filter(table => table.isActive);
+                const inactiveTables = visibleTables.filter(table => !table.isActive);
+
+                const stats = `${visibleTables.length} mesas total • ${activeTables.length} activas • ${inactiveTables.length} temporalmente cerradas`;
+                document.getElementById('stats-summary').textContent = stats;
+            }
+
+            // Zoom controls
+            zoomIn() {
+                this.zoomLevel = Math.min(this.zoomLevel * 1.2, 3);
+                this.updateZoom();
+            }
+
+            zoomOut() {
+                this.zoomLevel = Math.max(this.zoomLevel / 1.2, 0.3);
+                this.updateZoom();
+            }
+
+            fitToScreen() {
+                const container = this.canvasContainer;
+                const containerRect = container.getBoundingClientRect();
+
+                const scaleX = containerRect.width / 1200;
+                const scaleY = containerRect.height / 800;
+                this.zoomLevel = Math.min(scaleX, scaleY) * 0.9;
+
+                this.updateZoom();
+            }
+
+            updateZoom() {
+                this.centerCanvas();
+                document.getElementById('zoom-level').textContent = `${Math.round(this.zoomLevel * 100)}%`;
+            }
+
+            // Attach global event listeners
+            attachEventListeners() {
+                // Zone filter
+                document.getElementById('zone-select').addEventListener('change', (e) => {
+                    this.filterByZone(e.target.value);
+                });
+
+                // Zoom controls
+                document.getElementById('zoom-in').addEventListener('click', () => this.zoomIn());
+                document.getElementById('zoom-out').addEventListener('click', () => this.zoomOut());
+                document.getElementById('fit-screen').addEventListener('click', () => this.fitToScreen());
+
+                // Modal controls
+                document.getElementById('modal-close').addEventListener('click', () => this.closeModal());
+                this.modal.addEventListener('click', (e) => {
+                    if (e.target === this.modal) this.closeModal();
+                });
+
+                // Canvas panning
+                this.canvasContainer.addEventListener('mousedown', (e) => {
+                    if (e.target === this.canvasContainer || e.target === this.canvas) {
+                        this.startPanning(e);
+                    }
+                });
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') this.closeModal();
+                    if (e.key === '+' || e.key === '=') this.zoomIn();
+                    if (e.key === '-') this.zoomOut();
+                    if (e.key === '0') this.fitToScreen();
+                });
+
+                // Touch gestures for mobile
+                this.setupTouchGestures();
+            }
+
+            // Setup touch gestures for mobile
+            setupTouchGestures() {
+                let lastTouchDistance = 0;
+
+                this.canvasContainer.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 2) {
+                        // Pinch zoom start
+                        const touch1 = e.touches[0];
+                        const touch2 = e.touches[1];
+                        lastTouchDistance = Math.hypot(
+                            touch2.clientX - touch1.clientX,
+                            touch2.clientY - touch1.clientY
+                        );
+                    }
+                });
+
+                this.canvasContainer.addEventListener('touchmove', (e) => {
+                    if (e.touches.length === 2) {
+                        // Pinch zoom
+                        e.preventDefault();
+                        const touch1 = e.touches[0];
+                        const touch2 = e.touches[1];
+                        const distance = Math.hypot(
+                            touch2.clientX - touch1.clientX,
+                            touch2.clientY - touch1.clientY
+                        );
+
+                        if (lastTouchDistance > 0) {
+                            const scale = distance / lastTouchDistance;
+                            this.zoomLevel *= scale;
+                            this.zoomLevel = Math.max(0.3, Math.min(3, this.zoomLevel));
+                            this.updateZoom();
+                        }
+
+                        lastTouchDistance = distance;
+                    }
+                }, { passive: false });
+            }
+
+            // Start panning the canvas
+            startPanning(e) {
+                this.isPanning = true;
+                this.canvasContainer.style.cursor = 'grabbing';
+
+                this.panState.startX = e.clientX;
+                this.panState.startY = e.clientY;
+
+                const transform = this.canvas.style.transform;
+                const matches = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+
+                if (matches) {
+                    this.panState.initialCanvasX = parseFloat(matches[1]);
+                    this.panState.initialCanvasY = parseFloat(matches[2]);
+                } else {
+                    this.panState.initialCanvasX = 0;
+                    this.panState.initialCanvasY = 0;
+                }
+
+                document.addEventListener('mousemove', this.handlePanMove);
+                document.addEventListener('mouseup', this.endPanning);
+            }
+
+            // Handle panning movement
+            handlePanMove = (e) => {
+                if (!this.isPanning) return;
+
+                const deltaX = e.clientX - this.panState.startX;
+                const deltaY = e.clientY - this.panState.startY;
+
+                const newX = this.panState.initialCanvasX + deltaX;
+                const newY = this.panState.initialCanvasY + deltaY;
+
+                this.canvas.style.transform = `translate(${newX}px, ${newY}px) scale(${this.zoomLevel})`;
+            }
+
+            // End panning
+            endPanning = () => {
+                this.isPanning = false;
+                this.canvasContainer.style.cursor = 'grab';
+
+                document.removeEventListener('mousemove', this.handlePanMove);
+                document.removeEventListener('mouseup', this.endPanning);
+            }
+        }
+
+        // Initialize the floor plan manager when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.floorPlan = new EnigmaFloorPlanManager();
+        });
+
+        // Simulate real-time updates
+        setInterval(() => {
+            if (window.floorPlan && Math.random() < 0.1) { // 10% chance per 5 seconds
+                const tables = window.floorPlan.tables.filter(t => t.isActive);
+                if (tables.length > 0) {
+                    const randomTable = tables[Math.floor(Math.random() * tables.length)];
+                    const statuses = ['available', 'reserved', 'occupied'];
+                    const newStatus = statuses[Math.floor(Math.random() * statuses.length)];
+
+                    if (randomTable.currentStatus !== newStatus) {
+                        randomTable.currentStatus = newStatus;
+
+                        // Update reservation data
+                        if (newStatus === 'reserved' || newStatus === 'occupied') {
+                            randomTable.currentReservation = window.floorPlan.generateMockReservation();
+                        } else {
+                            randomTable.currentReservation = null;
+                        }
+
+                        // Re-render to show updated status
+                        window.floorPlan.renderTables();
+                    }
+                }
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

@@ -49,7 +49,7 @@ export class MigrationRunner {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
-        db: { schema: 'restaurante' },
+        db: { schema: 'restaurante' } as any,
         auth: { persistSession: false }
       }
     )
@@ -119,7 +119,7 @@ export class MigrationRunner {
         // Execute via raw SQL for CONCURRENTLY support
         const { error } = await this.supabaseAdmin.rpc('exec_sql', {
           sql_statement: statement
-        })
+        } as any)
 
         if (error) {
           // Allow index creation to fail if already exists
@@ -154,8 +154,8 @@ export class MigrationRunner {
     }
 
     // Validate schema exists
-    const { data: schemas } = await this.supabaseAdmin.rpc('list_schemas')
-    if (!schemas?.includes('restaurante')) {
+    const { data: schemas } = await this.supabaseAdmin.rpc('list_schemas', {} as any) as { data: string[] | null }
+    if (!schemas || !Array.isArray(schemas) || !schemas.includes('restaurante')) {
       throw new Error('restaurante schema not found')
     }
 
@@ -179,7 +179,7 @@ export class MigrationRunner {
       // Test critical indexes exist
       const { data: indexes } = await this.supabaseAdmin.rpc('list_indexes', {
         schema_name: 'restaurante'
-      })
+      } as any) as { data: DatabaseIndex[] | null }
 
       const requiredIndexes = [
         'idx_menu_items_category_available',
@@ -187,9 +187,10 @@ export class MigrationRunner {
         'idx_reservations_date_status'
       ]
 
-      const missingIndexes = requiredIndexes.filter(idx =>
-        !indexes?.some((dbIdx: DatabaseIndex) => dbIdx.indexname === idx)
-      )
+      const missingIndexes = requiredIndexes.filter(idx => {
+        if (!indexes || !Array.isArray(indexes)) return true
+        return !indexes.some((dbIdx: DatabaseIndex) => dbIdx.indexname === idx)
+      })
 
       if (missingIndexes.length > 0) {
         console.error('Missing indexes:', missingIndexes)
@@ -199,7 +200,7 @@ export class MigrationRunner {
       // Test RLS policies exist
       const { data: policies } = await this.supabaseAdmin.rpc('list_policies', {
         schema_name: 'restaurante'
-      })
+      } as any) as { data: DatabasePolicy[] | null }
 
       const requiredPolicies = [
         'legal_content_public_read',
@@ -207,9 +208,10 @@ export class MigrationRunner {
         'gdpr_requests_admin_all'
       ]
 
-      const missingPolicies = requiredPolicies.filter(policy =>
-        !policies?.some((dbPolicy: DatabasePolicy) => dbPolicy.policyname === policy)
-      )
+      const missingPolicies = requiredPolicies.filter(policy => {
+        if (!policies || !Array.isArray(policies)) return true
+        return !policies.some((dbPolicy: DatabasePolicy) => dbPolicy.policyname === policy)
+      })
 
       if (missingPolicies.length > 0) {
         console.error('Missing RLS policies:', missingPolicies)
@@ -251,8 +253,10 @@ export class MigrationRunner {
     for (const query of testQueries) {
       const { data } = await this.supabaseAdmin.rpc('explain_query', {
         query_text: query
-      })
-      afterPlans.push(data)
+      } as any)
+      if (data) {
+        afterPlans.push(data)
+      }
     }
 
     return {
@@ -343,7 +347,7 @@ export async function createMigrationHelpers(supabaseAdmin: SupabaseClient) {
 
   const { error } = await supabaseAdmin.rpc('exec_sql', {
     sql_statement: helperFunctions
-  })
+  } as any)
 
   if (error) {
     throw new Error(`Failed to create migration helpers: ${error.message}`)
