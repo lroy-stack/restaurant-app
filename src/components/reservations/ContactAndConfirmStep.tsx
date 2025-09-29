@@ -83,8 +83,12 @@ const content = {
     table: 'Mesa:',
     total: 'Total:',
     gdprTitle: 'Protección de datos y consentimientos',
-    dataProcessing: 'Acepto el procesamiento de mis datos personales para realizar la reserva conforme a la',
+    dataProcessing: 'Acepto el procesamiento de mis datos',
+    dataProcessingFull: 'conforme a la',
     privacyPolicy: 'política de privacidad',
+    emailConsentShort: 'Email de confirmación',
+    marketingConsentShort: 'Ofertas y eventos por email',
+    compactNotice: 'Las reservas pueden cancelarse hasta 24h antes • En caso de retraso +15min, la mesa puede reasignarse • Recibirás email de confirmación',
     emailConsent: 'Deseo recibir un email de confirmación para mi reserva.',
     marketingConsent: 'Deseo recibir información ocasional sobre ofertas especiales y eventos por email.',
     importantNotices: 'Información importante:',
@@ -123,8 +127,12 @@ const content = {
     table: 'Table:',
     total: 'Total:',
     gdprTitle: 'Data protection and consents',
-    dataProcessing: 'I agree to the processing of my personal data to make the reservation according to the',
+    dataProcessing: 'I agree to the processing of my data',
+    dataProcessingFull: 'according to the',
     privacyPolicy: 'privacy policy',
+    emailConsentShort: 'Confirmation email',
+    marketingConsentShort: 'Offers and events by email',
+    compactNotice: 'Reservations can be cancelled up to 24h before • In case of +15min delay, the table may be reassigned • You will receive a confirmation email',
     emailConsent: 'I want to receive a confirmation email for my reservation.',
     marketingConsent: 'I want to receive occasional information about special offers and events by email.',
     importantNotices: 'Important information:',
@@ -163,8 +171,12 @@ const content = {
     table: 'Tisch:',
     total: 'Gesamt:',
     gdprTitle: 'Datenschutz und Einverständniserklärungen',
-    dataProcessing: 'Ich stimme der Verarbeitung meiner personenbezogenen Daten zur Reservierung gemäß der',
+    dataProcessing: 'Ich stimme der Verarbeitung meiner Daten zu',
+    dataProcessingFull: 'gemäß der',
     privacyPolicy: 'Datenschutzerklärung',
+    emailConsentShort: 'Bestätigungs-E-Mail',
+    marketingConsentShort: 'Angebote und Events per E-Mail',
+    compactNotice: 'Reservierungen können bis 24h vorher storniert werden • Bei +15min Verspätung kann der Tisch neu vergeben werden • Sie erhalten eine Bestätigungs-E-Mail',
     emailConsent: 'Ich möchte eine Bestätigungs-E-Mail für meine Reservierung erhalten.',
     marketingConsent: 'Ich möchte gelegentlich Informationen über besondere Angebote und Veranstaltungen per E-Mail erhalten.',
     importantNotices: 'Wichtige Hinweise:',
@@ -571,101 +583,69 @@ export default function ContactAndConfirmStep({
         </CardContent>
       </Card>
 
-      {/* SECCIÓN 3: GDPR - Optimized Responsive Design */}
-      <Card>
-        <CardHeader className="pb-4 sm:pb-6">
-          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <Shield className="h-4 w-4 sm:h-5 sm:w-5" />
-            {t.gdprTitle}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          {/* GDPR Consent Section */}
-          <div className="p-3 sm:p-4 bg-gray-50/80 rounded-lg border border-gray-200/50">
-            <div className="space-y-3 sm:space-y-4">
-              {/* Required Data Processing Consent */}
-              <div className="flex items-start gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-md border border-primary/30 bg-primary/5">
+            {/* GDPR - Integrated Compact Design */}
+            <div className="space-y-4 border-t pt-6">
+              <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                {t.gdprTitle}
+              </h3>
+
+              {/* Required Data Processing - Prominent */}
+              <div className="flex items-start gap-3 p-3 bg-primary/80 border border-primary rounded-lg">
                 <Checkbox
                   id="dataProcessingConsent"
                   checked={watchedStepFour?.dataProcessingConsent || false}
                   onCheckedChange={(checked) => setValue('stepFour.dataProcessingConsent', checked)}
                   className="mt-0.5 shrink-0"
                 />
-                <Label htmlFor="dataProcessingConsent" className="text-xs sm:text-sm leading-relaxed cursor-pointer text-gray-700">
-                  <span className="font-medium text-primary">Consentimiento obligatorio <span className="text-red-500">*</span></span>
-                  <br className="sm:hidden" />
-                  <span className="hidden sm:inline"> — </span>
-                  <span>{t.dataProcessing} <Link
+                <Label htmlFor="dataProcessingConsent" className="text-sm leading-relaxed cursor-pointer">
+                  <span className="font-medium text-white">
+                    {t.dataProcessing} <span className="text-red-200">*</span>
+                  </span>
+                  <span className="text-primary-foreground/80"> {t.dataProcessingFull} </span>
+                  <Link
                     href={language === 'es' ? '/legal/politica-privacidad' : '/legal/politica-privacidad/en'}
-                    className="text-primary underline hover:text-primary/80 transition-colors"
+                    className="text-white underline hover:text-primary-foreground transition-colors"
                     target="_blank"
                   >
                     {t.privacyPolicy}
-                  </Link>.</span>
+                  </Link>
                 </Label>
               </div>
               {errors.stepFour?.dataProcessingConsent && (
-                <p className="text-xs sm:text-sm text-red-600 ml-6 sm:ml-7">
+                <p className="text-sm text-red-600 ml-6">
                   {errors.stepFour.dataProcessingConsent.message}
                 </p>
               )}
 
-              {/* Email Confirmation Consent */}
-              <div className="flex items-start gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-md border border-gray-200/50 bg-white/50">
-                <Checkbox
-                  id="emailConsent"
-                  checked={Boolean(watchedStepFour?.emailConsent)}
-                  onCheckedChange={(checked) => setValue('stepFour.emailConsent', Boolean(checked))}
-                  className="mt-0.5 shrink-0"
-                />
-                <Label htmlFor="emailConsent" className="text-xs sm:text-sm leading-relaxed cursor-pointer text-gray-700">
-                  <span className="font-medium flex items-center gap-2">
-                    <Mail className="h-3 w-3" />
-                    Email de confirmación
-                  </span>
-                  <br className="sm:hidden" />
-                  <span className="hidden sm:inline"> — </span>
-                  <span className="text-gray-600">{t.emailConsent}</span>
+              {/* Optional Consents - Horizontal on desktop, stack on mobile */}
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
+                <Label className="flex items-center gap-2 cursor-pointer text-sm">
+                  <Checkbox
+                    id="emailConsent"
+                    checked={Boolean(watchedStepFour?.emailConsent)}
+                    onCheckedChange={(checked) => setValue('stepFour.emailConsent', Boolean(checked))}
+                  />
+                  <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span>{t.emailConsentShort}</span>
+                </Label>
+
+                <Label className="flex items-center gap-2 cursor-pointer text-sm">
+                  <Checkbox
+                    id="marketingConsent"
+                    checked={Boolean(watchedStepFour?.marketingConsent)}
+                    onCheckedChange={(checked) => setValue('stepFour.marketingConsent', Boolean(checked))}
+                  />
+                  <Utensils className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span>{t.marketingConsentShort}</span>
                 </Label>
               </div>
 
-              {/* Marketing Consent */}
-              <div className="flex items-start gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-md border border-gray-200/50 bg-white/50">
-                <Checkbox
-                  id="marketingConsent"
-                  checked={Boolean(watchedStepFour?.marketingConsent)}
-                  onCheckedChange={(checked) => setValue('stepFour.marketingConsent', Boolean(checked))}
-                  className="mt-0.5 shrink-0"
-                />
-                <Label htmlFor="marketingConsent" className="text-xs sm:text-sm leading-relaxed cursor-pointer text-gray-700">
-                  <span className="font-medium flex items-center gap-2">
-                    <Utensils className="h-3 w-3" />
-                    Ofertas y eventos
-                  </span>
-                  <br className="sm:hidden" />
-                  <span className="hidden sm:inline"> — </span>
-                  <span className="text-gray-600">{t.marketingConsent}</span>
-                </Label>
+              {/* Compact Notice */}
+              <div className="text-xs text-muted-foreground bg-muted/60 p-3 rounded-lg border">
+                <p><strong>{t.importantNotices}</strong> {t.compactNotice}</p>
               </div>
             </div>
-          </div>
-
-          {/* Important Notice - Optimized Responsive Design */}
-          <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-50/80 rounded-lg border border-blue-200/50">
-            <div className="flex items-start gap-2.5 sm:gap-3">
-              <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-[#237584] mt-0.5 shrink-0" />
-              <div className="text-xs sm:text-sm">
-                <p className="font-medium text-blue-900 mb-2 sm:mb-1">{t.importantNotices}</p>
-                <div className="text-blue-800 space-y-1">
-                  <p className="leading-relaxed">{t.notice1}</p>
-                  <p className="leading-relaxed">{t.notice2}</p>
-                  <p className="leading-relaxed">{t.notice3}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Navigation */}
       <div className="flex gap-3 pt-6">
