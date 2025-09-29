@@ -2,7 +2,7 @@
 // Legal Content Management Service - Database-driven with Type Safety
 // PRP Implementation: GDPR/AEPD 2025 Complete Compliance
 
-import { createClient, createServerSupabaseClient } from '@/lib/supabase/server'
+import { createClient, createServerSupabaseClient, createServerSupabaseRestauranteClient } from '@/lib/supabase/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import {
@@ -471,7 +471,8 @@ export class LegalContentService {
 // ============================================
 
 export async function createLegalContentService() {
-  const supabaseClient = await createClient()
+  const cookieStore = await cookies()
+  const supabaseClient = createServerSupabaseRestauranteClient(cookieStore)
   return new LegalContentService(supabaseClient)
 }
 
