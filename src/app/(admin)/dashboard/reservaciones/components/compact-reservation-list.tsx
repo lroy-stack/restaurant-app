@@ -178,16 +178,34 @@ function formatReservationDateTime(dateStr: string, timeStr: string) {
   }
 }
 
-// Urgency badge logic - Using established patterns
+// Enhanced temporal badge logic with EN CURSO and PASADA
 function getUrgencyBadge(reservation: Reservation) {
   try {
     const now = new Date()
     const reservationDateTime = new Date(reservation.time)
+    const minutesFromReservation = (now.getTime() - reservationDateTime.getTime()) / (1000 * 60)
     const hoursUntil = (reservationDateTime.getTime() - now.getTime()) / (1000 * 60 * 60)
 
+    // DB buffer: 150 minutes (2.5 hours)
+    const BUFFER_MINUTES = 150
+
+    // 🔴 PASADA: More than 150min after reservation time
+    if (minutesFromReservation > BUFFER_MINUTES) {
+      return { text: 'PASADA', variant: 'outline' as const, icon: XCircle }
+    }
+
+    // 🟢 EN CURSO: From reservation time until +150min after
+    if (minutesFromReservation >= 0 && minutesFromReservation <= BUFFER_MINUTES) {
+      return { text: 'EN CURSO', variant: 'default' as const, icon: CheckCircle }
+    }
+
+    // ⚡ URGENTE: ≤2h before reservation (existing logic)
     if (hoursUntil <= 2 && hoursUntil > 0) {
       return { text: 'URGENTE', variant: 'destructive' as const, icon: Timer }
-    } else if (hoursUntil <= 6 && hoursUntil > 2) {
+    }
+
+    // 🟡 PRONTO: ≤6h before reservation (existing logic)
+    if (hoursUntil <= 6 && hoursUntil > 2) {
       return { text: 'PRONTO', variant: 'secondary' as const, icon: Clock }
     }
 
