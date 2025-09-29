@@ -130,6 +130,11 @@ function getDefaultBusinessHours(): BusinessHours[] {
 /**
  * Generates available time slots for a specific date (SERVER ONLY)
  * Implements enterprise-grade dual shift availability logic
+ *
+ * 🔧 PRODUCTION TIMEZONE FIX:
+ * - Local development uses Europe/Madrid timezone correctly
+ * - Production (Vercel) defaults to UTC, causing past time slots to appear available
+ * - Fix: Force Europe/Madrid timezone in date comparisons for production consistency
  */
 export async function getAvailableTimeSlots(
   date: string,
@@ -194,7 +199,9 @@ function generateTimeSlots(config: {
   currentDateTime: Date
 }): TimeSlot[] {
   const slots: TimeSlot[] = []
-  const isToday = config.date === config.currentDateTime.toISOString().split('T')[0]
+  // 🔧 PRODUCTION FIX: Compare dates using Europe/Madrid timezone
+  const madridToday = new Date(config.currentDateTime.toLocaleString("en-US", {timeZone: "Europe/Madrid"})).toISOString().split('T')[0]
+  const isToday = config.date === madridToday
 
   // Parse time strings
   const [openHour, openMinute] = config.openTime.split(':').map(Number)
@@ -222,8 +229,12 @@ function generateTimeSlots(config: {
 
     // Check if slot is in the past (for today only)
     if (isToday && available) {
-      const slotDateTime = new Date(config.date + `T${timeString}:00`)
-      const minimumBookingTime = new Date(config.currentDateTime.getTime() + (config.advanceMinutes * 60 * 1000))
+      // 🔧 PRODUCTION FIX: Force Europe/Madrid timezone for both dates
+      const slotDateTime = new Date(config.date + `T${timeString}:00+02:00`)
+
+      // Ensure currentDateTime is also in Madrid timezone for comparison
+      const madridCurrentTime = new Date(config.currentDateTime.toLocaleString("en-US", {timeZone: "Europe/Madrid"}))
+      const minimumBookingTime = new Date(madridCurrentTime.getTime() + (config.advanceMinutes * 60 * 1000))
 
       if (slotDateTime <= minimumBookingTime) {
         available = false
