@@ -45,6 +45,7 @@ import { ReservationDetailModal } from './reservation-detail-modal'
 import { CancellationModal } from './cancellation-modal'
 import { CustomEmailComposer } from '@/components/email/custom-email-composer'
 import { useCustomerProfile } from '@/hooks/useCustomerProfile'
+import { useBusinessHours } from '@/hooks/useBusinessHours'
 
 interface MenuItem {
   id: string
@@ -178,24 +179,24 @@ function formatReservationDateTime(dateStr: string, timeStr: string) {
   }
 }
 
-// Enhanced temporal badge logic with EN CURSO and PASADA
-function getUrgencyBadge(reservation: Reservation) {
+// Enhanced temporal badge logic with DYNAMIC buffer from DB
+function getUrgencyBadge(reservation: Reservation, bufferMinutes: number) {
   try {
     const now = new Date()
     const reservationDateTime = new Date(reservation.time)
     const minutesFromReservation = (now.getTime() - reservationDateTime.getTime()) / (1000 * 60)
     const hoursUntil = (reservationDateTime.getTime() - now.getTime()) / (1000 * 60 * 60)
 
-    // DB buffer: 150 minutes (2.5 hours)
-    const BUFFER_MINUTES = 150
+    // 🚀 DYNAMIC: Use buffer from business_hours table (changeable 150→120 etc.)
+    // No more hardcoded values - fully flexible with DB configuration
 
-    // 🔴 PASADA: More than 150min after reservation time
-    if (minutesFromReservation > BUFFER_MINUTES) {
+    // 🔴 PASADA: More than [bufferMinutes] after reservation time
+    if (minutesFromReservation > bufferMinutes) {
       return { text: 'PASADA', variant: 'outline' as const, icon: XCircle }
     }
 
-    // 🟢 EN CURSO: From reservation time until +150min after
-    if (minutesFromReservation >= 0 && minutesFromReservation <= BUFFER_MINUTES) {
+    // 🟢 EN CURSO: From reservation time until +[bufferMinutes] after
+    if (minutesFromReservation >= 0 && minutesFromReservation <= bufferMinutes) {
       return { text: 'EN CURSO', variant: 'default' as const, icon: CheckCircle }
     }
 
@@ -434,6 +435,9 @@ export function CompactReservationList({
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
   const [viewingReservation, setViewingReservation] = useState<Reservation | null>(null)
 
+  // 🚀 DYNAMIC BUFFER: Get buffer minutes from business hours (150→120 configurable)
+  const { bufferMinutes } = useBusinessHours()
+
   const handleItemSelection = (id: string, checked: boolean) => {
     if (!onSelectionChange) return
 
@@ -585,7 +589,7 @@ export function CompactReservationList({
                   </TableHeader>
                   <TableBody>
                     {groupReservations.map((reservation) => {
-                      const urgencyBadge = getUrgencyBadge(reservation)
+                      const urgencyBadge = getUrgencyBadge(reservation, bufferMinutes)
                       const statusStyle = statusStyles[reservation.status]
 
                       return (
