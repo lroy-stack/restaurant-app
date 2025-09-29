@@ -147,10 +147,12 @@ function createReservationMadridDate(dateStr: string, timeStr?: string): Date {
 
 function formatTimeForInput(dateTimeString: string): string {
   try {
-    // 🚀 SIMPLIFIED: Direct UTC parsing since DB stores UTC timestamps
+    // 🔧 CRITICAL FIX: DB stores Madrid timezone, use getHours() not getUTCHours()
+    // Problem was: 22:15 Madrid → getUTCHours() → 20:15 UTC (2 hours less in placeholder)
+    // Solution: Use local hours since DB already stores Madrid timezone
     const date = new Date(dateTimeString)
-    const hours = date.getUTCHours().toString().padStart(2, '0')
-    const minutes = date.getUTCMinutes().toString().padStart(2, '0')
+    const hours = date.getHours().toString().padStart(2, '0')      // ✅ FIX: Local hours
+    const minutes = date.getMinutes().toString().padStart(2, '0')  // ✅ FIX: Local minutes
     return `${hours}:${minutes}`
   } catch (error) {
     console.error('Error formatting time for input:', error, dateTimeString)
