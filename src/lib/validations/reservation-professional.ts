@@ -22,7 +22,8 @@ const createErrorMessages = (maxPartySize: number = 10) => ({
     lastNameMinLength: "Apellidos debe tener al menos 2 caracteres",
     emailRequired: "Email requerido",
     emailInvalid: "Email válido requerido",
-    phoneInvalid: "Teléfono válido requerido",
+    phoneRequired: "Teléfono requerido",
+    phoneInvalid: "Formato: +código_país seguido de 8-14 dígitos (ej: +34 600 123 456)",
     
     // Special Requirements
     occasionMax: "Máximo 100 caracteres",
@@ -44,14 +45,15 @@ const createErrorMessages = (maxPartySize: number = 10) => ({
     // Step 2: Table Selection
     tableRequired: "Table required",
     
-    // Step 3: Contact Information  
+    // Step 3: Contact Information
     firstNameRequired: "First name required",
     firstNameMinLength: "First name must be at least 2 characters",
     lastNameRequired: "Last name required",
     lastNameMinLength: "Last name must be at least 2 characters",
     emailRequired: "Email required",
-    emailInvalid: "Valid email required", 
-    phoneInvalid: "Valid phone required",
+    emailInvalid: "Valid email required",
+    phoneRequired: "Phone number required",
+    phoneInvalid: "Format: +country_code followed by 8-14 digits (e.g: +34 600 123 456)",
     
     // Special Requirements
     occasionMax: "Maximum 100 characters",
@@ -74,13 +76,14 @@ const createErrorMessages = (maxPartySize: number = 10) => ({
     tableRequired: "Tisch erforderlich",
     
     // Step 3: Contact Information
-    firstNameRequired: "Vorname erforderlich", 
+    firstNameRequired: "Vorname erforderlich",
     firstNameMinLength: "Vorname muss mindestens 2 Zeichen haben",
     lastNameRequired: "Nachname erforderlich",
     lastNameMinLength: "Nachname muss mindestens 2 Zeichen haben",
     emailRequired: "E-Mail erforderlich",
     emailInvalid: "Gültige E-Mail erforderlich",
-    phoneInvalid: "Gültige Telefonnummer erforderlich",
+    phoneRequired: "Telefonnummer erforderlich",
+    phoneInvalid: "Format: +Ländercode gefolgt von 8-14 Ziffern (z.B: +34 600 123 456)",
     
     // Special Requirements
     occasionMax: "Maximal 100 Zeichen",
@@ -126,13 +129,16 @@ export const stepTwoSchema = z.object({
 export const stepThreeSchema = z.object({
   // Contact Information
   firstName: z.string().min(2),
-  lastName: z.string().min(2), 
-  email: z.string().email(),
-  phone: z.string().min(1).regex(/^[\+]?[0-9\s\-\(\)]{8,15}$/),
-  
-  // Special Requirements
+  lastName: z.string().min(2),
+  email: z.string().email().refine(val => !val.includes('..'), "Email inválido"),
+  phone: z.string().min(1).regex(/^[+][1-9]\d{1,14}$/, "Formato: +código_país seguido de 8-14 dígitos"),
+
+  // Special Requirements - Checkbox controlled
+  hasOccasion: z.boolean().default(false),
   occasion: z.string().max(100).optional(),
+  hasDietaryNotes: z.boolean().default(false),
   dietaryNotes: z.string().max(300).optional(),
+  hasSpecialRequests: z.boolean().default(false),
   specialRequests: z.string().max(500).optional(),
 })
 
@@ -180,17 +186,22 @@ export const createProfessionalReservationSchema = (lang: Language = 'es', maxPa
         .min(1, messages.firstNameRequired)
         .min(2, messages.firstNameMinLength),
       lastName: z.string()
-        .min(1, messages.lastNameRequired) 
+        .min(1, messages.lastNameRequired)
         .min(2, messages.lastNameMinLength),
       email: z.string()
         .min(1, messages.emailRequired)
-        .email(messages.emailInvalid),
+        .email(messages.emailInvalid)
+        .refine(val => !val.includes('..'), messages.emailInvalid),
       phone: z.string()
-        .regex(/^[\+]?[0-9\s\-\(\)]{8,15}$/, messages.phoneInvalid)
-        .optional().or(z.literal("")),
-      
+        .min(1, messages.phoneRequired)
+        .regex(/^[+][1-9]\d{1,14}$/, messages.phoneInvalid),
+
+      // Special Requirements - Checkbox controlled
+      hasOccasion: z.boolean().default(false),
       occasion: z.string().max(100, messages.occasionMax).optional(),
+      hasDietaryNotes: z.boolean().default(false),
       dietaryNotes: z.string().max(300, messages.dietaryNotesMax).optional(),
+      hasSpecialRequests: z.boolean().default(false),
       specialRequests: z.string().max(500, messages.specialRequestsMax).optional(),
     }),
     
