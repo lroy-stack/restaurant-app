@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-  <!-- Círculo de fondo azul atlántico -->
-  <circle cx="200" cy="200" r="190" fill="#237584"/>
+  <!-- Fondo blanco -->
+  <circle cx="200" cy="200" r="200" fill="#FFFFFF"/>
 
-  <!-- Logo Enigma centrado y escalado -->
-  <g transform="translate(200, 200) scale(0.035, 0.035) translate(-1127, -1703)">
-    <g transform="translate(0.000000,3406.000000) scale(0.100000,-0.100000)" fill="#FFFFFF" stroke="none">
+  <!-- Borde circular azul atlántico -->
+  <circle cx="200" cy="200" r="185" fill="none" stroke="#237584" stroke-width="12"/>
+
+  <!-- Logo Enigma centrado y más grande -->
+  <g transform="translate(200, 200) scale(0.055, 0.055) translate(-1127, -1703)">
+    <g transform="translate(0.000000,3406.000000) scale(0.100000,-0.100000)" fill="#237584" stroke="none">
       <path d="M9977 34039 c-1839 -67 -3551 -529 -5097 -1375 -1604 -878 -2801
 -2021 -3627 -3464 -121 -210 -340 -653 -438 -885 -432 -1017 -678 -2085 -782
 -3395 -25 -322 -26 -1236 0 -1560 94 -1193 342 -2298 770 -3431 876 -2319

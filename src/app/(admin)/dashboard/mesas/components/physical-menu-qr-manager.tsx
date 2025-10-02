@@ -143,13 +143,13 @@ export function PhysicalMenuQRManager() {
       toast.info('Generando PDF...', { description: 'Esto puede tomar unos segundos' })
 
       const doc = new jsPDF()
-      const COLS = 4
-      const ROWS = 4
-      const QR_SIZE = 45
+      const COLS = 5
+      const ROWS = 5
+      const QR_SIZE = 35
       const PAGE_WIDTH = 210
       const PAGE_HEIGHT = 297
-      const SPACING_X = 6
-      const SPACING_Y = 8
+      const SPACING_X = 5
+      const SPACING_Y = 6
       const MARGIN_X = (PAGE_WIDTH - (COLS * QR_SIZE) - ((COLS - 1) * SPACING_X)) / 2
       const MARGIN_Y = 25
       const ITEMS_PER_PAGE = COLS * ROWS
@@ -184,7 +184,7 @@ export function PhysicalMenuQRManager() {
           const row = Math.floor(i / COLS)
           const col = i % COLS
           const x = MARGIN_X + col * (QR_SIZE + SPACING_X)
-          const y = MARGIN_Y + row * (QR_SIZE + SPACING_Y + 15)
+          const y = MARGIN_Y + row * (QR_SIZE + SPACING_Y + 10)
 
           const qrDataURL = await QRExportService.generateQRDataURL(
             menu.qr_url,
@@ -194,21 +194,21 @@ export function PhysicalMenuQRManager() {
 
           doc.addImage(qrDataURL, 'PNG', x, y, QR_SIZE, QR_SIZE)
 
-          doc.setFontSize(9)
+          doc.setFontSize(7)
           doc.setFont('helvetica', 'bold')
           doc.text(
             `${type === 'CARTA_FISICA' ? 'Carta' : 'Exterior'} #${menu.code}`,
             x + QR_SIZE / 2,
-            y + QR_SIZE + 4,
+            y + QR_SIZE + 3,
             { align: 'center' }
           )
 
-          doc.setFontSize(6)
+          doc.setFontSize(5)
           doc.setFont('helvetica', 'normal')
           doc.text(
-            menu.qr_url.length > 35 ? menu.qr_url.substring(0, 35) + '...' : menu.qr_url,
+            menu.qr_url.length > 30 ? menu.qr_url.substring(0, 30) + '...' : menu.qr_url,
             x + QR_SIZE / 2,
-            y + QR_SIZE + 8,
+            y + QR_SIZE + 6,
             { align: 'center' }
           )
         }
