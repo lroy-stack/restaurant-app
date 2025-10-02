@@ -156,7 +156,17 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
     recentActivity: [],
     tablePerformance: []
   })
-  const [qrAnalyticsData, setQRAnalyticsData] = useState<any>(null)
+  const [qrAnalyticsData, setQRAnalyticsData] = useState<any>({
+    totalScans: 0,
+    uniqueTables: 0,
+    avgScansPerTable: 0,
+    conversionRate: 0,
+    dailyScans: [],
+    hourlyDistribution: [],
+    topTables: [],
+    utmAnalysis: { sources: [], mediums: [], campaigns: [] },
+    tableMetrics: []
+  })
 
   const [qrConfig, setQrConfig] = useState({
     includeMenuLink: true,
