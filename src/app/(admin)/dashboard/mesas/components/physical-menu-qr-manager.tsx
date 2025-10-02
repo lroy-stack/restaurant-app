@@ -41,6 +41,7 @@ export function PhysicalMenuQRManager() {
   const [menuType, setMenuType] = useState<'CARTA_FISICA' | 'CARTELERIA'>('CARTA_FISICA')
   const [activeTab, setActiveTab] = useState<'CARTA_FISICA' | 'CARTELERIA'>('CARTA_FISICA')
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
+  const [selectedTemplate, setSelectedTemplate] = useState(QR_TEMPLATES[0])
 
   const BASE_URL = process.env.NEXT_PUBLIC_QR_MENU_URL || 'https://menu.enigmaconalma.com'
 
@@ -53,13 +54,18 @@ export function PhysicalMenuQRManager() {
     try {
       setIsLoading(true)
       const response = await fetch('/api/physical-menus')
-      if (!response.ok) throw new Error('Failed to load menus')
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        console.error('API Error:', response.status, errorData)
+        throw new Error(errorData.error || errorData.details || `HTTP ${response.status}`)
+      }
 
       const { data } = await response.json()
       setExistingMenus(data || [])
     } catch (error) {
       console.error('Load menus error:', error)
-      toast.error('Error al cargar códigos QR existentes')
+      toast.error(`Error: ${error instanceof Error ? error.message : 'Error al cargar códigos QR'}`)
     } finally {
       setIsLoading(false)
     }
@@ -124,7 +130,7 @@ export function PhysicalMenuQRManager() {
     }
   }
 
-  // Export PDF Grid 2x3
+  // Export PDF Grid 3x4 (12 QRs per page - optimized for DIN A4)
   const handleExportPDF = async (type: 'CARTA_FISICA' | 'CARTELERIA') => {
     const menusToExport = existingMenus.filter(m => m.type === type)
 
@@ -137,20 +143,25 @@ export function PhysicalMenuQRManager() {
       toast.info('Generando PDF...', { description: 'Esto puede tomar unos segundos' })
 
       const doc = new jsPDF()
-      const COLS = 2
-      const ROWS = 3
-      const QR_SIZE = 70
+      const COLS = 4
+      const ROWS = 4
+      const QR_SIZE = 45
       const PAGE_WIDTH = 210
       const PAGE_HEIGHT = 297
-      const MARGIN_X = (PAGE_WIDTH - (COLS * QR_SIZE) - 10) / 2
-      const MARGIN_Y = 20
+      const SPACING_X = 6
+      const SPACING_Y = 8
+      const MARGIN_X = (PAGE_WIDTH - (COLS * QR_SIZE) - ((COLS - 1) * SPACING_X)) / 2
+      const MARGIN_Y = 25
+      const ITEMS_PER_PAGE = COLS * ROWS
 
-      for (let pageIndex = 0; pageIndex < Math.ceil(menusToExport.length / 6); pageIndex++) {
+      for (let pageIndex = 0; pageIndex < Math.ceil(menusToExport.length / ITEMS_PER_PAGE); pageIndex++) {
         if (pageIndex > 0) doc.addPage()
 
-        const pageMenus = menusToExport.slice(pageIndex * 6, (pageIndex + 1) * 6)
+        const pageMenus = menusToExport.slice(pageIndex * ITEMS_PER_PAGE, (pageIndex + 1) * ITEMS_PER_PAGE)
 
-        doc.setFontSize(16)
+        // Header
+        doc.setFontSize(14)
+        doc.setFont('helvetica', 'bold')
         doc.text(
           type === 'CARTA_FISICA' ? 'Cartas Físicas - Enigma' : 'Cartelería Exterior - Enigma',
           PAGE_WIDTH / 2,
@@ -158,41 +169,55 @@ export function PhysicalMenuQRManager() {
           { align: 'center' }
         )
 
+        // Template info
+        doc.setFontSize(8)
+        doc.setFont('helvetica', 'normal')
+        doc.text(
+          `Template: ${selectedTemplate.name}`,
+          PAGE_WIDTH / 2,
+          20,
+          { align: 'center' }
+        )
+
         for (let i = 0; i < pageMenus.length; i++) {
           const menu = pageMenus[i]
           const row = Math.floor(i / COLS)
           const col = i % COLS
-          const x = MARGIN_X + col * (QR_SIZE + 5)
-          const y = MARGIN_Y + row * (QR_SIZE + 25)
+          const x = MARGIN_X + col * (QR_SIZE + SPACING_X)
+          const y = MARGIN_Y + row * (QR_SIZE + SPACING_Y + 15)
 
           const qrDataURL = await QRExportService.generateQRDataURL(
             menu.qr_url,
-            QR_TEMPLATES[0],
-            300
+            selectedTemplate,
+            400
           )
 
           doc.addImage(qrDataURL, 'PNG', x, y, QR_SIZE, QR_SIZE)
 
-          doc.setFontSize(10)
+          doc.setFontSize(9)
+          doc.setFont('helvetica', 'bold')
           doc.text(
             `${type === 'CARTA_FISICA' ? 'Carta' : 'Exterior'} #${menu.code}`,
             x + QR_SIZE / 2,
-            y + QR_SIZE + 5,
+            y + QR_SIZE + 4,
             { align: 'center' }
           )
 
-          doc.setFontSize(7)
+          doc.setFontSize(6)
+          doc.setFont('helvetica', 'normal')
           doc.text(
-            menu.qr_url.replace(BASE_URL, '...'),
+            menu.qr_url.length > 35 ? menu.qr_url.substring(0, 35) + '...' : menu.qr_url,
             x + QR_SIZE / 2,
-            y + QR_SIZE + 10,
+            y + QR_SIZE + 8,
             { align: 'center' }
           )
         }
 
-        doc.setFontSize(8)
+        // Footer
+        doc.setFontSize(7)
+        doc.setFont('helvetica', 'normal')
         doc.text(
-          `Página ${pageIndex + 1} de ${Math.ceil(menusToExport.length / 6)}`,
+          `Página ${pageIndex + 1} de ${Math.ceil(menusToExport.length / ITEMS_PER_PAGE)} | Generado: ${new Date().toLocaleDateString('es-ES')}`,
           PAGE_WIDTH / 2,
           PAGE_HEIGHT - 10,
           { align: 'center' }
@@ -227,16 +252,16 @@ export function PhysicalMenuQRManager() {
     try {
       const qrDataURL = await QRExportService.generateQRDataURL(
         menu.qr_url,
-        QR_TEMPLATES[0],
-        300
+        selectedTemplate,
+        600
       )
 
       const link = document.createElement('a')
-      link.download = `enigma-${menu.type === 'CARTA_FISICA' ? 'carta' : 'exterior'}-${menu.code}.png`
+      link.download = `enigma-${menu.type === 'CARTA_FISICA' ? 'carta' : 'exterior'}-${menu.code}-${selectedTemplate.id}.png`
       link.href = qrDataURL
       link.click()
 
-      toast.success('QR descargado')
+      toast.success(`QR descargado: ${selectedTemplate.name}`)
     } catch (error) {
       toast.error('Error al descargar')
     }
@@ -325,6 +350,31 @@ export function PhysicalMenuQRManager() {
                       Cartelería Exterior
                     </div>
                   </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Estilo de QR</Label>
+              <Select
+                value={selectedTemplate.id}
+                onValueChange={(value) => setSelectedTemplate(QR_TEMPLATES.find(t => t.id === value) || QR_TEMPLATES[0])}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {QR_TEMPLATES.map((template) => (
+                    <SelectItem key={template.id} value={template.id}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: template.dotsColor }}
+                        />
+                        {template.name}
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

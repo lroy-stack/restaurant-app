@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/utils/supabase/server'
 
 interface PhysicalMenuInsert {
   code: string
@@ -15,8 +14,7 @@ interface PhysicalMenuInsert {
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const supabase = createAdminSupabaseClient(cookieStore)
+    const supabase = await createServiceClient()
     const { menus } = await request.json() as { menus: PhysicalMenuInsert[] }
 
     if (!menus || menus.length === 0) {
@@ -26,11 +24,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Insert batch into physical_menus table
+    // UPSERT batch into physical_menus table (update if code exists, insert if new)
     const { data, error } = await supabase
       .schema('restaurante')
       .from('physical_menus')
-      .insert(menus)
+      .upsert(menus, { onConflict: 'code' })
       .select()
 
     if (error) {
@@ -58,13 +56,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const supabase = createAdminSupabaseClient(cookieStore)
+    const supabase = await createServiceClient()
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type')
 
     let query = supabase
-      .schema('restaurante')
       .from('physical_menus')
       .select('*')
       .order('code', { ascending: true })
@@ -76,6 +72,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query
 
     if (error) {
+      console.error('Physical menus GET error:', error)
       return NextResponse.json(
         { error: 'Database error', details: error.message },
         { status: 500 }
@@ -85,7 +82,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data })
 
   } catch (error) {
-    console.error('Physical menus GET error:', error)
+    console.error('Physical menus GET exception:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

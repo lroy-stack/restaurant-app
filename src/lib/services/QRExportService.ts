@@ -6,19 +6,30 @@ export interface QRTemplate {
   dotsColor: string
   backgroundColor: string
   cornerSquareColor: string
-  dotsStyle?: 'rounded' | 'dots' | 'classy' | 'square'
+  dotsStyle?: 'rounded' | 'dots' | 'classy' | 'classy-rounded' | 'square'
   cornerSquareStyle?: 'dot' | 'square' | 'extra-rounded'
+  logoUrl?: string
 }
 
 export const QR_TEMPLATES: QRTemplate[] = [
   {
     id: 'enigma-primary',
-    name: 'Enigma Principal',
-    dotsColor: '#0A3A5C',
+    name: 'Azul Atlántico',
+    dotsColor: '#237584',
     backgroundColor: '#ffffff',
-    cornerSquareColor: '#1a1a1a',
+    cornerSquareColor: '#237584',
     dotsStyle: 'rounded',
     cornerSquareStyle: 'extra-rounded'
+  },
+  {
+    id: 'enigma-logo',
+    name: 'Con Logo Enigma',
+    dotsColor: '#237584',
+    backgroundColor: '#ffffff',
+    cornerSquareColor: '#237584',
+    dotsStyle: 'classy-rounded',
+    cornerSquareStyle: 'extra-rounded',
+    logoUrl: '/enigma-logo-circle.svg'
   },
   {
     id: 'high-contrast',
@@ -42,7 +53,7 @@ export class QRExportService {
   ): Promise<string> {
     return new Promise((resolve, reject) => {
       try {
-        const qrCode = new QRCodeStyling({
+        const qrConfig: any = {
           width: size,
           height: size,
           data: content,
@@ -59,12 +70,20 @@ export class QRExportService {
           },
           cornersDotOptions: {
             color: template.cornerSquareColor
-          },
-          imageOptions: {
-            crossOrigin: 'anonymous',
-            margin: 0
           }
-        })
+        }
+
+        // Add logo if template has one
+        if (template.logoUrl) {
+          qrConfig.image = template.logoUrl
+          qrConfig.imageOptions = {
+            crossOrigin: 'anonymous',
+            margin: 10,
+            imageSize: 0.3
+          }
+        }
+
+        const qrCode = new QRCodeStyling(qrConfig)
 
         // Create temporary container
         const container = document.createElement('div')

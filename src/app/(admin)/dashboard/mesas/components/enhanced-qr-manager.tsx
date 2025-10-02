@@ -95,92 +95,25 @@ interface EnhancedQRCodeManagerProps {
   }>
 }
 
+// Map QRExportService templates to local qrcode.react styling
 const qrTemplates = {
-  default: {
-    name: 'Estándar',
-    description: 'Diseño QR simple y limpio',
+  'enigma-primary': {
+    name: 'Azul Atlántico',
+    description: 'Diseño con azul atlántico Enigma',
+    colors: { background: '#FFFFFF', foreground: '#237584' },
+    logo: false
+  },
+  'enigma-logo': {
+    name: 'Con Logo Enigma',
+    description: 'Azul atlántico con logo integrado',
+    colors: { background: '#FFFFFF', foreground: '#237584' },
+    logo: true
+  },
+  'high-contrast': {
+    name: 'Alto Contraste',
+    description: 'Negro sobre blanco - máxima legibilidad',
     colors: { background: '#FFFFFF', foreground: '#000000' },
-    logo: false,
-    styling: {
-      width: 400,
-      height: 400,
-      type: 'svg' as const,
-      data: '',
-      dotsOptions: {
-        color: '#000000',
-        type: 'rounded' as const
-      },
-      backgroundOptions: {
-        color: '#FFFFFF'
-      },
-      cornersSquareOptions: {
-        type: 'extra-rounded' as const,
-        color: '#000000'
-      },
-      cornersDotOptions: {
-        type: 'dot' as const,
-        color: '#000000'
-      }
-    }
-  },
-  premium: {
-    name: 'Premium',
-    description: 'Diseño elegante con colores Enigma',
-    colors: { background: '#F8F9FA', foreground: '#1A1A1A' },
-    logo: false,
-    styling: {
-      width: 400,
-      height: 400,
-      type: 'svg' as const,
-      data: '',
-      dotsOptions: {
-        color: '#1A1A1A',
-        type: 'classy' as const
-      },
-      backgroundOptions: {
-        color: '#F8F9FA'
-      },
-      cornersSquareOptions: {
-        type: 'extra-rounded' as const,
-        color: '#D4AF37'
-      },
-      cornersDotOptions: {
-        type: 'square' as const,
-        color: '#D4AF37'
-      }
-    }
-  },
-  branded: {
-    name: 'Con Marca',
-    description: 'Con logo Enigma y branding completo',
-    colors: { background: '#FFFFFF', foreground: '#D4AF37' },
-    logo: true,
-    styling: {
-      width: 400,
-      height: 400,
-      type: 'svg' as const,
-      data: '',
-      dotsOptions: {
-        color: '#D4AF37',
-        type: 'classy-rounded' as const
-      },
-      backgroundOptions: {
-        color: '#FFFFFF'
-      },
-      cornersSquareOptions: {
-        type: 'extra-rounded' as const,
-        color: '#1A1A1A'
-      },
-      cornersDotOptions: {
-        type: 'dot' as const,
-        color: '#1A1A1A'
-      },
-      imageOptions: {
-        crossOrigin: 'anonymous' as const,
-        margin: 20,
-        imageSize: 0.4
-      }
-    }
+    logo: false
   }
 }
 
@@ -232,7 +165,7 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
     wifiSSID: 'Enigma_Guest',
     wifiPassword: '',
     menuUrl: process.env.NEXT_PUBLIC_QR_MENU_URL || 'https://menu.enigmaconalma.com',
-    template: 'default' as keyof typeof qrTemplates,
+    template: 'enigma-primary' as keyof typeof qrTemplates,
     branding: true,
     callToAction: 'Ver Carta Digital'
   })
@@ -401,31 +334,26 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
     return qrCode
   }
 
-  // Download styled QR as PNG/SVG
+  // Download individual QR as PNG (high quality)
   const downloadStyledQR = async (tableNumber: string, tableId: string, location: string, format: 'png' | 'svg' = 'png') => {
     try {
-      // Use SECURE QR generation instead of deprecated function
+      const { QRExportService, QR_TEMPLATES } = await import('@/lib/services/QRExportService')
+
       const url = generateSecureQRContent(tableNumber, tableId, location, qrConfig.template)
-      const styledQR = await generateStyledQRCode(url, qrConfig.template)
-      
-      const fileName = `enigma-qr-mesa-${tableNumber}-${qrConfig.template}.${format}`
-      
-      if (format === 'png') {
-        styledQR.download({ 
-          name: fileName,
-          extension: 'png'
-        })
-      } else {
-        styledQR.download({ 
-          name: fileName,
-          extension: 'svg'
-        })
-      }
-      
-      toast.success(`✅ QR Mesa ${tableNumber} descargado como ${format.toUpperCase()}`)
+      const template = QR_TEMPLATES.find(t => t.id === qrConfig.template) || QR_TEMPLATES[0]
+
+      const qrDataURL = await QRExportService.generateQRDataURL(url, template, 800)
+      const fileName = `enigma-qr-mesa-${tableNumber}-${template.id}.png`
+
+      const link = document.createElement('a')
+      link.download = fileName
+      link.href = qrDataURL
+      link.click()
+
+      toast.success(`✅ QR Mesa ${tableNumber} descargado: ${template.name}`)
     } catch (error) {
-      console.error(`Error downloading ${format.toUpperCase()}:`, error)
-      toast.error(`Error al descargar ${format.toUpperCase()}`)
+      console.error('Error downloading QR:', error)
+      toast.error('Error al descargar QR')
     }
   }
 
@@ -564,7 +492,7 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
     }
   }
 
-  // Export QR codes using real next-qrcode with download functionality
+  // Export QR codes - Optimized DIN A4 layout (3x4 grid)
   const exportQRCodesPDF = async () => {
     if (selectedTables.length === 0) {
       toast.error('Por favor selecciona mesas para exportar')
@@ -572,74 +500,74 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
     }
 
     try {
-      // Create PDF using jsPDF with REAL QR codes from database
+      toast.info('Generando PDF...', { description: 'Esto puede tomar unos segundos' })
+
+      const { QRExportService, QR_TEMPLATES } = await import('@/lib/services/QRExportService')
       const doc = new jsPDF()
-      let currentY = 20
-      
-      for (let i = 0; i < selectedTables.length; i++) {
-        const tableId = selectedTables[i]
-        const table = tables.find(t => t.id === tableId)
-        if (!table) continue
 
-        // Generate secure QR URL in real-time using current configuration
-        const qrContent = generateSecureQRContent(table.number, table.id, table.location || 'principal', qrConfig.template)
-        
-        // Create temporary container for QR rendering
-        const tempContainer = document.createElement('div')
-        tempContainer.style.position = 'absolute'
-        tempContainer.style.top = '-9999px'
-        document.body.appendChild(tempContainer)
+      const COLS = 4
+      const ROWS = 4
+      const QR_SIZE = 45
+      const PAGE_WIDTH = 210
+      const PAGE_HEIGHT = 297
+      const SPACING_X = 6
+      const SPACING_Y = 8
+      const MARGIN_X = (PAGE_WIDTH - (COLS * QR_SIZE) - ((COLS - 1) * SPACING_X)) / 2
+      const MARGIN_Y = 25
+      const ITEMS_PER_PAGE = COLS * ROWS
 
-        try {
-          // Use React createElement to render QR component
-          tempContainer.innerHTML = `
-            <div id="qr-temp-${i}">
-              <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
-                <rect width="200" height="200" fill="white"/>
-                <text x="100" y="100" text-anchor="middle" font-family="Arial" font-size="12" fill="currentColor" className="text-foreground">
-                  Mesa ${table.number} QR Code
-                </text>
-                <text x="100" y="120" text-anchor="middle" font-family="Arial" font-size="8" fill="currentColor" className="text-muted-foreground">
-                  ${qrContent.substring(0, 30)}...
-                </text>
-              </svg>
-            </div>
-          `
-          
-          // Add to PDF
-          if (i > 0 && currentY > 250) {
-            doc.addPage()
-            currentY = 20
-          }
-          
+      // Find selected template
+      const template = QR_TEMPLATES.find(t => t.id === qrConfig.template) || QR_TEMPLATES[0]
+
+      for (let pageIndex = 0; pageIndex < Math.ceil(selectedTables.length / ITEMS_PER_PAGE); pageIndex++) {
+        if (pageIndex > 0) doc.addPage()
+
+        const pageTables = selectedTables
+          .slice(pageIndex * ITEMS_PER_PAGE, (pageIndex + 1) * ITEMS_PER_PAGE)
+          .map(id => tables.find(t => t.id === id))
+          .filter(Boolean) as typeof tables
+
+        // Header
+        doc.setFontSize(14)
+        doc.setFont('helvetica', 'bold')
+        doc.text('QR Codes Mesas - Enigma', PAGE_WIDTH / 2, 15, { align: 'center' })
+
+        doc.setFontSize(8)
+        doc.setFont('helvetica', 'normal')
+        doc.text(`Template: ${template.name}`, PAGE_WIDTH / 2, 20, { align: 'center' })
+
+        for (let i = 0; i < pageTables.length; i++) {
+          const table = pageTables[i]
+          const row = Math.floor(i / COLS)
+          const col = i % COLS
+          const x = MARGIN_X + col * (QR_SIZE + SPACING_X)
+          const y = MARGIN_Y + row * (QR_SIZE + SPACING_Y + 15)
+
+          const qrContent = generateSecureQRContent(table.number, table.id, table.location || 'SALA_PRINCIPAL', qrConfig.template)
+          const qrDataURL = await QRExportService.generateQRDataURL(qrContent, template, 400)
+
+          doc.addImage(qrDataURL, 'PNG', x, y, QR_SIZE, QR_SIZE)
+
+          doc.setFontSize(9)
           doc.setFont('helvetica', 'bold')
-          doc.setFontSize(16)
-          doc.text(`Mesa ${table.number}`, 20, currentY)
-          
-          doc.setFont('helvetica', 'normal')
-          doc.setFontSize(10)
-          doc.text(`Ubicación: ${getLocationLabel(table.location)}`, 20, currentY + 10)
-          doc.text(`Capacidad: ${table.capacity} personas`, 20, currentY + 20)
-          doc.text(`URL: ${qrContent}`, 20, currentY + 30)
-          
-          // Generate actual QR code
-          const { QRExportService, QR_TEMPLATES } = await import('@/lib/services/QRExportService')
-          const qrDataURL = await QRExportService.generateQRDataURL(
-            qrContent,
-            QR_TEMPLATES[0],
-            300
-          )
-          doc.addImage(qrDataURL, 'PNG', 20, currentY + 40, 50, 50)
-          
-          currentY += 100
+          doc.text(`Mesa ${table.number}`, x + QR_SIZE / 2, y + QR_SIZE + 4, { align: 'center' })
 
-        } finally {
-          document.body.removeChild(tempContainer)
+          doc.setFontSize(6)
+          doc.setFont('helvetica', 'normal')
+          doc.text(getLocationLabel(table.location), x + QR_SIZE / 2, y + QR_SIZE + 8, { align: 'center' })
         }
+
+        // Footer
+        doc.setFontSize(7)
+        doc.text(
+          `Página ${pageIndex + 1} de ${Math.ceil(selectedTables.length / ITEMS_PER_PAGE)} | Generado: ${new Date().toLocaleDateString('es-ES')}`,
+          PAGE_WIDTH / 2,
+          PAGE_HEIGHT - 10,
+          { align: 'center' }
+        )
       }
 
-      // Download PDF
-      doc.save(`enigma-qr-codes-${new Date().toISOString().split('T')[0]}.pdf`)
+      doc.save(`enigma-mesas-qr-${new Date().toISOString().split('T')[0]}.pdf`)
       toast.success(`✅ PDF exportado con ${selectedTables.length} códigos QR`)
 
     } catch (error) {
@@ -843,8 +771,8 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
                                 value={generateSecureQRContent(table.number, table.id, table.location || 'principal', qrConfig.template)}
                                 size={88}
                                 level="H"
-                                bgColor="#FFFFFF"
-                                fgColor="#000000"
+                                bgColor={qrTemplates[qrConfig.template]?.colors.background || '#FFFFFF'}
+                                fgColor={qrTemplates[qrConfig.template]?.colors.foreground || '#2563B5'}
                                 marginSize={1}
                                 className="w-full h-full"
                               />
