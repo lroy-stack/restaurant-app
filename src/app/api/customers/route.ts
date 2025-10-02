@@ -36,11 +36,26 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    // Build customers query
+    // Build customers query with REAL data from DB
     let customersQuery = supabase
       .from('customers')
-      .select('id, firstName, lastName, email, phone, isVip, createdAt, updatedAt')
-      .order('createdAt', { ascending: false })
+      .select(`
+        id,
+        firstName,
+        lastName,
+        email,
+        phone,
+        isVip,
+        totalSpent,
+        totalVisits,
+        lastVisit,
+        emailConsent,
+        marketingConsent,
+        dataProcessingConsent,
+        createdAt,
+        updatedAt
+      `)
+      .order('totalSpent', { ascending: false })
 
     // Apply search filter
     if (search) {
@@ -56,14 +71,15 @@ export async function GET(request: NextRequest) {
       customersQuery,
       supabase
         .from('reservations')
-        .select('customerEmail, partySize, status, createdAt')
+        .select('customerId, customerEmail')
+        .eq('status', 'COMPLETED')
     ])
 
     if (customersResult.error) {
       console.error('Customers query error:', customersResult.error)
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Error fetching customers',
           details: customersResult.error.message
         },
@@ -74,8 +90,8 @@ export async function GET(request: NextRequest) {
     if (reservationsResult.error) {
       console.error('Reservations query error:', reservationsResult.error)
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Error fetching reservations',
           details: reservationsResult.error.message
         },
@@ -86,65 +102,62 @@ export async function GET(request: NextRequest) {
     const customers = customersResult.data || []
     const reservationsData = reservationsResult.data || []
 
-    const reservationsMap = new Map()
+    // Count reservations per customer
+    const reservationsCountMap = new Map<string, number>()
     reservationsData.forEach(reservation => {
-      const email = reservation.customerEmail
-      if (!reservationsMap.has(email)) {
-        reservationsMap.set(email, {
-          totalReservations: 0,
-          totalSpent: 0,
-          lastVisit: null
-        })
-      }
-      
-      const customerData = reservationsMap.get(email)
-      customerData.totalReservations += 1
-      
-      // Simulate spending based on party size and status
-      if (reservation.status === 'COMPLETED') {
-        customerData.totalSpent += reservation.partySize * 45 // Average €45 per person
-      }
-      
-      // Track last visit
-      const reservationDate = new Date(reservation.createdAt)
-      if (!customerData.lastVisit || reservationDate > new Date(customerData.lastVisit)) {
-        customerData.lastVisit = reservation.createdAt
+      if (reservation.customerId) {
+        reservationsCountMap.set(
+          reservation.customerId,
+          (reservationsCountMap.get(reservation.customerId) || 0) + 1
+        )
       }
     })
 
+    // Calculate loyalty tier based on totalSpent
+    const calculateLoyaltyTier = (totalSpent: number): string => {
+      if (totalSpent >= 500) return 'ORO'
+      if (totalSpent >= 200) return 'PLATA'
+      if (totalSpent >= 50) return 'BRONCE'
+      return 'NUEVO'
+    }
+
     // Enrich customers with computed data
-    const enrichedCustomers = customers?.map(user => {
-      const stats = reservationsMap.get(user.email) || {
-        totalReservations: 0,
-        totalSpent: 0,
-        lastVisit: null
-      }
-      
+    const enrichedCustomers = customers?.map(customer => {
+      const totalReservations = reservationsCountMap.get(customer.id) || 0
+      const loyaltyTier = calculateLoyaltyTier(customer.totalSpent || 0)
+
       return {
-        ...user,
-        ...stats,
-        loyaltyTier: 'BRONZE',
-        averageSpending: stats.totalReservations > 0 ? Math.round(stats.totalSpent / stats.totalReservations) : 0,
-        visitFrequency: 'LOW',
-        preferences: null,
-        allergies: [],
-        gdprConsent: true,
-        marketingConsent: false
+        ...customer,
+        totalReservations,
+        loyaltyTier,
+        averageSpending: customer.totalVisits > 0
+          ? Math.round(customer.totalSpent / customer.totalVisits)
+          : 0,
+        visitFrequency: customer.totalVisits >= 5 ? 'HIGH' : customer.totalVisits >= 2 ? 'MEDIUM' : 'LOW',
+        gdprConsent: customer.dataProcessingConsent,
       }
     }) || []
+
+    // Calculate summary stats
+    const now = new Date()
+    const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate())
+
+    const summary = {
+      total: enrichedCustomers.length,
+      active: enrichedCustomers.filter(c => c.lastVisit && new Date(c.lastVisit) > oneMonthAgo).length,
+      vip: enrichedCustomers.filter(c => c.isVip).length,
+      inactive: enrichedCustomers.filter(c => !c.lastVisit || new Date(c.lastVisit) <= oneMonthAgo).length,
+      newThisMonth: enrichedCustomers.filter(c => new Date(c.createdAt) > oneMonthAgo).length,
+      totalRevenue: enrichedCustomers.reduce((sum, c) => sum + (c.totalSpent || 0), 0),
+      averageOrderValue: enrichedCustomers.length > 0
+        ? Math.round(enrichedCustomers.reduce((sum, c) => sum + (c.totalSpent || 0), 0) / enrichedCustomers.length)
+        : 0
+    }
 
     return NextResponse.json({
       success: true,
       customers: enrichedCustomers,
-      summary: {
-        total: enrichedCustomers.length,
-        active: 0,
-        vip: enrichedCustomers.filter(c => c.isVip).length,
-        inactive: 0,
-        newThisMonth: 0,
-        totalRevenue: 0,
-        averageOrderValue: 0
-      },
+      summary,
       timestamp: new Date().toISOString()
     })
 

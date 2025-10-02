@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation'
 import { useCustomerProfile } from '@/hooks/useCustomerProfile'
 import { useNewsletterStatus } from '@/hooks/useNewsletterStatus'
 import { useCustomerPreOrders } from '@/hooks/useCustomerPreOrders'
+import { useCustomerReservationStats } from '@/hooks/useCustomerReservationStats'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -17,6 +18,7 @@ import { CustomerReservations } from './components/customer-reservations'
 import { CustomerGdpr } from './components/customer-gdpr'
 import { CustomerNotes } from './components/customer-notes'
 import { CustomerIntelligence } from './components/customer-intelligence'
+import { CustomerOrders } from './components/customer-orders'
 import { CustomEmailComposer } from '@/components/email/custom-email-composer'
 import { toast } from 'sonner'
 
@@ -47,6 +49,7 @@ export default function CustomerProfilePage() {
 
   const newsletterStatus = useNewsletterStatus(customer?.email)
   const preOrders = useCustomerPreOrders(customerId)
+  const reservationStats = useCustomerReservationStats(customerId)
 
   if (loading) {
     return (
@@ -200,10 +203,11 @@ export default function CustomerProfilePage() {
       {/* CUSTOMER PROFILE - SHADCN TABS PATTERN */}
       <div className="flex w-full flex-col gap-6">
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Resumen</TabsTrigger>
             <TabsTrigger value="contact">Contacto</TabsTrigger>
             <TabsTrigger value="reservations">Reservas</TabsTrigger>
+            <TabsTrigger value="orders">Pedidos</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
 
@@ -249,10 +253,16 @@ export default function CustomerProfilePage() {
                   <Calendar className="h-4 w-4 text-orange-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">1 Total</div>
-                  <p className="text-xs text-muted-foreground">
-                    1 Cancelada - 25/09/2025 (7 pax)
-                  </p>
+                  {reservationStats.loading ? (
+                    <div className="text-sm text-muted-foreground">Cargando...</div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold">{reservationStats.total} Total</div>
+                      <p className="text-xs text-muted-foreground">
+                        {reservationStats.completed} Completadas • {reservationStats.upcoming} Próximas • {reservationStats.cancelled} Canceladas
+                      </p>
+                    </>
+                  )}
                 </CardContent>
               </Card>
 
@@ -379,9 +389,44 @@ export default function CustomerProfilePage() {
                         }
                       </div>
                     </div>
-                    <div className="p-2 bg-blue-50 border border-blue-200 rounded">
-                      <div className="font-medium text-blue-800">Grupo Grande</div>
-                      <div className="text-blue-700 text-xs">7 personas</div>
+                    <div className={`p-2 border rounded ${
+                      reservationStats.loading
+                        ? 'bg-gray-50 border-gray-200'
+                        : reservationStats.total >= 10
+                        ? 'bg-blue-50 border-blue-200'
+                        : reservationStats.total >= 5
+                        ? 'bg-purple-50 border-purple-200'
+                        : 'bg-orange-50 border-orange-200'
+                    }`}>
+                      <div className={`font-medium ${
+                        reservationStats.loading
+                          ? 'text-gray-800'
+                          : reservationStats.total >= 10
+                          ? 'text-blue-800'
+                          : reservationStats.total >= 5
+                          ? 'text-purple-800'
+                          : 'text-orange-800'
+                      }`}>
+                        {reservationStats.loading
+                          ? 'Cargando...'
+                          : reservationStats.total >= 10
+                          ? 'Cliente Frecuente'
+                          : reservationStats.total >= 5
+                          ? 'Cliente Regular'
+                          : 'Cliente Nuevo'
+                        }
+                      </div>
+                      <div className={`text-xs ${
+                        reservationStats.loading
+                          ? 'text-gray-600'
+                          : reservationStats.total >= 10
+                          ? 'text-blue-700'
+                          : reservationStats.total >= 5
+                          ? 'text-purple-700'
+                          : 'text-orange-700'
+                      }`}>
+                        {reservationStats.loading ? '...' : `${reservationStats.total} reservas`}
+                      </div>
                     </div>
                     <div className="p-2 bg-purple-50 border border-purple-200 rounded">
                       <div className="font-medium text-purple-800">Pre-Orders</div>
@@ -395,24 +440,93 @@ export default function CustomerProfilePage() {
                         }
                       </div>
                     </div>
-                    <div className="p-2 bg-yellow-50 border border-yellow-200 rounded">
-                      <div className="font-medium text-yellow-800">Email Activo</div>
-                      <div className="text-yellow-700 text-xs">Consiente emails</div>
+                    <div className={`p-2 border rounded ${
+                      reservationStats.loading
+                        ? 'bg-gray-50 border-gray-200'
+                        : reservationStats.completed > 0 && reservationStats.total > 0
+                        ? ((reservationStats.completed / reservationStats.total) * 100) >= 75
+                          ? 'bg-green-50 border-green-200'
+                          : ((reservationStats.completed / reservationStats.total) * 100) >= 50
+                          ? 'bg-yellow-50 border-yellow-200'
+                          : 'bg-red-50 border-red-200'
+                        : 'bg-gray-50 border-gray-200'
+                    }`}>
+                      <div className={`font-medium ${
+                        reservationStats.loading
+                          ? 'text-gray-800'
+                          : reservationStats.completed > 0 && reservationStats.total > 0
+                          ? ((reservationStats.completed / reservationStats.total) * 100) >= 75
+                            ? 'text-green-800'
+                            : ((reservationStats.completed / reservationStats.total) * 100) >= 50
+                            ? 'text-yellow-800'
+                            : 'text-red-800'
+                          : 'text-gray-800'
+                      }`}>Completitud</div>
+                      <div className={`text-xs ${
+                        reservationStats.loading
+                          ? 'text-gray-600'
+                          : reservationStats.completed > 0 && reservationStats.total > 0
+                          ? ((reservationStats.completed / reservationStats.total) * 100) >= 75
+                            ? 'text-green-700'
+                            : ((reservationStats.completed / reservationStats.total) * 100) >= 50
+                            ? 'text-yellow-700'
+                            : 'text-red-700'
+                          : 'text-gray-600'
+                      }`}>
+                        {reservationStats.loading
+                          ? 'Cargando...'
+                          : reservationStats.total > 0
+                          ? `${Math.round((reservationStats.completed / reservationStats.total) * 100)}% asistencias`
+                          : 'Sin datos'
+                        }
+                      </div>
                     </div>
                   </div>
 
                   <div className="p-3 bg-gray-50 border rounded-lg">
                     <div className="font-medium text-sm mb-2">📊 Perfil Detectado:</div>
                     <div className="text-xs text-gray-700">
-                      <div>• Cliente organizado (pre-orders detallados)</div>
-                      <div>• Grupo familiar/social grande (7 pax)</div>
-                      <div>• Comprometido digitalmente (newsletter)</div>
-                      <div>
-                        • {preOrders.totalAmount > 0
-                          ? `Potencial cliente de valor (€${preOrders.totalAmount.toFixed(2)} pedido)`
-                          : 'Cliente sin historial de pre-orders'
-                        }
-                      </div>
+                      {reservationStats.loading || preOrders.loading ? (
+                        <div>Cargando análisis...</div>
+                      ) : (
+                        <>
+                          <div>
+                            • {reservationStats.total >= 10
+                              ? 'Cliente frecuente y fiel'
+                              : reservationStats.total >= 5
+                              ? 'Cliente regular en crecimiento'
+                              : 'Cliente nuevo - potencial de fidelización'
+                            } ({reservationStats.total} reservas)
+                          </div>
+                          <div>
+                            • Tasa de asistencia: {reservationStats.total > 0
+                              ? `${Math.round((reservationStats.completed / reservationStats.total) * 100)}%`
+                              : 'N/A'
+                            } {reservationStats.total > 0 && ((reservationStats.completed / reservationStats.total) * 100) >= 75
+                              ? '(excelente)'
+                              : reservationStats.total > 0 && ((reservationStats.completed / reservationStats.total) * 100) >= 50
+                              ? '(buena)'
+                              : reservationStats.total > 0
+                              ? '(mejorable)'
+                              : ''
+                            }
+                          </div>
+                          {preOrders.totalAmount > 0 && (
+                            <div>
+                              • Cliente organizado - usa pre-orders (€{preOrders.totalAmount.toFixed(2)} total)
+                            </div>
+                          )}
+                          {newsletterStatus.isSubscribed && (
+                            <div>• Comprometido digitalmente (suscrito newsletter)</div>
+                          )}
+                          {customer?.isVip && (
+                            <div>• Status VIP - cliente de alto valor</div>
+                          )}
+                          {customer?.emailConsent && (
+                            <div>• Abierto a comunicación directa</div>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
 
@@ -491,6 +605,10 @@ export default function CustomerProfilePage() {
               reservations={[]}
               onViewReservation={(id) => console.log('View reservation', id)}
             />
+          </TabsContent>
+
+          <TabsContent value="orders">
+            <CustomerOrders customerId={customerId} />
           </TabsContent>
 
           <TabsContent value="settings">

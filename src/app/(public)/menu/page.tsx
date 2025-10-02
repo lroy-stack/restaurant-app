@@ -494,13 +494,24 @@ export default function MenuPage() {
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
                         <Checkbox
-                          id="vegetarian"
-                          checked={filters.isVegetarian || false}
-                          onCheckedChange={(checked: boolean) => updateFilters({ isVegetarian: checked })}
+                          id="recommended"
+                          checked={filters.isRecommended || false}
+                          onCheckedChange={(checked: boolean) => updateFilters({ isRecommended: checked })}
                         />
-                        <Label htmlFor="vegetarian" className="flex items-center gap-2">
+                        <Label htmlFor="recommended" className="flex items-center gap-2">
+                          <Star className="h-4 w-4 text-yellow-600" />
+                          {language === 'en' ? 'Recommended' : 'Recomendado'}
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="organic"
+                          checked={filters.isOrganic || false}
+                          onCheckedChange={(checked: boolean) => updateFilters({ isOrganic: checked })}
+                        />
+                        <Label htmlFor="organic" className="flex items-center gap-2">
                           <Leaf className="h-4 w-4 text-green-600" />
-                          {language === 'en' ? 'Vegetarian' : 'Vegetariano'}
+                          {language === 'en' ? 'Organic' : 'Ecológico'}
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -523,17 +534,6 @@ export default function MenuPage() {
                         <Label htmlFor="gluten-free" className="flex items-center gap-2">
                           <Shield className="h-4 w-4 text-blue-600" />
                           {language === 'en' ? 'Gluten Free' : 'Sin Gluten'}
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="signature"
-                          checked={filters.isSignature || false}
-                          onCheckedChange={(checked: boolean) => updateFilters({ isSignature: checked })}
-                        />
-                        <Label htmlFor="signature" className="flex items-center gap-2">
-                          <Star className="h-4 w-4 text-yellow-600" />
-                          {language === 'en' ? 'Signature Dishes' : 'Platos Signature'}
                         </Label>
                       </div>
                     </div>
@@ -702,6 +702,17 @@ export default function MenuPage() {
                                 <div className="w-7 h-7 sm:w-6 sm:h-6 bg-accent/20 rounded-full flex items-center justify-center">
                                   <Heart className="w-4 h-4 sm:w-3 sm:h-3 text-accent fill-current" />
                                 </div>
+                              )}
+                              {item.isOrganic && (
+                                <Badge variant="secondary" className="text-xs bg-secondary/30 text-secondary-foreground border border-secondary/40">
+                                  <Leaf className="w-3 h-3 mr-1" />
+                                  {language === 'en' ? 'Organic' : 'Ecológico'}
+                                </Badge>
+                              )}
+                              {category.type === 'WINE' && item.vintage && (
+                                <Badge variant="outline" className="text-xs bg-muted text-foreground border-border">
+                                  {item.vintage}
+                                </Badge>
                               )}
                             </div>
                             <div className="text-right flex-shrink-0">

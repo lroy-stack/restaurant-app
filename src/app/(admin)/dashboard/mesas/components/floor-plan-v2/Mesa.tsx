@@ -78,6 +78,18 @@ const Mesa = React.memo(({
     onDragEnd(mesa, newPosition)
   }, [onDragEnd, canDrag, mesa])
 
+  // Check for active orders
+  const [hasActiveOrders, setHasActiveOrders] = React.useState(false)
+
+  React.useEffect(() => {
+    fetch(`/api/orders/by-table/${mesa.id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) setHasActiveOrders(data.count > 0)
+      })
+      .catch(() => {})
+  }, [mesa.id])
+
   // Additional status indicator for reserved/occupied tables
   const statusIndicator = useMemo(() => {
     if (mesa.currentReservation && (mesa.currentStatus === 'reserved' || mesa.currentStatus === 'occupied')) {
@@ -160,6 +172,22 @@ const Mesa = React.memo(({
           stroke={statusIndicator.stroke}
           strokeWidth={statusIndicator.strokeWidth}
           listening={false}
+        />
+      )}
+
+      {/* Active orders badge - Pulsing red circle */}
+      {hasActiveOrders && (
+        <Circle
+          x={shapeConfig.width - 12}
+          y={-12}
+          radius={8}
+          fill="#ef4444"
+          stroke="white"
+          strokeWidth={2}
+          listening={false}
+          shadowColor="#ef4444"
+          shadowBlur={8}
+          shadowOpacity={0.6}
         />
       )}
 

@@ -49,7 +49,7 @@ export function useCustomerPreOrders(customerId?: string): PreOrderSummary {
       try {
         setPreOrders(prev => ({ ...prev, loading: true, error: null }))
 
-        const response = await fetch(`/api/customers/${customerId}/reservations`)
+        const response = await fetch(`/api/customers/${customerId}/reservations?includeItems=true&limit=100`)
         const data = await response.json()
 
         if (response.ok && data.success && data.reservations) {

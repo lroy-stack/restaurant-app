@@ -180,11 +180,22 @@ export function ProductDetailModal({
                     <div className="text-sm text-muted-foreground mt-1">{item.alcoholContent}% Vol.</div>
                   )}
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-1 flex-wrap">
                   {item.isSignature && (
                     <Badge variant="secondary" className="text-xs">
                       <Star className="w-3 h-3 mr-1" />
                       {language === 'en' ? 'Recommended' : 'Recomendado'}
+                    </Badge>
+                  )}
+                  {item.isOrganic && (
+                    <Badge variant="secondary" className="text-xs bg-secondary/30 text-secondary-foreground border border-secondary/40">
+                      <Leaf className="w-3 h-3 mr-1" />
+                      {language === 'en' ? 'Organic' : 'Ecológico'}
+                    </Badge>
+                  )}
+                  {category.type === 'WINE' && item.vintage && (
+                    <Badge variant="outline" className="text-xs bg-muted text-foreground border-border">
+                      {item.vintage}
                     </Badge>
                   )}
                 </div>
@@ -216,17 +227,11 @@ export function ProductDetailModal({
                 language={language}
               />
 
-              {/* Wine Details */}
-              {category.type === 'WINE' && (item.vintage || item.region || item.wineType) && (
+              {/* Wine Details - Region & Type only */}
+              {category.type === 'WINE' && (item.region || item.wineType) && (
                 <Card>
                   <CardContent className="p-4">
                     <div className="grid grid-cols-2 gap-3 text-sm">
-                      {item.vintage && (
-                        <div>
-                          <span className="text-muted-foreground">Añada:</span>
-                          <p className="font-medium">{item.vintage}</p>
-                        </div>
-                      )}
                       {item.region && (
                         <div>
                           <span className="text-muted-foreground">Región:</span>

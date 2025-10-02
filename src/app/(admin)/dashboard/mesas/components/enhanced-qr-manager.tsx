@@ -337,14 +337,13 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
 
   // SECURE QR GENERATION - Following OWASP + Restaurant Security Best Practices 2024
   const generateSecureQRContent = (
-    tableNumber: string, 
-    tableId: string, 
+    tableNumber: string,
+    tableId: string,
     location: string,
     template: keyof typeof qrTemplates = 'default'
   ): string => {
-    // Generate cryptographic hash for table verification (security measure)
-    const timestamp = Date.now().toString()
-    const payload = `${tableId}:${location}:${timestamp}`
+    // ✅ QR Permanente - Generate hash without timestamp
+    const payload = `${tableId}:${location}`
     // Convert to base64url manually (Node.js doesn't support base64url encoding directly)
     const base64 = Buffer.from(payload).toString('base64')
     const secureIdentifier = base64
@@ -352,7 +351,7 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
       .replace(/\//g, '_')
       .replace(/=/g, '')
       .substring(0, 12)
-    
+
     // SECURE URL FORMAT - HTTPS mandatory + table-specific identifier
     const secureUrl = new URL(qrConfig.menuUrl)
     secureUrl.searchParams.set('mesa', tableNumber)
@@ -360,10 +359,10 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
     secureUrl.searchParams.set('table_id', tableId)
     secureUrl.searchParams.set('location', location)
     secureUrl.searchParams.set('utm_source', 'qr')
-    secureUrl.searchParams.set('utm_medium', 'table') 
+    secureUrl.searchParams.set('utm_medium', 'table')
     secureUrl.searchParams.set('utm_campaign', 'restaurante')
-    secureUrl.searchParams.set('timestamp', timestamp)
-    
+    // ✅ NO timestamp - QR válido indefinidamente
+
     return secureUrl.toString()
   }
 

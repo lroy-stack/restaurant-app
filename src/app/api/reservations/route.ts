@@ -284,13 +284,11 @@ export async function POST(request: NextRequest) {
     }
     console.log('✅ Time slot validation passed:', `${data.date} ${data.time}`)
 
-    // Create proper Spain timezone datetime
-    const spainTimeString = `${data.date}T${data.time}:00+02:00`
-    const utcDate = new Date(spainTimeString)
-    const reservationDateTime = new Date(utcDate.getTime() + (2 * 60 * 60 * 1000))
+    // Create proper Spain timezone datetime (sin suma adicional - DB ya maneja timezone)
+    const spainTimeString = `${data.date}T${data.time}:00`
+    const reservationDateTime = new Date(spainTimeString)
 
     console.log('🕐 User input:', `${data.date}T${data.time}:00 (Spain time)`)
-    console.log('🚀 UTC converted:', utcDate.toISOString())
     console.log('🇪🇸 Spain local stored:', reservationDateTime.toISOString())
 
     const supabase = createDirectAdminClient()

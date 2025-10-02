@@ -14,6 +14,7 @@ import {
   ChevronDown,
   ChevronUp,
   Globe,
+  Utensils,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -318,6 +319,39 @@ export function CustomerReservations({
                 <p className="text-sm text-muted-foreground pl-6 bg-green-50 p-2 rounded">
                   {reservation.dietaryNotes}
                 </p>
+              </div>
+            )}
+
+            {/* Pre-Orders */}
+            {reservation.reservation_items && reservation.reservation_items.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Utensils className="h-4 w-4 text-orange-600" />
+                  <span className="text-sm font-medium">Pre-Pedidos ({reservation.reservation_items.length} platos)</span>
+                </div>
+                <div className="bg-orange-50 p-3 rounded space-y-2">
+                  {reservation.reservation_items.map((item) => (
+                    <div key={item.id} className="flex justify-between items-start text-sm">
+                      <div className="flex-1">
+                        <span className="font-medium">{item.quantity}x</span> {item.menu_items.name}
+                        {item.notes && (
+                          <div className="text-xs text-muted-foreground italic mt-1">{item.notes}</div>
+                        )}
+                      </div>
+                      <span className="font-medium text-orange-700">
+                        €{(item.quantity * item.menu_items.price).toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="border-t border-orange-200 pt-2 flex justify-between font-semibold text-orange-900">
+                    <span>Total Pre-Pedido:</span>
+                    <span>
+                      €{reservation.reservation_items
+                        .reduce((sum, item) => sum + (item.quantity * item.menu_items.price), 0)
+                        .toFixed(2)}
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
 

@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/form'
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { UtensilsCrossed, Euro, Globe, Leaf, Star } from 'lucide-react'
+import { UtensilsCrossed, Euro, Globe, Leaf, Star, Wine } from 'lucide-react'
 import { toast } from 'sonner'
 import { useMenuItems } from '../../hooks/use-menu-items'
 import { useCategories } from '../../hooks/use-categories'
@@ -344,6 +344,118 @@ export function WorkingMenuItemForm({
 
             </CardContent>
           </Card>
+
+          {/* Wine-Specific Fields - Only show if WINE category */}
+          {selectedCategory?.type === 'WINE' && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Wine className="w-4 h-4" />
+                  Detalles del Vino
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Vintage Field */}
+                  <FormField
+                    control={form.control}
+                    name="vintage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Añada / Vintage</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="2022"
+                            min="1900"
+                            max="2100"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                            value={field.value ?? ''}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Alcohol Content */}
+                  <FormField
+                    control={form.control}
+                    name="alcoholContent"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Graduación Alcohólica (%)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="13.5"
+                            step="0.1"
+                            min="0"
+                            max="100"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                            value={field.value ?? ''}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Glass Price */}
+                  <FormField
+                    control={form.control}
+                    name="glassPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Precio Copa (€)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="4.70"
+                            step="0.01"
+                            min="0"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                            value={field.value ?? ''}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* isOrganic Toggle */}
+                  <FormField
+                    control={form.control}
+                    name="isOrganic"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col justify-between border rounded-lg p-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <FormLabel className="flex items-center gap-2">
+                              <Leaf className="w-4 h-4 text-secondary" />
+                              Vino Ecológico
+                            </FormLabel>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Producción orgánica certificada
+                            </p>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Dietary and Availability Options */}
           <Card>

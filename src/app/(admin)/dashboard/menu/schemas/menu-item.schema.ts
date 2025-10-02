@@ -83,6 +83,31 @@ export const menuItemSchema = z.object({
     .default([])
     .describe('IDs of allergens from the allergens table'),
 
+  // Wine-specific fields (optional for wines)
+  vintage: z.number()
+    .int('El año debe ser un número entero')
+    .min(1900, 'El año debe ser posterior a 1900')
+    .max(2100, 'El año no puede ser futuro')
+    .optional()
+    .nullable(),
+
+  alcoholContent: z.number()
+    .min(0, 'El contenido de alcohol no puede ser negativo')
+    .max(100, 'El contenido de alcohol no puede exceder 100%')
+    .multipleOf(0.1, 'El contenido de alcohol debe tener máximo 1 decimal')
+    .optional()
+    .nullable(),
+
+  glassPrice: z.number()
+    .min(0.01, 'El precio por copa debe ser mayor a 0')
+    .max(99.99, 'El precio por copa no puede exceder 99.99€')
+    .multipleOf(0.01, 'El precio por copa debe tener máximo 2 decimales')
+    .optional()
+    .nullable(),
+
+  isOrganic: z.boolean()
+    .default(false),
+
   // Restaurant ID (required in DB, will be set automatically)
   restaurantId: z.string()
     .optional() // Will be set by backend
@@ -161,5 +186,9 @@ export const defaultMenuItemValues: MenuItemFormData = {
   isRecommended: false,
   stock: 0,
   imageUrl: null,
-  allergenIds: []
+  allergenIds: [],
+  vintage: null,
+  alcoholContent: null,
+  glassPrice: null,
+  isOrganic: false
 }

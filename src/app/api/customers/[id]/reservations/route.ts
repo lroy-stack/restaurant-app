@@ -141,14 +141,22 @@ export async function GET(
       console.warn('Count query error:', countError)
     }
 
-    // Calculate stats
+    // Calculate stats from ALL reservations (not just paginated results)
+    const { data: allReservations } = await supabase
+      .from('reservations')
+      .select('status, date, time')
+      .eq('customerId', customerId)
+
     const stats = {
-      total: reservations?.length || 0,
-      completed: reservations?.filter(r => r.status === 'COMPLETED').length || 0,
-      upcoming: reservations?.filter(r =>
-        new Date(r.date) > new Date() && ['PENDING', 'CONFIRMED'].includes(r.status)
+      total: count || 0,
+      completed: allReservations?.filter(r => r.status === 'COMPLETED').length || 0,
+      upcoming: allReservations?.filter(r =>
+        new Date(r.time) > new Date() && ['PENDING', 'CONFIRMED'].includes(r.status)
       ).length || 0,
-      cancelled: reservations?.filter(r => ['CANCELLED', 'NO_SHOW'].includes(r.status)).length || 0
+      cancelled: allReservations?.filter(r => ['CANCELLED', 'NO_SHOW'].includes(r.status)).length || 0,
+      confirmed: allReservations?.filter(r => r.status === 'CONFIRMED').length || 0,
+      pending: allReservations?.filter(r => r.status === 'PENDING').length || 0,
+      noShow: allReservations?.filter(r => r.status === 'NO_SHOW').length || 0
     }
 
     return NextResponse.json({

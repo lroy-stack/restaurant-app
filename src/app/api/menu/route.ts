@@ -13,7 +13,8 @@ export async function GET(request: Request) {
       categoryId: searchParams.get('categoryId') || undefined,
       search: searchParams.get('search') || undefined,
       isAvailable: searchParams.get('isAvailable') ? searchParams.get('isAvailable') === 'true' : undefined,
-      isSignature: searchParams.get('isSignature') ? searchParams.get('isSignature') === 'true' : undefined,
+      isRecommended: searchParams.get('isRecommended') ? searchParams.get('isRecommended') === 'true' : undefined,
+      isOrganic: searchParams.get('isOrganic') ? searchParams.get('isOrganic') === 'true' : undefined,
       isVegetarian: searchParams.get('isVegetarian') ? searchParams.get('isVegetarian') === 'true' : undefined,
       isVegan: searchParams.get('isVegan') ? searchParams.get('isVegan') === 'true' : undefined,
       isGlutenFree: searchParams.get('isGlutenFree') ? searchParams.get('isGlutenFree') === 'true' : undefined,
@@ -118,6 +119,8 @@ export async function GET(request: Request) {
           price: parseFloat(item.price) || 0,
           glassPrice: item.glassPrice ? parseFloat(item.glassPrice) : undefined,
           alcoholContent: item.alcoholContent ? parseFloat(item.alcoholContent) : undefined,
+          vintage: item.vintage || undefined,
+          isOrganic: item.isOrganic || false,
           isVegetarian: item.isVegetarian || false,
           isVegan: item.isVegan || false,
           isGlutenFree: item.isGlutenFree || false,
@@ -182,14 +185,22 @@ export async function GET(request: Request) {
           if (!searchMatch) includeItem = false
         }
         
+        if (filters.isRecommended !== undefined && item.isRecommended !== filters.isRecommended) {
+          includeItem = false
+        }
+
+        if (filters.isOrganic !== undefined && item.isOrganic !== filters.isOrganic) {
+          includeItem = false
+        }
+
         if (filters.isVegetarian !== undefined && item.isVegetarian !== filters.isVegetarian) {
           includeItem = false
         }
-        
+
         if (filters.isVegan !== undefined && item.isVegan !== filters.isVegan) {
           includeItem = false
         }
-        
+
         if (filters.isGlutenFree !== undefined && item.isGlutenFree !== filters.isGlutenFree) {
           includeItem = false
         }

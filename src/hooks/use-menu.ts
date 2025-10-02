@@ -33,6 +33,15 @@ export interface MenuItem {
   displayOrder: number
   glassPrice?: number
   alcoholContent?: number
+  vintage?: number
+  isOrganic: boolean
+  allergens?: Array<{
+    id: string
+    name: string
+    nameEn?: string
+  }>
+  winePairings?: Array<any>
+  foodPairings?: Array<any>
 }
 
 export interface MenuCategory {

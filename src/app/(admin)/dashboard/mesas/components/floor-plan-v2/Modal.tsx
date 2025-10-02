@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,6 +13,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { toast } from 'sonner'
 import { useTableStore } from '@/stores/useTableStore'
 import { QRViewerModal } from '../qr-viewer-modal'
+import { OrderPanel } from './OrderPanel'
 import {
   MapPin,
   Users,
@@ -49,8 +50,26 @@ export function Modal({ isOpen, onClose, table }: ModalProps) {
   const [estimatedTime, setEstimatedTime] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
   const [isQRModalOpen, setIsQRModalOpen] = useState(false)
+  const [showOrderPanel, setShowOrderPanel] = useState(false)
+  const [hasActiveOrders, setHasActiveOrders] = useState(false)
+  const [orderCount, setOrderCount] = useState(0)
 
   const { updateTableStatus } = useTableStore()
+
+  // Check active orders
+  useEffect(() => {
+    if (!table?.id || !isOpen) return
+
+    fetch(`/api/orders/by-table/${table.id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setHasActiveOrders(data.count > 0)
+          setOrderCount(data.count)
+        }
+      })
+      .catch(console.error)
+  }, [table?.id, isOpen])
 
   // ✅ DEBUG: Log modal state changes
   console.log('🎭 Modal render:', { isOpen, table: table?.number, hasTable: !!table })
@@ -251,9 +270,17 @@ export function Modal({ isOpen, onClose, table }: ModalProps) {
             <CardContent className="p-4">
               <h3 className="font-medium mb-3">Acciones de Comandero</h3>
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="justify-start" disabled>
+                <Button
+                  variant="outline"
+                  className="justify-start"
+                  onClick={() => setShowOrderPanel(true)}
+                  disabled={!hasActiveOrders}
+                >
                   <Users className="h-4 w-4 mr-2" />
                   Ver Comanda
+                  {hasActiveOrders && (
+                    <Badge className="ml-2 bg-red-500 text-white">{orderCount}</Badge>
+                  )}
                 </Button>
                 <Button variant="outline" className="justify-start" disabled>
                   <Phone className="h-4 w-4 mr-2" />
@@ -268,9 +295,11 @@ export function Modal({ isOpen, onClose, table }: ModalProps) {
                   Reportar Incidencia
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">
-                <em>Funciones de comandero en desarrollo</em>
-              </p>
+              {!hasActiveOrders && (
+                <p className="text-xs text-muted-foreground mt-3">
+                  No hay pedidos activos
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -347,6 +376,14 @@ export function Modal({ isOpen, onClose, table }: ModalProps) {
         qrCode: qrUrl, // Use generated QR URL
         isActive: table.isActive
       } : undefined}
+    />
+
+    {/* Order Panel */}
+    <OrderPanel
+      tableId={table.id}
+      tableNumber={table.number}
+      isOpen={showOrderPanel}
+      onClose={() => setShowOrderPanel(false)}
     />
   </>
   )
