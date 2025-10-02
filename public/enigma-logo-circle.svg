@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
   <!-- Fondo blanco -->
-  <circle cx="200" cy="200" r="200" fill="#FFFFFF"/>
+  <rect width="400" height="400" fill="#FFFFFF"/>
 
-  <!-- Borde circular azul atlántico -->
-  <circle cx="200" cy="200" r="185" fill="none" stroke="#237584" stroke-width="12"/>
+  <!-- Cuadrado con esquinas redondeadas - fondo blanco con borde azul -->
+  <rect x="20" y="20" width="360" height="360" rx="40" ry="40"
+        fill="#FFFFFF" stroke="#237584" stroke-width="14"/>
 
-  <!-- Logo Enigma centrado y más grande -->
-  <g transform="translate(200, 200) scale(0.055, 0.055) translate(-1127, -1703)">
+  <!-- Logo Enigma centrado y aprovechando espacio -->
+  <g transform="translate(200, 200) scale(0.068, 0.068) translate(-1127, -1703)">
     <g transform="translate(0.000000,3406.000000) scale(0.100000,-0.100000)" fill="#237584" stroke="none">
       <path d="M9977 34039 c-1839 -67 -3551 -529 -5097 -1375 -1604 -878 -2801
 -2021 -3627 -3464 -121 -210 -340 -653 -438 -885 -432 -1017 -678 -2085 -782
