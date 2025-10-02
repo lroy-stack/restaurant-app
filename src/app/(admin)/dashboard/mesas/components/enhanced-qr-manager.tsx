@@ -622,9 +622,14 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
           doc.text(`Capacidad: ${table.capacity} personas`, 20, currentY + 20)
           doc.text(`URL: ${qrContent}`, 20, currentY + 30)
           
-          // Add QR placeholder (in production, you'd render actual QR)
-          doc.rect(20, currentY + 40, 50, 50)
-          doc.text('QR CODE', 35, currentY + 70)
+          // Generate actual QR code
+          const { QRExportService, QR_TEMPLATES } = await import('@/lib/services/QRExportService')
+          const qrDataURL = await QRExportService.generateQRDataURL(
+            qrContent,
+            QR_TEMPLATES[0],
+            300
+          )
+          doc.addImage(qrDataURL, 'PNG', 20, currentY + 40, 50, 50)
           
           currentY += 100
 
