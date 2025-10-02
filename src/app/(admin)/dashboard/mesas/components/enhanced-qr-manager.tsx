@@ -521,8 +521,8 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
           })
           
           // Update local state immediately with SECURE QR
-          setTables(prev => prev.map(t => 
-            t.id === tableId 
+          setLocalTables(prev => prev.map(t =>
+            t.id === tableId
               ? { ...t, qrCode: secureQRContent, scanCount: t.scanCount || 0 }
               : t
           ))

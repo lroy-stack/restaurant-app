@@ -6,6 +6,7 @@ import { TableStatusPanel } from './table-status-panel'
 import { TableAnalytics } from './table-analytics'
 import { TableConfiguration } from './table-configuration'
 import { EnhancedQRManager } from './enhanced-qr-manager'
+import { PhysicalMenuQRManager } from './physical-menu-qr-manager'
 import dynamic from 'next/dynamic'
 
 // Dynamic import for floor plan to handle SSR compatibility with Konva
@@ -60,12 +61,13 @@ export function TableTabs({ tables = [], defaultTab = 'status' }: TableTabsProps
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-      <TabsList className="grid w-full grid-cols-5">
+      <TabsList className="grid w-full grid-cols-6">
         <TabsTrigger value="status">Estados</TabsTrigger>
         <TabsTrigger value="floor-plan">Planta</TabsTrigger>
         <TabsTrigger value="analytics">Análisis</TabsTrigger>
         <TabsTrigger value="config">Configuración</TabsTrigger>
-        <TabsTrigger value="qrcodes">QR Codes</TabsTrigger>
+        <TabsTrigger value="qrcodes">QR Mesas</TabsTrigger>
+        <TabsTrigger value="physical-qr">Cartas & Exterior</TabsTrigger>
       </TabsList>
 
 
@@ -87,6 +89,10 @@ export function TableTabs({ tables = [], defaultTab = 'status' }: TableTabsProps
 
       <TabsContent value="qrcodes" className="space-y-4">
         <EnhancedQRManager tables={tables} />
+      </TabsContent>
+
+      <TabsContent value="physical-qr" className="space-y-4">
+        <PhysicalMenuQRManager />
       </TabsContent>
     </Tabs>
   )
