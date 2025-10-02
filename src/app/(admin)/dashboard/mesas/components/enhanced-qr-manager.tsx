@@ -851,10 +851,10 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
                 <QrCode className="h-3 w-3 text-muted-foreground" />
               </CardHeader>
               <CardContent className="pb-2">
-                <div className="text-xl font-bold text-primary">-</div>
+                <div className="text-xl font-bold text-primary">{qrAnalyticsData.totalScans || 0}</div>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <TrendingUp className="h-2.5 w-2.5 text-[#9FB289]" />
-                  <span className="truncate">Reservas sistema</span>
+                  <span className="truncate">Últimos 30 días</span>
                 </div>
               </CardContent>
             </Card>
@@ -865,7 +865,7 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
                 <Activity className="h-3 w-3 text-muted-foreground" />
               </CardHeader>
               <CardContent className="pb-2">
-                <div className="text-xl font-bold">-</div>
+                <div className="text-xl font-bold">{realAnalytics.activeQRCodes || 0}</div>
                 <div className="text-xs text-muted-foreground truncate">
                   Mesas con QR
                 </div>
@@ -878,7 +878,7 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
                 <Target className="h-3 w-3 text-muted-foreground" />
               </CardHeader>
               <CardContent className="pb-2">
-                <div className="text-xl font-bold text-[#9FB289]">-%</div>
+                <div className="text-xl font-bold text-[#9FB289]">{qrAnalyticsData.conversionRate?.toFixed(1) || 0}%</div>
                 <div className="text-xs text-muted-foreground truncate">
                   QR a pedido
                 </div>
@@ -891,9 +891,9 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
                 <TrendingUp className="h-3 w-3 text-muted-foreground" />
               </CardHeader>
               <CardContent className="pb-2">
-                <div className="text-xl font-bold">-</div>
+                <div className="text-xl font-bold">{qrAnalyticsData.topTables?.[0]?.tableNumber || '-'}</div>
                 <div className="text-xs text-muted-foreground truncate">
-                  Más escaneos
+                  {qrAnalyticsData.topTables?.[0]?.totalScans || 0} escaneos
                 </div>
               </CardContent>
             </Card>
