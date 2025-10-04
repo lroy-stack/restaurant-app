@@ -153,7 +153,7 @@ export function OrderPanel({ tableId, tableNumber, isOpen, onClose }: OrderPanel
                 const config = STATUS_CONFIG[order.status]
                 const StatusIcon = config.icon
 
-                const minutesAgo = differenceInMinutes(new Date(), new Date(order.orderedAt + 'Z'))
+                const minutesAgo = differenceInMinutes(new Date(), new Date(order.orderedAt))
                 const isUrgent = minutesAgo > 20
                 const isWarning = minutesAgo > 10 && minutesAgo <= 20
 
@@ -165,7 +165,7 @@ export function OrderPanel({ tableId, tableNumber, isOpen, onClose }: OrderPanel
                           <div>
                             <CardTitle className="text-base sm:text-lg font-mono">{order.orderNumber}</CardTitle>
                             <p className="text-xs sm:text-sm text-muted-foreground">
-                              {formatDistanceToNow(new Date(order.orderedAt + 'Z'), { addSuffix: true, locale: es })}
+                              {formatDistanceToNow(new Date(order.orderedAt), { addSuffix: true, locale: es })}
                             </p>
                           </div>
                           {isUrgent && (

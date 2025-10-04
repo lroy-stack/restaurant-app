@@ -125,6 +125,8 @@ export async function GET(request: Request) {
           isVegan: item.isVegan || false,
           isGlutenFree: item.isGlutenFree || false,
           isRecommended: item.isRecommended || false,
+          stock: item.stock || 0,
+          isAvailable: item.isAvailable !== false,
           // Map allergens from DB dinamically
           containsGluten: itemSpecificAllergens.some((ia: any) => ia.allergen.name === 'Gluten'),
           containsMilk: itemSpecificAllergens.some((ia: any) => ia.allergen.name === 'Lácteos'),

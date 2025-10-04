@@ -3,6 +3,7 @@ import { Metadata } from 'next'
 import { StaffOrAbove } from '@/components/auth/role-guard'
 import { ResponsiveSidebar } from '@/components/ui/responsive-sidebar'
 import { FloatingNav } from '@/components/ui/mobile-nav'
+import { QueryProvider } from '@/providers/query-provider'
 import { cn } from '@/lib/utils'
 
 // Force dynamic rendering for all dashboard routes
@@ -55,24 +56,26 @@ function DashboardSkeleton() {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <StaffOrAbove>
-      <div className="h-screen bg-background">
-        {/* FloatingNav maneja su propia visibilidad */}
-        <FloatingNav />
+      <QueryProvider>
+        <div className="h-screen bg-background">
+          {/* FloatingNav maneja su propia visibilidad */}
+          <FloatingNav />
 
-        <div className="flex h-full">
-          {/* ResponsiveSidebar maneja su propia visibilidad */}
-          <ResponsiveSidebar className="w-64" />
+          <div className="flex h-full">
+            {/* ResponsiveSidebar maneja su propia visibilidad */}
+            <ResponsiveSidebar className="w-64" />
 
-          {/* Main Content Area */}
-          <main className="flex-1 overflow-y-auto overflow-x-hidden bg-background">
-            <Suspense fallback={<DashboardSkeleton />}>
-              <div className="p-4 lg:p-6 max-w-full space-y-6">
-                {children}
-              </div>
-            </Suspense>
-          </main>
+            {/* Main Content Area */}
+            <main className="flex-1 overflow-y-auto overflow-x-hidden bg-background">
+              <Suspense fallback={<DashboardSkeleton />}>
+                <div className="p-4 lg:p-6 max-w-full space-y-6">
+                  {children}
+                </div>
+              </Suspense>
+            </main>
+          </div>
         </div>
-      </div>
+      </QueryProvider>
     </StaffOrAbove>
   )
 }

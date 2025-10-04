@@ -15,7 +15,8 @@ import {
   UtensilsCrossed,
   BarChart3,
   Settings,
-  LogOut
+  LogOut,
+  ChefHat
 } from 'lucide-react'
 import { EnigmaLogo } from './enigma-logo'
 import Link from 'next/link'
@@ -46,6 +47,12 @@ const navigationItems = [
     name: 'Mesas',
     href: '/dashboard/mesas',
     icon: MapPin,
+    roles: ['ADMIN', 'MANAGER', 'STAFF']
+  },
+  {
+    name: 'Pedidos',
+    href: '/dashboard/pedidos',
+    icon: ChefHat,
     roles: ['ADMIN', 'MANAGER', 'STAFF']
   },
   {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import { SupabaseProvider } from "@/components/providers/supabase-provider";
+import { QueryClientProvider } from "@/components/providers/query-client-provider";
 import { EnigmaThemeProvider } from "@/components/theme/theme-provider";
 import { PerformanceProvider, PerformanceDebugger } from "@/components/performance/performance-provider";
 import { CartProvider } from "@/contexts/CartContext";
@@ -39,17 +40,19 @@ export default function RootLayout({
       <body className="font-sans antialiased min-h-screen bg-background">
         <PerformanceProvider>
           <EnigmaThemeProvider>
-            <SupabaseProvider>
-              <ScrollProvider>
-                <CartProvider>
-                  {children}
-                  <PerformanceDebugger />
-                </CartProvider>
-              </ScrollProvider>
-            </SupabaseProvider>
+            <QueryClientProvider>
+              <SupabaseProvider>
+                <ScrollProvider>
+                  <CartProvider>
+                    {children}
+                    <PerformanceDebugger />
+                  </CartProvider>
+                </ScrollProvider>
+              </SupabaseProvider>
+            </QueryClientProvider>
           </EnigmaThemeProvider>
         </PerformanceProvider>
-        <Toaster 
+        <Toaster
           position="top-right"
           toastOptions={{
             style: {

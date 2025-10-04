@@ -87,6 +87,13 @@
   /* Mesh Gradient Colors - Atlantic Blue Theme */
   --mesh-gradient-color-1: #e0eaff;
   --mesh-gradient-color-2: #237685;
+
+  /* Chart Colors */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
 }
 
 /* ENIGMA BOSQUE THEME - Professional Sage Green Sanctuary */
@@ -195,57 +202,64 @@
   --mesh-gradient-color-2: #cb5810;
 }
 
-/* ENIGMA OBSIDIANA THEME - Professional Dark Mode (Aggressive Blue) */
+/* ENIGMA OBSIDIANA THEME - Professional Dark Mode */
 .theme-obsidian, .dark {
-  /* Core Surface Colors - Following shadcn/ui best practices */
-  --background: oklch(0.141 0.005 220);          /* Professional dark base - shadcn pattern */
-  --foreground: oklch(0.985 0.002 220);          /* High contrast white text */
+  /* Core Surface Colors - Following shadcn/ui dark mode best practices */
+  --background: oklch(0.145 0 0);                /* Pure dark base - matches reference */
+  --foreground: oklch(0.985 0 0);                /* High contrast white text */
 
   /* Elevated Surfaces - Clear visual hierarchy */
-  --card: oklch(0.21 0.008 220);                 /* Elevated from background (+0.069) */
-  --card-foreground: oklch(0.985 0.002 220);     /* Consistent readable text */
+  --card: oklch(0.205 0 0);                      /* Elevated cards (+0.06) */
+  --card-foreground: oklch(0.985 0 0);
 
-  --popover: oklch(0.21 0.008 220);              /* Same elevation as cards */
-  --popover-foreground: oklch(0.985 0.002 220);
+  --popover: oklch(0.269 0 0);                   /* Higher elevation */
+  --popover-foreground: oklch(0.985 0 0);
 
-  /* 🔥 AGGRESSIVE BLUE PRIMARY - Deep, saturated, professional */
-  --primary: oklch(0.58 0.22 200);               /* Aggressive Atlantic Blue - deeper, more saturated */
-  --primary-foreground: oklch(0.985 0.002 220);  /* High contrast white text */
+  /* Primary - Professional aggressive blue */
+  --primary: oklch(0.58 0.22 200);               /* Aggressive Atlantic Blue */
+  --primary-foreground: oklch(0.985 0 0);
 
-  /* Secondary Surfaces - Sage Green harmony */
-  --secondary: oklch(0.28 0.01 125);             /* Dark sage green secondary */
-  --secondary-foreground: oklch(0.985 0.002 220);
+  /* Secondary Surfaces */
+  --secondary: oklch(0.269 0 0);                 /* Consistent with popover */
+  --secondary-foreground: oklch(0.985 0 0);
 
-  /* Muted Elements - WCAG AA compliant text hierarchy */
-  --muted: oklch(0.28 0.008 220);                /* Elevated muted surface */
-  --muted-foreground: oklch(0.72 0.015 220);     /* WCAG AA - improved contrast */
+  /* Muted Elements - WCAG AA compliant */
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);          /* 4.5:1 contrast ratio */
 
-  /* Accent Colors - Burnt Orange optimized for dark */
-  --accent: oklch(0.68 0.16 40);                 /* Brighter burnt orange */
-  --accent-foreground: oklch(0.141 0.005 220);
+  /* Accent Colors - Burnt Orange */
+  --accent: oklch(0.371 0 0);
+  --accent-foreground: oklch(0.985 0 0);
 
-  /* Destructive States - Professional error handling */
-  --destructive: oklch(0.67 0.18 25);            /* Brighter error red for visibility */
-  --destructive-foreground: oklch(0.985 0.002 220);
+  /* Destructive States */
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
 
-  /* 🔥 AGGRESSIVE BLUE INTERACTIVE - Consistent with new primary */
-  --border: oklch(0.45 0.18 200 / 35%);          /* Aggressive blue borders with transparency */
-  --input: oklch(0.52 0.2 200 / 15%);            /* Subtle aggressive blue input backgrounds */
-  --ring: oklch(0.52 0.25 200);                  /* Intense focus ring - even more saturated */
+  /* Interactive Elements */
+  --border: oklch(1 0 0 / 10%);                  /* Subtle white borders with opacity */
+  --input: oklch(1 0 0 / 15%);                   /* Subtle white inputs with opacity */
+  --ring: oklch(0.556 0 0);                      /* Focus ring */
 
-  /* 🔥 AGGRESSIVE BLUE SIDEBAR - Professional navigation hierarchy */
-  --sidebar: oklch(0.18 0.006 220);              /* Distinct sidebar - slightly lighter */
-  --sidebar-foreground: oklch(0.985 0.002 220);
-  --sidebar-primary: oklch(0.58 0.22 200);       /* Aggressive Blue navigation - matches primary */
-  --sidebar-primary-foreground: oklch(0.985 0.002 220);
-  --sidebar-accent: oklch(0.25 0.008 220);       /* Hover states */
-  --sidebar-accent-foreground: oklch(0.985 0.002 220);
-  --sidebar-border: oklch(0.45 0.18 200 / 25%);  /* Aggressive blue sidebar borders */
-  --sidebar-ring: oklch(0.52 0.25 200);          /* Focus consistency - intense */
+  /* Chart Colors - Professional data visualization */
+  --chart-1: oklch(0.488 0.243 264.376);         /* Purple */
+  --chart-2: oklch(0.696 0.17 162.48);           /* Teal */
+  --chart-3: oklch(0.769 0.188 70.08);           /* Yellow */
+  --chart-4: oklch(0.627 0.265 303.9);           /* Magenta */
+  --chart-5: oklch(0.645 0.246 16.439);          /* Orange */
 
-  /* Mesh Gradient Colors - Aggressive Blue Obsidian Theme */
+  /* Sidebar System */
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.439 0 0);
+
+  /* Mesh Gradient Colors */
   --mesh-gradient-color-1: #1a1b23;
-  --mesh-gradient-color-2: #2d4a6b;              /* Deeper blue gradient */
+  --mesh-gradient-color-2: #2d4a6b;
 }
 
 @layer base {
