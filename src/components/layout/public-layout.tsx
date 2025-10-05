@@ -1,3 +1,5 @@
+'use client'
+
 import { ReactNode } from 'react'
 import { FloatingNavbar } from '@/components/navigation/floating-navbar'
 import { CartFloatingButton } from '@/components/cart/CartFloatingButton'
@@ -6,6 +8,7 @@ import { CookieConsentBanner } from '@/components/legal/CookieConsentBanner'
 import { ThemeAwareMeshGradient } from '@/components/background/mesh-gradient-background'
 import { Footer } from './footer'
 import { cn } from '@/lib/utils'
+import { CssCursorTrail } from '@/components/effects/CssCursorTrail'
 
 interface PublicLayoutProps {
   children: ReactNode
@@ -24,6 +27,9 @@ export function PublicLayout({
     <div className="min-h-screen flex flex-col relative">
       {/* Animated Mesh Gradient Background */}
       <ThemeAwareMeshGradient />
+
+      {/* CSS Cursor Trail - Desktop only */}
+      <CssCursorTrail />
 
       {/* Floating Navigation */}
       {showNavbar && <FloatingNavbar />}

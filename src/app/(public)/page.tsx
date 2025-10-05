@@ -10,6 +10,7 @@ import { FeaturedDishes } from "@/components/homepage/featured-dishes"
 import { FeaturedWines } from "@/components/homepage/featured-wines"
 import { OptimizedImage } from "@/components/ui/optimized-image"
 import { useMediaLibrary } from "@/hooks/use-media-library"
+import { ScrollReveal } from "@/components/animations/ScrollReveal"
 import { Suspense, memo } from "react"
 
 export default function HomePage() {
@@ -78,96 +79,108 @@ export default function HomePage() {
       </section>
 
       {/* Featured Dishes Section - REUTILIZANDO componentes del /menu */}
-      <Suspense fallback={
-        <section className="py-12 sm:py-16">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="animate-pulse space-y-8">
-              <div className="h-8 bg-muted rounded w-48 mx-auto"></div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="space-y-4">
-                    <div className="h-48 bg-muted rounded"></div>
-                    <div className="h-4 bg-muted rounded w-3/4"></div>
-                    <div className="h-4 bg-muted rounded w-1/2"></div>
-                  </div>
-                ))}
+      <ScrollReveal direction="up" delay={0.1}>
+        <Suspense fallback={
+          <section className="py-12 sm:py-16">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="animate-pulse space-y-8">
+                <div className="h-8 bg-muted rounded w-48 mx-auto"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="space-y-4">
+                      <div className="h-48 bg-muted rounded"></div>
+                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                      <div className="h-4 bg-muted rounded w-1/2"></div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-      }>
-        <FeaturedDishes maxItems={4} showViewMore={true} />
-      </Suspense>
+          </section>
+        }>
+          <FeaturedDishes maxItems={4} showViewMore={true} />
+        </Suspense>
+      </ScrollReveal>
 
       {/* Featured Wines Section - Nuestra Cava */}
-      <Suspense fallback={
-        <section className="py-12 sm:py-16 bg-muted/30">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="animate-pulse space-y-8">
-              <div className="h-8 bg-muted rounded w-48 mx-auto"></div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[...Array(2)].map((_, i) => (
-                  <div key={i} className="space-y-4">
-                    <div className="h-64 bg-muted rounded"></div>
-                    <div className="h-4 bg-muted rounded w-3/4"></div>
-                    <div className="h-4 bg-muted rounded w-1/2"></div>
-                  </div>
-                ))}
+      <ScrollReveal direction="up" delay={0.2}>
+        <Suspense fallback={
+          <section className="py-12 sm:py-16 bg-muted/30">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="animate-pulse space-y-8">
+                <div className="h-8 bg-muted rounded w-48 mx-auto"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {[...Array(2)].map((_, i) => (
+                    <div key={i} className="space-y-4">
+                      <div className="h-64 bg-muted rounded"></div>
+                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                      <div className="h-4 bg-muted rounded w-1/2"></div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-      }>
-        <FeaturedWines maxItems={2} showViewMore={true} />
-      </Suspense>
+          </section>
+        }>
+          <FeaturedWines maxItems={2} showViewMore={true} />
+        </Suspense>
+      </ScrollReveal>
 
       {/* Features Section - 100% Responsive Grid */}
       <section className="py-12 sm:py-16 bg-muted/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 sm:mb-12">
-            <h3 className="enigma-section-title">Una Experiencia Gastronómica Única</h3>
-            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-              En Enigma Cocina Con Alma, cada plato cuenta una historia de tradición, innovación y pasión culinaria.
-            </p>
-          </div>
-          
+          <ScrollReveal direction="up">
+            <div className="text-center mb-8 sm:mb-12">
+              <h3 className="enigma-section-title">Una Experiencia Gastronómica Única</h3>
+              <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+                En Enigma Cocina Con Alma, cada plato cuenta una historia de tradición, innovación y pasión culinaria.
+              </p>
+            </div>
+          </ScrollReveal>
+
           {/* Responsive Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            <Card className="text-center p-4 sm:p-6 hover:shadow-lg transition-shadow">
-              <CardContent className="p-4 sm:p-6 pt-4 sm:pt-6">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                  <EnigmaLogo className="h-6 w-6 sm:h-8 sm:w-8" variant="primary" />
-                </div>
-                <h4 className="enigma-subsection-title">Cocina de Autor</h4>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Platos únicos que fusionan tradición atlántica y mediterránea con técnicas modernas.
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center p-4 sm:p-6 hover:shadow-lg transition-shadow">
-              <CardContent className="p-4 sm:p-6 pt-4 sm:pt-6">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 bg-secondary/10 rounded-full flex items-center justify-center">
-                  <Star className="h-6 w-6 sm:h-8 sm:w-8 text-secondary" />
-                </div>
-                <h4 className="enigma-subsection-title">Ingredientes Premium</h4>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Seleccionamos los mejores productos locales y de temporada para garantizar máxima calidad.
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center p-4 sm:p-6 hover:shadow-lg transition-shadow md:col-span-2 lg:col-span-1">
-              <CardContent className="p-4 sm:p-6 pt-4 sm:pt-6">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 bg-accent/10 rounded-full flex items-center justify-center">
-                  <Utensils className="h-6 w-6 sm:h-8 sm:w-8 text-accent" />
-                </div>
-                <h4 className="enigma-subsection-title">Experiencia Completa</h4>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Desde el servicio hasta el ambiente, cada detalle está pensado para crear momentos inolvidables.
-                </p>
-              </CardContent>
-            </Card>
+            <ScrollReveal delay={0.1} direction="up">
+              <Card className="text-center p-4 sm:p-6 hover:shadow-lg transition-shadow">
+                <CardContent className="p-4 sm:p-6 pt-4 sm:pt-6">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                    <EnigmaLogo className="h-6 w-6 sm:h-8 sm:w-8" variant="primary" />
+                  </div>
+                  <h4 className="enigma-subsection-title">Cocina de Autor</h4>
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    Platos únicos que fusionan tradición atlántica y mediterránea con técnicas modernas.
+                  </p>
+                </CardContent>
+              </Card>
+            </ScrollReveal>
+
+            <ScrollReveal delay={0.2} direction="up">
+              <Card className="text-center p-4 sm:p-6 hover:shadow-lg transition-shadow">
+                <CardContent className="p-4 sm:p-6 pt-4 sm:pt-6">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 bg-secondary/10 rounded-full flex items-center justify-center">
+                    <Star className="h-6 w-6 sm:h-8 sm:w-8 text-secondary" />
+                  </div>
+                  <h4 className="enigma-subsection-title">Ingredientes Premium</h4>
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    Seleccionamos los mejores productos locales y de temporada para garantizar máxima calidad.
+                  </p>
+                </CardContent>
+              </Card>
+            </ScrollReveal>
+
+            <ScrollReveal delay={0.3} direction="up">
+              <Card className="text-center p-4 sm:p-6 hover:shadow-lg transition-shadow md:col-span-2 lg:col-span-1">
+                <CardContent className="p-4 sm:p-6 pt-4 sm:pt-6">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 bg-accent/10 rounded-full flex items-center justify-center">
+                    <Utensils className="h-6 w-6 sm:h-8 sm:w-8 text-accent" />
+                  </div>
+                  <h4 className="enigma-subsection-title">Experiencia Completa</h4>
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    Desde el servicio hasta el ambiente, cada detalle está pensado para crear momentos inolvidables.
+                  </p>
+                </CardContent>
+              </Card>
+            </ScrollReveal>
           </div>
         </div>
       </section>

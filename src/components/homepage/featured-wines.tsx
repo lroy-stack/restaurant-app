@@ -3,21 +3,13 @@
 import { useState } from 'react'
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { useTopRecommendedWines } from "@/hooks/use-recommended-wines"
-import {
-  Star,
-  ArrowRight,
-  Eye,
-  ShoppingCart,
-  Heart,
-  Wine
-} from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProductDetailModal } from "@/components/menu/ProductDetailModal"
-import { AllergenInfo } from '@/app/(admin)/dashboard/menu/components/ui/allergen-badges'
 import { useCart } from '@/hooks/useCart'
+import { EnhancedProductCard } from '@/components/menu/EnhancedProductCard'
 
 interface FeaturedWinesProps {
   maxItems?: number
@@ -152,129 +144,19 @@ export function FeaturedWines({
             </p>
           </div>
 
-          {/* Grid de vinos - SIGUIENDO EXACTAMENTE PATRÓN DE FEATURED DISHES */}
+          {/* Grid de vinos - 2 columnas siempre, más compacto en móvil */}
           <div className="flex justify-center">
-            <div className="grid grid-cols-2 gap-2 sm:gap-4 md:gap-6 max-w-2xl w-full">
-            {topItems.map((item) => {
-              const allergens = item.allergens || []
-
-              return (
-                <Card key={item.id} className="relative group h-full flex flex-col overflow-hidden hover:shadow-lg transition-all duration-200 border-border/50 hover:border-primary/20">
-                  {/* CARD HEADER - Status Badges & Price - Enhanced */}
-                  <div className="flex items-start justify-between p-3 sm:p-4 md:p-5 pb-3 sm:pb-3 border-b border-border/50">
-                    <div className="flex gap-2 flex-wrap">
-                      {item.isRecommended && (
-                        <div className="w-7 h-7 sm:w-6 sm:h-6 bg-accent/20 rounded-full flex items-center justify-center">
-                          <Heart className="w-4 h-4 sm:w-3 sm:h-3 text-accent fill-current" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className="flex items-baseline gap-2 justify-end">
-                        <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">€{item.price}</div>
-                        {item.glassPrice && (
-                          <div className="text-sm sm:text-xs text-muted-foreground">
-                            / €{item.glassPrice} copa
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* CARD BODY - Content - Enhanced Padding */}
-                  <CardContent className="flex-1 flex flex-col p-3 sm:p-4 md:p-5 pt-3 sm:pt-3">
-                    {/* Item Name & Description - Enhanced Legibility */}
-                    <div className="mb-3 sm:mb-4">
-                      <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-2 sm:mb-3 leading-snug group-hover:text-primary transition-colors line-clamp-2">
-                        {item.name}
-                      </h3>
-                      <p className="text-sm sm:text-sm md:text-base text-muted-foreground leading-relaxed line-clamp-3 sm:line-clamp-2">
-                        {item.richDescription || item.description}
-                      </p>
-                    </div>
-
-
-                    {/* Allergen & Dietary Info - COMPONENTE REUTILIZADO */}
-                    <div className="mb-3 sm:mb-4">
-                      <AllergenInfo
-                        allergens={allergens}
-                        isVegetarian={item.isVegetarian}
-                        isVegan={item.isVegan}
-                        isGlutenFree={item.isGlutenFree}
-                        variant="default"
-                        size="sm"
-                        layout="inline"
-                        showNames={false}
-                        maxVisible={99}
-                        className="justify-start"
-                        language="es"
-                      />
-                    </div>
-
-                    {/* CARD FOOTER - Action Buttons EXACTOS DEL /MENU */}
-                    <div className="mt-auto pt-2 sm:pt-3 border-t border-border/30">
-                      {/* Cart Status */}
-                      {isInCart(item.id) && getCartItem(item.id) && (
-                        <div className="mb-1 sm:mb-2 text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
-                          <ShoppingCart className="h-3 w-3" />
-                          <span className="truncate">
-                            En carrito ({getCartItem(item.id)?.quantity})
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Action Buttons - Progressive Mobile-Friendly */}
-                      <div className="flex gap-2 sm:gap-3 justify-end">
-                        {/* View Details - Better Touch Targets */}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openDetailModal(item)}
-                          className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 p-0 hover:shadow-md transition-all duration-200"
-                          title="Ver Detalle"
-                        >
-                          <Eye className="h-4 w-4 sm:h-4 sm:w-4 md:h-5 md:w-5" />
-                        </Button>
-
-                        {/* Add to Cart - Enhanced Touch Experience */}
-                        <Button
-                          onClick={() => handleAddToCart(item)}
-                          size="sm"
-                          className={cn(
-                            "relative h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 p-0 transition-all duration-200 hover:shadow-md",
-                            isInCart(item.id)
-                              ? "bg-green-50 border-green-200 hover:bg-green-100 text-green-700 border"
-                              : "bg-primary hover:bg-primary/90 text-primary-foreground"
-                          )}
-                          title={isInCart(item.id) ? 'Añadir Más' : 'Al Carrito'}
-                        >
-                          <ShoppingCart className="h-4 w-4 sm:h-4 sm:w-4 md:h-5 md:w-5" />
-
-                          {/* Enhanced quantity badge */}
-                          {isInCart(item.id) && getCartItem(item.id) && getCartItem(item.id)!.quantity > 0 && (
-                            <Badge
-                              className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 h-4 w-4 sm:h-5 sm:w-5 p-0 text-xs flex items-center justify-center bg-red-500 hover:bg-red-500 text-white border-0 rounded-full shadow-sm"
-                            >
-                              {getCartItem(item.id)?.quantity}
-                            </Badge>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-
-                  {/* Badge de alcohol - OVERLAY BOTTOM LEFT como en /menu */}
-                  {item.alcoholContent && (
-                    <div className="absolute bottom-2 left-2">
-                      <div className="px-2 py-1 bg-primary/10 rounded-md flex items-center gap-1">
-                        <Wine className="w-3 h-3 text-primary" />
-                        <span className="text-xs font-medium text-primary">{item.alcoholContent}% Vol.</span>
-                      </div>
-                    </div>
-                  )}
-                </Card>
-              )
-            })}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-6 max-w-4xl w-full">
+              {topItems.map((item) => (
+                <EnhancedProductCard
+                  key={item.id}
+                  item={item}
+                  onQuickView={() => openDetailModal(item)}
+                  onAddToCart={() => handleAddToCart(item)}
+                  isInCart={isInCart(item.id)}
+                  cartQuantity={getCartItem(item.id)?.quantity || 0}
+                />
+              ))}
             </div>
           </div>
 

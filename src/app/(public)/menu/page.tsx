@@ -688,79 +688,79 @@ export default function MenuPage() {
                     )}
                   </div>
 
-                  {/* Menu Items Grid - RESPONSIVE 2x2 Mobile, 4x4 Desktop */}
-                  <div className="grid grid-cols-2 gap-2 sm:gap-4 md:gap-6 lg:grid-cols-4">
+                  {/* Menu Items Grid - Mobile-First Responsive */}
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:grid-cols-4">
                     {category.menuItems.map((item) => {
                       const allergens = getAdvancedAllergenObjects(item)
 
                       return (
                         <Card key={item.id} className="relative group h-full flex flex-col overflow-hidden hover:shadow-lg transition-all duration-200 border-border/50 hover:border-primary/20">
-                          {/* CARD HEADER - Status Badges & Price - Enhanced */}
-                          <div className="flex items-start justify-between p-3 sm:p-4 md:p-5 pb-3 sm:pb-3 border-b border-border/50">
-                            <div className="flex gap-2 flex-wrap">
+                          {/* CARD HEADER - Status Badges & Price - Mobile Optimized */}
+                          <div className="flex items-start justify-between p-2 sm:p-3 md:p-4 pb-2 border-b border-border/50">
+                            <div className="flex gap-1 sm:gap-2 flex-wrap">
                               {item.isRecommended && (
-                                <div className="w-7 h-7 sm:w-6 sm:h-6 bg-accent/20 rounded-full flex items-center justify-center">
-                                  <Heart className="w-4 h-4 sm:w-3 sm:h-3 text-accent fill-current" />
+                                <div className="w-6 h-6 sm:w-7 sm:h-7 bg-accent/20 rounded-full flex items-center justify-center">
+                                  <Heart className="w-3 h-3 sm:w-4 sm:h-4 text-accent fill-current" />
                                 </div>
                               )}
                               {item.isOrganic && (
-                                <Badge variant="secondary" className="text-xs bg-secondary/30 text-secondary-foreground border border-secondary/40">
-                                  <Leaf className="w-3 h-3 mr-1" />
-                                  {language === 'en' ? 'Organic' : 'Ecológico'}
+                                <Badge variant="secondary" className="text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 bg-secondary/30 text-secondary-foreground border border-secondary/40">
+                                  <Leaf className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
+                                  <span className="hidden sm:inline">{language === 'en' ? 'Organic' : 'Ecológico'}</span>
                                 </Badge>
                               )}
                               {category.type === 'WINE' && item.vintage && (
-                                <Badge variant="outline" className="text-xs bg-muted text-foreground border-border">
+                                <Badge variant="outline" className="text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 bg-muted text-foreground border-border">
                                   {item.vintage}
                                 </Badge>
                               )}
                             </div>
                             <div className="text-right flex-shrink-0">
-                              <div className="flex items-baseline gap-2 justify-end">
-                                <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">€{item.price}</div>
+                              <div className="flex items-baseline gap-1 sm:gap-2 justify-end">
+                                <div className="text-base sm:text-lg md:text-xl font-bold text-primary">€{item.price}</div>
                                 {category.type === 'WINE' && item.glassPrice && (
-                                  <div className="text-sm sm:text-xs text-muted-foreground">
-                                    / €{item.glassPrice} {language === 'en' ? 'glass' : 'copa'}
+                                  <div className="text-[10px] sm:text-xs text-muted-foreground">
+                                    / €{item.glassPrice} <span className="hidden sm:inline">{language === 'en' ? 'glass' : 'copa'}</span>
                                   </div>
                                 )}
                               </div>
                             </div>
                           </div>
 
-                          {/* CARD BODY - Content - Enhanced Padding */}
-                          <CardContent className="flex-1 flex flex-col p-3 sm:p-4 md:p-5 pt-3 sm:pt-3">
-                            {/* Item Name & Description - Enhanced Legibility */}
-                            <div className="mb-3 sm:mb-4">
-                              <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-2 sm:mb-3 leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                          {/* CARD BODY - Content - Compact Mobile Padding */}
+                          <CardContent className="flex-1 flex flex-col p-2 sm:p-3 md:p-4 pt-2">
+                            {/* Item Name & Description - Mobile Optimized Typography */}
+                            <div className="mb-2 sm:mb-3">
+                              <h3 className="text-sm sm:text-base md:text-lg font-semibold mb-1 sm:mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-2">
                                 {getItemDisplayName(item)}
                               </h3>
-                              <p className="text-sm sm:text-sm md:text-base text-muted-foreground leading-relaxed line-clamp-3 sm:line-clamp-2">
+                              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2 sm:line-clamp-3">
                                 {getItemDisplayDescription(item)}
                               </p>
                             </div>
 
-                            {/* Wine/Food Pairing Compact Display */}
+                            {/* Wine/Food Pairing Compact Display - Mobile Optimized */}
                             {category.type === 'FOOD' && item.winePairings && item.winePairings.length > 0 && (
-                              <div className="mb-3 p-2.5 bg-purple-50/80 dark:bg-purple-950/20 rounded-md border border-purple-200/60 dark:border-purple-800/60">
-                                <div className="flex items-center gap-1.5 text-xs font-medium text-purple-700 dark:text-purple-300">
-                                  <Wine className="h-3.5 w-3.5" />
+                              <div className="mb-2 p-2 sm:p-2.5 bg-purple-50/80 dark:bg-purple-950/20 rounded-md border border-purple-200/60 dark:border-purple-800/60">
+                                <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-medium text-purple-700 dark:text-purple-300">
+                                  <Wine className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
                                   <span className="truncate">{item.winePairings[0].wineItem.name}</span>
-                                  <span className="text-purple-600 dark:text-purple-400">€{item.winePairings[0].wineItem.price}</span>
+                                  <span className="text-purple-600 dark:text-purple-400 flex-shrink-0">€{item.winePairings[0].wineItem.price}</span>
                                 </div>
                               </div>
                             )}
 
                             {category.type === 'WINE' && item.foodPairings && item.foodPairings.length > 0 && (
-                              <div className="mb-3 flex items-center gap-1.5 text-xs">
-                                <ChefHat className="h-3.5 w-3.5 text-green-600" />
-                                <span className="text-green-700 dark:text-green-300 font-medium">
-                                  {language === 'en' ? 'Pairs with:' : 'Marida con:'} {item.foodPairings[0].foodItem.name}
+                              <div className="mb-2 flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs">
+                                <ChefHat className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-green-600 flex-shrink-0" />
+                                <span className="text-green-700 dark:text-green-300 font-medium truncate">
+                                  <span className="hidden sm:inline">{language === 'en' ? 'Pairs with:' : 'Marida con:'} </span>{item.foodPairings[0].foodItem.name}
                                 </span>
                               </div>
                             )}
 
-                            {/* Allergen & Dietary Info - RESPONSIVE DISPLAY */}
-                            <div className="mb-3 sm:mb-4">
+                            {/* Allergen & Dietary Info - Mobile Optimized */}
+                            <div className="mb-2 sm:mb-3">
                               <AllergenInfo
                                 allergens={allergens}
                                 isVegetarian={item.isVegetarian}
@@ -776,38 +776,38 @@ export default function MenuPage() {
                               />
                             </div>
 
-                            {/* CARD FOOTER - Responsive Action Buttons */}
-                            <div className="mt-auto pt-2 sm:pt-3 border-t border-border/30">
-                              {/* Cart Status - Compact for mobile */}
+                            {/* CARD FOOTER - Mobile-First Responsive Buttons */}
+                            <div className="mt-auto pt-2 border-t border-border/30">
+                              {/* Cart Status - Ultra Compact Mobile */}
                               {(category.type === 'FOOD' || category.type === 'WINE') && isInCart(item.id) && getCartItem(item.id) && (
-                                <div className="mb-1 sm:mb-2 text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
-                                  <ShoppingCart className="h-3 w-3" />
+                                <div className="mb-1.5 text-[10px] sm:text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
+                                  <ShoppingCart className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                                   <span className="truncate">
                                     {language === 'en' ? `In cart (${getCartItem(item.id)?.quantity})` : `En carrito (${getCartItem(item.id)?.quantity})`}
                                   </span>
                                 </div>
                               )}
 
-                              {/* Action Buttons - Progressive Mobile-Friendly */}
-                              <div className="flex gap-2 sm:gap-3 justify-end">
-                                {/* View Details - Better Touch Targets */}
+                              {/* Action Buttons - Optimized Touch Targets */}
+                              <div className="flex gap-2 justify-end">
+                                {/* View Details - Mobile Touch Optimized */}
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() => openDetailModal(item, category)}
-                                  className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 p-0 hover:shadow-md transition-all duration-200"
+                                  className="h-8 w-8 sm:h-9 sm:w-9 p-0 hover:shadow-md transition-all duration-200"
                                   title={language === 'en' ? 'View Details' : 'Ver Detalle'}
                                 >
-                                  <Eye className="h-4 w-4 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+                                  <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                 </Button>
 
-                                {/* Add to Cart - Enhanced Touch Experience */}
+                                {/* Add to Cart - Enhanced Mobile Experience */}
                                 {(category.type === 'FOOD' || category.type === 'WINE') && (
                                   <Button
                                     onClick={() => handleAddToCart(item, category)}
                                     size="sm"
                                     className={cn(
-                                      "relative h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 p-0 transition-all duration-200 hover:shadow-md",
+                                      "relative h-8 w-8 sm:h-9 sm:w-9 p-0 transition-all duration-200 hover:shadow-md",
                                       isInCart(item.id)
                                         ? "bg-green-50 border-green-200 hover:bg-green-100 text-green-700 border"
                                         : "bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -817,12 +817,12 @@ export default function MenuPage() {
                                       : (isInCart(item.id) ? 'Añadir Más' : 'Al Carrito')
                                     }
                                   >
-                                    <ShoppingCart className="h-4 w-4 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+                                    <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
 
-                                    {/* Enhanced quantity badge */}
+                                    {/* Compact quantity badge */}
                                     {isInCart(item.id) && getCartItem(item.id) && getCartItem(item.id)!.quantity > 0 && (
                                       <Badge
-                                        className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 h-4 w-4 sm:h-5 sm:w-5 p-0 text-xs flex items-center justify-center bg-red-500 hover:bg-red-500 text-white border-0 rounded-full shadow-sm"
+                                        className="absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 h-4 w-4 sm:h-5 sm:w-5 p-0 text-[10px] sm:text-xs flex items-center justify-center bg-red-500 hover:bg-red-500 text-white border-0 rounded-full shadow-sm"
                                       >
                                         {getCartItem(item.id)?.quantity}
                                       </Badge>
@@ -833,12 +833,12 @@ export default function MenuPage() {
                             </div>
                           </CardContent>
 
-                          {/* Alcohol Badge - BOTTOM LEFT CORNER */}
+                          {/* Alcohol Badge - Mobile Optimized */}
                           {category.type === 'WINE' && item.alcoholContent && (
                             <div className="absolute bottom-2 left-2">
-                              <div className="px-2 py-1 bg-primary/10 rounded-md flex items-center gap-1">
-                                <Wine className="w-3 h-3 text-primary" />
-                                <span className="text-xs font-medium text-primary">{item.alcoholContent}% Vol.</span>
+                              <div className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-primary/10 rounded-md flex items-center gap-0.5 sm:gap-1">
+                                <Wine className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-primary" />
+                                <span className="text-[10px] sm:text-xs font-medium text-primary">{item.alcoholContent}% <span className="hidden sm:inline">Vol.</span></span>
                               </div>
                             </div>
                           )}

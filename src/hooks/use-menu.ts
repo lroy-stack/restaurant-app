@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react'
+'use client'
+
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { MenuFilterData } from '@/lib/validations/menu'
 
 export interface MenuItem {
@@ -74,15 +76,11 @@ export interface MenuData {
 }
 
 export function useMenu(filters?: MenuFilterData) {
-  const [menu, setMenu] = useState<MenuData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
-  const fetchMenu = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
+  const query = useQuery({
+    queryKey: ['menu', filters],
+    queryFn: async () => {
       const queryParams = new URLSearchParams()
 
       if (filters) {
@@ -100,59 +98,25 @@ export function useMenu(filters?: MenuFilterData) {
         throw new Error('Error al cargar el menú')
       }
 
-      const data = await response.json()
-      setMenu(data)
-    } catch (err) {
-      console.error('Error loading menu:', err)
-      setError(err instanceof Error ? err.message : 'Ocurrió un error')
-    } finally {
-      setLoading(false)
-    }
-  }
+      return response.json() as Promise<MenuData>
+    },
+    staleTime: 5 * 60 * 1000, // Menu rarely changes
+  })
 
-  const filterByAllergens = (excludeAllergens: string[]) => {
-    if (!menu) return
-
-    const allergenMapping: Record<string, keyof MenuItem> = {
-      gluten: 'containsGluten',
-      milk: 'containsMilk',
-      eggs: 'containsEggs',
-      nuts: 'containsNuts',
-      fish: 'containsFish',
-      shellfish: 'containsShellfish',
-      soy: 'containsSoy',
-      celery: 'containsCelery',
-      mustard: 'containsMustard',
-      sesame: 'containsSesame',
-      sulfites: 'containsSulfites',
-      lupin: 'containsLupin',
-      mollusks: 'containsMollusks',
-      peanuts: 'containsPeanuts',
-    }
-
-    const newFilters: MenuFilterData = { ...filters }
-    
-    excludeAllergens.forEach(allergen => {
-      const filterKey = `exclude${allergen.charAt(0).toUpperCase() + allergen.slice(1)}` as keyof MenuFilterData
-      ;(newFilters as any)[filterKey] = true
-    })
-
-    return fetchMenu()
-  }
-
+  // Helper functions (keep existing logic)
   const getItemsByCategory = (categoryId: string): MenuItem[] => {
-    if (!menu) return []
-    const category = menu.categories.find(cat => cat.id === categoryId)
+    if (!query.data) return []
+    const category = query.data.categories.find(cat => cat.id === categoryId)
     return category?.menuItems || []
   }
 
-  const searchItems = (query: string): MenuItem[] => {
-    if (!menu || !query.trim()) return []
-    
-    const searchTerm = query.toLowerCase()
-    const allItems = menu.categories.flatMap(cat => cat.menuItems)
-    
-    return allItems.filter(item => 
+  const searchItems = (searchQuery: string): MenuItem[] => {
+    if (!query.data || !searchQuery.trim()) return []
+
+    const searchTerm = searchQuery.toLowerCase()
+    const allItems = query.data.categories.flatMap(cat => cat.menuItems)
+
+    return allItems.filter(item =>
       item.name.toLowerCase().includes(searchTerm) ||
       item.nameEn?.toLowerCase().includes(searchTerm) ||
       item.description.toLowerCase().includes(searchTerm) ||
@@ -161,35 +125,74 @@ export function useMenu(filters?: MenuFilterData) {
   }
 
   const getRecommendedItems = (): MenuItem[] => {
-    if (!menu) return []
-    return menu.categories.flatMap(cat => cat.menuItems.filter(item => item.isRecommended))
+    if (!query.data) return []
+    return query.data.categories.flatMap(cat =>
+      cat.menuItems.filter(item => item.isRecommended)
+    )
   }
 
   const getVegetarianItems = (): MenuItem[] => {
-    if (!menu) return []
-    return menu.categories.flatMap(cat => cat.menuItems.filter(item => item.isVegetarian))
+    if (!query.data) return []
+    return query.data.categories.flatMap(cat =>
+      cat.menuItems.filter(item => item.isVegetarian)
+    )
   }
 
   const getVeganItems = (): MenuItem[] => {
-    if (!menu) return []
-    return menu.categories.flatMap(cat => cat.menuItems.filter(item => item.isVegan))
+    if (!query.data) return []
+    return query.data.categories.flatMap(cat =>
+      cat.menuItems.filter(item => item.isVegan)
+    )
   }
 
-  // 🚨 EMERGENCY FIX: Add filters dependency to prevent stale closures causing infinite loops
-  useEffect(() => {
-    fetchMenu()
-  }, [filters]) // Include filters dependency to prevent stale data loops
+  const filterByAllergens = (excludeAllergens: string[]) => {
+    const newFilters: MenuFilterData = { ...filters }
+
+    excludeAllergens.forEach(allergen => {
+      const filterKey = `exclude${allergen.charAt(0).toUpperCase() + allergen.slice(1)}` as keyof MenuFilterData
+      ;(newFilters as any)[filterKey] = true
+    })
+
+    // Invalidate and refetch with new filters
+    queryClient.invalidateQueries({ queryKey: ['menu', newFilters] })
+  }
 
   return {
-    menu,
-    loading,
-    error,
-    refetch: fetchMenu,
+    menu: query.data ?? null,
+    loading: query.isLoading,
+    error: query.error?.message ?? null,
+    refetch: query.refetch,
     filterByAllergens,
     getItemsByCategory,
     searchItems,
     getRecommendedItems,
     getVegetarianItems,
     getVeganItems,
+    // React Query extras
+    isFetching: query.isFetching,
+    isStale: query.isStale,
+  }
+}
+
+// Prefetch hook for SSR/RSC
+export function usePrefetchMenu(filters?: MenuFilterData) {
+  const queryClient = useQueryClient()
+
+  return () => {
+    queryClient.prefetchQuery({
+      queryKey: ['menu', filters],
+      queryFn: async () => {
+        const queryParams = new URLSearchParams()
+        if (filters) {
+          Object.entries(filters).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+              queryParams.set(key, value.toString())
+            }
+          })
+        }
+        const response = await fetch(`/api/menu?${queryParams}`)
+        return response.json()
+      }
+    })
   }
 }

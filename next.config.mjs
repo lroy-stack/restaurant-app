@@ -25,16 +25,13 @@ const nextConfig = {
       "@xyflow/react",
       "react-big-calendar",
       "recharts",
-      "react-konva" // Add react-konva for optimization
-    ],
-    turbopack: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
-      },
-    },
+      "react-konva", // Add react-konva for optimization
+      // Animation & Performance libraries
+      "framer-motion",
+      "@react-three/fiber",
+      "@react-three/drei",
+      "@tanstack/react-query"
+    ]
   },
   eslint: {
     ignoreDuringBuilds: true, // TEMP: Disable ESLint for Vercel build
