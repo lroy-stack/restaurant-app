@@ -28,8 +28,6 @@ const nextConfig = {
       "react-konva", // Add react-konva for optimization
       // Animation & Performance libraries
       "framer-motion",
-      "@react-three/fiber",
-      "@react-three/drei",
       "@tanstack/react-query"
     ]
   },
