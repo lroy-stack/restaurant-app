@@ -1,9 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { Phone, MapPin, Clock, Mail, Instagram, Facebook, MessageCircle, Loader2, Check } from "lucide-react"
+import { Phone, MapPin, Clock, Mail, Instagram, Facebook, Loader2, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { EnigmaLogo } from "@/components/ui/enigma-logo"
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon"
 import { useRestaurant } from "@/hooks/use-restaurant"
 import { useState } from "react"
 
@@ -52,6 +53,7 @@ export function Footer() {
     }
   }
 
+  // Dynamic footer links with TripAdvisor from DB
   const footerLinks = {
     restaurant: {
       title: 'Restaurante',
@@ -66,7 +68,7 @@ export function Footer() {
       links: [
         { name: 'Sobre Nosotros', href: '/historia' },
         { name: 'Contacto', href: '/contacto' },
-        { name: 'Reseñas', href: 'https://www.tripadvisor.es/Restaurant_Review-g187526-d23958723-Reviews-Enigma_Cocina_Con_Alma-Calpe_Costa_Blanca_Province_of_Alicante_Valencian_Communi.html' },
+        { name: 'Reseñas', href: restaurant?.footer_tripadvisor_url || 'https://www.tripadvisor.es/Restaurant_Review-g187526-d23958723-Reviews-Enigma_Cocina_Con_Alma-Calpe_Costa_Blanca_Province_of_Alicante_Valencian_Communi.html' },
       ]
     },
     legal: {
@@ -87,7 +89,7 @@ export function Footer() {
       <div
         className="border-b relative"
         style={{
-          backgroundImage: 'url(https://ik.imagekit.io/insomnialz/feeling.jpg?updatedAt=1754141886874)',
+          backgroundImage: `url(${restaurant?.footer_newsletter_image_url || 'https://ik.imagekit.io/insomnialz/feeling.jpg?updatedAt=1754141886874'})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
@@ -96,10 +98,10 @@ export function Footer() {
         <div className="container mx-auto px-4 py-12 relative z-10">
           <div className="text-center max-w-2xl mx-auto">
             <h3 className="text-xl sm:text-2xl font-semibold mb-4 text-white" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)', fontFamily: 'var(--font-crimson), var(--font-source-serif), serif' }}>
-              Mantente al día con nuestro newsletter
+              {restaurant?.footer_newsletter_title || 'Mantente al día con nuestro newsletter'}
             </h3>
             <p className="text-white/80 mb-6">
-              Descubre nuestros platos especiales, eventos exclusivos y ofertas únicas directamente en tu email.
+              {restaurant?.footer_newsletter_description || 'Descubre nuestros platos especiales, eventos exclusivos y ofertas únicas directamente en tu email.'}
             </p>
             <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
               <input
@@ -141,8 +143,8 @@ export function Footer() {
       </div>
 
       {/* Main Footer Content */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="container mx-auto px-4 py-12 lg:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Restaurant Info */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
@@ -151,30 +153,39 @@ export function Footer() {
                 {restaurant?.name || 'Enigma Cocina Con Alma'}
               </span>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {restaurant?.description || 'Cocina atlántico-mediterránea con alma en el auténtico casco antiguo de Calpe.'}
             </p>
 
             {/* Contact Info - Dynamic from DB */}
             {!loading && restaurant && (
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  <span>{restaurant.address}</span>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-start gap-2 text-muted-foreground">
+                  <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <span className="leading-relaxed">{restaurant.address}</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Phone className="h-4 w-4" />
-                  <a href={`tel:${restaurant.phone.replace(/\s+/g, '')}`} className="hover:text-primary">
+                  <Phone className="h-4 w-4 flex-shrink-0" />
+                  <a href={`tel:${restaurant.phone.replace(/\s+/g, '')}`} className="hover:text-primary transition-colors">
                     {restaurant.phone}
                   </a>
                 </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span>{restaurant.hours_operation}</span>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-muted-foreground font-medium">
+                    <Clock className="h-4 w-4 flex-shrink-0" />
+                    <span>Horarios</span>
+                  </div>
+                  <div className="pl-6 text-sm space-y-0.5">
+                    {restaurant.hours_operation.split('|').map((schedule, idx) => (
+                      <div key={idx} className="text-muted-foreground/90 leading-relaxed">
+                        {schedule.trim()}
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Mail className="h-4 w-4" />
-                  <a href={`mailto:${restaurant.email}`} className="hover:text-primary">
+                  <Mail className="h-4 w-4 flex-shrink-0" />
+                  <a href={`mailto:${restaurant.email}`} className="hover:text-primary transition-colors break-all">
                     {restaurant.email}
                   </a>
                 </div>
@@ -183,24 +194,31 @@ export function Footer() {
 
             {/* Loading fallback */}
             {loading && (
-              <div className="space-y-2 text-sm">
+              <div className="space-y-3 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
+                  <MapPin className="h-4 w-4 flex-shrink-0" />
                   <span>Carrer Justicia 6A, 03710 Calpe, Alicante</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Phone className="h-4 w-4" />
-                  <a href="tel:+34672796006" className="hover:text-primary">
+                  <Phone className="h-4 w-4 flex-shrink-0" />
+                  <a href="tel:+34672796006" className="hover:text-primary transition-colors">
                     +34 672 79 60 06
                   </a>
                 </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span>Mar-Dom: 18:00 - 23:00</span>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-muted-foreground font-medium">
+                    <Clock className="h-4 w-4 flex-shrink-0" />
+                    <span>Horarios</span>
+                  </div>
+                  <div className="pl-6 text-sm space-y-0.5 text-muted-foreground/90">
+                    <div>Lun: Cerrado</div>
+                    <div>Mar: 18:30-23:00</div>
+                    <div>Mié-Sáb: 13:00-16:00 y 18:30-23:00</div>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Mail className="h-4 w-4" />
-                  <a href="mailto:reservas@enigmaconalma.com" className="hover:text-primary">
+                  <Mail className="h-4 w-4 flex-shrink-0" />
+                  <a href="mailto:reservas@enigmaconalma.com" className="hover:text-primary transition-colors">
                     reservas@enigmaconalma.com
                   </a>
                 </div>
@@ -224,14 +242,19 @@ export function Footer() {
                 </Button>
               )}
               {restaurant?.whatsapp_number && (
-                <Button size="icon" variant="outline" className="h-9 w-9" asChild>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-9 w-9 hover:bg-[#25D366]/10 hover:border-[#25D366]/50 hover:text-[#25D366] transition-all"
+                  asChild
+                >
                   <a
                     href={`https://wa.me/${restaurant.whatsapp_number.replace(/[^\d]/g, '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="WhatsApp"
                   >
-                    <MessageCircle className="h-4 w-4" />
+                    <WhatsAppIcon className="h-4 w-4" />
                   </a>
                 </Button>
               )}
@@ -241,8 +264,8 @@ export function Footer() {
           {/* Footer Links */}
           {Object.values(footerLinks).map((section) => (
             <div key={section.title} className="space-y-4">
-              <h4 className="enigma-brand-body font-semibold">{section.title}</h4>
-              <ul className="space-y-2">
+              <h4 className="enigma-brand-body font-semibold text-foreground">{section.title}</h4>
+              <ul className="space-y-2.5">
                 {section.links.map((link) => (
                   <li key={link.href}>
                     {link.href.startsWith('http') ? (
@@ -250,14 +273,14 @@ export function Footer() {
                         href={link.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
                       >
                         {link.name}
                       </a>
                     ) : (
                       <Link
                         href={link.href}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors inline-block"
                       >
                         {link.name}
                       </Link>
@@ -274,7 +297,7 @@ export function Footer() {
       <div className="border-t">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <p>© {currentYear} Enigma Cocina Con Alma. Todos los derechos reservados.</p>
+            <p>© {currentYear} {restaurant?.footer_copyright_text || 'Enigma Cocina Con Alma. Todos los derechos reservados.'}</p>
             <div className="flex gap-4">
               <Link href="/legal/aviso-legal" className="hover:text-primary">
                 Aviso Legal

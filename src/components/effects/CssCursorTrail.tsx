@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { useTheme } from '@/components/theme/theme-provider'
 
 interface Particle {
   x: number
@@ -14,7 +15,19 @@ interface Particle {
   rotationSpeed: number
 }
 
+// Theme-specific colors for cursor trail
+const themeColors = {
+  atlantic: { r: 26, g: 115, b: 232 },    // Atlantic Blue
+  forest: { r: 82, g: 114, b: 91 },       // Forest Green
+  sunset: { r: 255, g: 127, b: 80 },      // Sunset Orange
+  obsidian: { r: 148, g: 163, b: 184 },   // Obsidian Gray
+  chicle: { r: 236, g: 72, b: 153 },      // Chicle Pink
+  calpe: { r: 20, g: 184, b: 166 },       // Calpe Teal
+  galaxy: { r: 147, g: 51, b: 234 }       // Galaxy Purple
+}
+
 export function CssCursorTrail() {
+  const { theme } = useTheme()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particlesRef = useRef<Particle[]>([])
   const animationFrameRef = useRef<number>()
@@ -101,11 +114,15 @@ export function CssCursorTrail() {
         // Create radial gradient for glow effect
         const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, currentSize)
 
-        // Atlantic blue with fade
-        gradient.addColorStop(0, `rgba(26, 115, 232, ${alpha * 0.8})`)
-        gradient.addColorStop(0.4, `rgba(26, 115, 232, ${alpha * 0.4})`)
-        gradient.addColorStop(0.7, `rgba(26, 115, 232, ${alpha * 0.1})`)
-        gradient.addColorStop(1, `rgba(26, 115, 232, 0)`)
+        // Get theme color
+        const color = themeColors[theme] || themeColors.atlantic
+        const rgbaColor = `rgba(${color.r}, ${color.g}, ${color.b}`
+
+        // Theme color with fade
+        gradient.addColorStop(0, `${rgbaColor}, ${alpha * 0.8})`)
+        gradient.addColorStop(0.4, `${rgbaColor}, ${alpha * 0.4})`)
+        gradient.addColorStop(0.7, `${rgbaColor}, ${alpha * 0.1})`)
+        gradient.addColorStop(1, `${rgbaColor}, 0)`)
 
         ctx.fillStyle = gradient
         ctx.fillRect(-currentSize, -currentSize, currentSize * 2, currentSize * 2)
@@ -127,7 +144,7 @@ export function CssCursorTrail() {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [])
+  }, [theme])
 
   return (
     <canvas

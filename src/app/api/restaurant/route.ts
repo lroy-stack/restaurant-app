@@ -46,7 +46,8 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const updates = await request.json()
-    
+    console.log('Received updates:', JSON.stringify(updates, null, 2))
+
     // Update restaurant data in Supabase
     const response = await fetch(`${SUPABASE_URL}/rest/v1/restaurants?id=eq.rest_enigma_001`, {
       method: 'PATCH',
@@ -54,25 +55,33 @@ export async function PUT(request: NextRequest) {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Accept-Profile': 'restaurante',
+        'Content-Profile': 'restaurante',
         'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
         'apikey': SUPABASE_SERVICE_KEY,
-        'Prefer': 'return=representation'
+        'Prefer': 'return=representation,resolution=merge-duplicates'
       },
       body: JSON.stringify(updates)
     })
 
     if (!response.ok) {
+      const errorBody = await response.text()
       console.error('Supabase update error:', response.status, response.statusText)
-      throw new Error(`HTTP error! status: ${response.status}`)
+      console.error('Error body:', errorBody)
+      return NextResponse.json(
+        { error: `Supabase error: ${response.status} - ${errorBody}` },
+        { status: response.status }
+      )
     }
 
     const data = await response.json()
+    console.log('Update successful:', data)
     return NextResponse.json(data[0])
-    
+
   } catch (error) {
     console.error('Error updating restaurant info:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to update restaurant info' },
+      { error: `Failed to update restaurant info: ${errorMessage}` },
       { status: 500 }
     )
   }

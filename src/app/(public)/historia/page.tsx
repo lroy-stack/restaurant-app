@@ -39,11 +39,11 @@ export default function HistoriaPage() {
           </Badge>
           
           <h1 className="enigma-hero-title">
-            Tradición y Pasión
+            {restaurant?.historia_hero_title || 'Tradición y Pasión'}
           </h1>
 
           <p className="enigma-hero-subtitle">
-            {restaurant?.description}
+            {restaurant?.historia_hero_subtitle}
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 text-sm sm:text-base text-white/90 mb-8">
@@ -65,14 +65,14 @@ export default function HistoriaPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center mb-12 sm:mb-16">
             <div className="order-2 lg:order-1">
               <h2 className="enigma-section-title-large">
-                Una Pasión Que Nace del Corazón
+                {restaurant?.historia_pasion_title || 'Una Pasión Que Nace del Corazón'}
               </h2>
               <div className="prose prose-lg max-w-none">
                 <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-4 sm:mb-6">
-                  {restaurant?.description}
+                  {restaurant?.historia_pasion_paragraph1}
                 </p>
                 <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                  {restaurant?.ambiente}
+                  {restaurant?.historia_pasion_paragraph2}
                 </p>
               </div>
             </div>
@@ -110,8 +110,7 @@ export default function HistoriaPage() {
                 </div>
                 <h3 className="enigma-subsection-title">Tradición</h3>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  Respetamos las raíces culinarias atlántico-mediterráneas, honrando cada 
-                  receta tradicional con técnicas ancestrales.
+                  {restaurant?.historia_valor_tradicion_content}
                 </p>
               </CardContent>
             </Card>
@@ -123,8 +122,7 @@ export default function HistoriaPage() {
                 </div>
                 <h3 className="enigma-subsection-title">Pasión</h3>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  Cada plato se elabora con dedicación absoluta, convirtiendo ingredientes 
-                  selectos en experiencias gastronómicas memorables.
+                  {restaurant?.historia_valor_pasion_content}
                 </p>
               </CardContent>
             </Card>
@@ -136,8 +134,7 @@ export default function HistoriaPage() {
                 </div>
                 <h3 className="enigma-subsection-title">Comunidad</h3>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  Somos parte del corazón de Calpe, creando conexiones auténticas con 
-                  nuestra comunidad local e internacional.
+                  {restaurant?.historia_valor_comunidad_content}
                 </p>
               </CardContent>
             </Card>
@@ -150,26 +147,18 @@ export default function HistoriaPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <h2 className="enigma-section-title-center">
-              Un Lugar Con Historia
+              {restaurant?.historia_location_title || 'Un Lugar Con Historia'}
             </h2>
             
             <Card className="p-6 sm:p-8 bg-card/50 backdrop-blur-sm border-none shadow-lg">
               <CardContent className="p-6 sm:p-8 pt-0">
                 <div className="prose prose-lg max-w-none">
                   <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-4 sm:mb-6">
-                    El casco antiguo de Calpe es un testimonio vivo de siglos de historia mediterránea. 
-                    Nuestro restaurante se encuentra en Carrer Justicia 6A, una ubicación que respira 
-                    autenticidad y tradición en cada rincón.
-                  </p>
-                  <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-4 sm:mb-6">
-                    Las calles empedradas y las fachadas centenarias crean el escenario perfecto para 
-                    nuestra propuesta gastronómica. Aquí, rodeados de historia, ofrecemos una experiencia 
-                    culinaria que honra el pasado mientras abraza el presente.
+                    {restaurant?.historia_location_content}
                   </p>
                   <div className="bg-primary/10 p-4 sm:p-6 rounded-lg border-l-4 border-primary">
                     <p className="text-base sm:text-lg italic text-primary font-medium">
-                      &quot;Entre callejones históricos rodeados de plantas, descubre un ambiente auténtico 
-                      y acogedor donde cada comida se convierte en una experiencia memorable.&quot;
+                      &quot;{restaurant?.historia_quote}&quot;
                     </p>
                   </div>
                 </div>
@@ -184,11 +173,10 @@ export default function HistoriaPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto">
             <h2 className="enigma-section-title-large">
-              Vive Nuestra Historia
+              {restaurant?.vive_historia_title || 'Vive Nuestra Historia'}
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 leading-relaxed">
-              Te invitamos a ser parte de nuestra historia. Reserva tu mesa y descubre por qué 
-              somos el restaurante recomendado en el auténtico casco antiguo de Calpe.
+              {restaurant?.vive_historia_content}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">

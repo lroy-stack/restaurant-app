@@ -94,7 +94,7 @@ export const useTheme = () => {
 // Theme configurations for display
 export const themeConfig = {
   atlantic: {
-    name: 'Atlántico',
+    name: 'Enigma',
     icon: 'Waves'
   },
   forest: {

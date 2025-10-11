@@ -1415,3 +1415,150 @@
     }
   }
 }
+
+/* ============================================
+   CONFIGURATION ADMIN SYSTEM STYLES
+   Estilos centralizados para /dashboard/configuracion
+   ============================================ */
+
+/* Config Container */
+.enigma-config-container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Config Cards */
+.enigma-config-card {
+  @apply bg-card border-border shadow-sm transition-all duration-200;
+  @apply hover:shadow-md;
+}
+
+/* Config Forms */
+.enigma-config-form {
+  @apply space-y-6;
+}
+
+.enigma-config-field {
+  @apply space-y-2;
+}
+
+.enigma-config-label {
+  @apply text-sm font-medium text-foreground;
+}
+
+.enigma-config-input {
+  @apply h-10 w-full rounded-md border border-input bg-background px-3 py-2;
+  @apply text-base md:text-sm;
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+  @apply disabled:cursor-not-allowed disabled:opacity-50;
+  @apply transition-colors duration-200;
+}
+
+.enigma-config-input:focus {
+  @apply border-primary;
+}
+
+/* Config Buttons */
+.enigma-config-save-btn {
+  @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  @apply h-10 px-6 py-2 rounded-md font-medium;
+  @apply transition-colors duration-200;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.enigma-config-cancel-btn {
+  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  @apply h-10 px-6 py-2 rounded-md font-medium;
+  @apply transition-colors duration-200;
+}
+
+/* Config States */
+.enigma-config-loading {
+  @apply animate-pulse bg-muted;
+}
+
+.enigma-config-error {
+  @apply border-destructive bg-destructive/10 text-destructive;
+}
+
+.enigma-config-success {
+  @apply border-green-500 bg-green-50 text-green-800;
+  @apply dark:bg-green-950 dark:text-green-200;
+}
+
+/* Config Sections */
+.enigma-config-section {
+  @apply space-y-6 p-6;
+}
+
+.enigma-config-section-header {
+  @apply flex items-center justify-between pb-4 border-b;
+}
+
+.enigma-config-section-title {
+  @apply text-2xl font-bold text-foreground;
+}
+
+.enigma-config-section-description {
+  @apply text-muted-foreground mt-1;
+}
+
+/* Responsive Grid Layouts */
+.enigma-config-grid-2 {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+.enigma-config-grid-3 {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+.enigma-config-grid-4 {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6;
+}
+
+/* Config Actions Bar */
+.enigma-config-actions {
+  @apply flex items-center gap-4 pt-6 border-t;
+}
+
+/* Media Library Specific */
+.enigma-config-media-card {
+  @apply relative overflow-hidden rounded-lg;
+  @apply border border-border bg-card;
+  @apply transition-all duration-200 hover:shadow-lg;
+}
+
+.enigma-config-media-overlay {
+  @apply absolute inset-0 bg-black/60 opacity-0;
+  @apply hover:opacity-100 transition-opacity duration-200;
+  @apply flex items-center justify-center gap-2;
+}
+
+/* Business Hours Grid */
+.enigma-config-hours-grid {
+  @apply grid grid-cols-1 gap-4;
+}
+
+.enigma-config-day-row {
+  @apply flex items-center gap-4 p-4 rounded-lg;
+  @apply border border-border bg-card;
+  @apply transition-colors duration-200;
+}
+
+.enigma-config-day-row:hover {
+  @apply bg-accent;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 640px) {
+  .enigma-config-section {
+    @apply p-4;
+  }
+
+  .enigma-config-actions {
+    @apply flex-col w-full;
+  }
+
+  .enigma-config-actions > * {
+    @apply w-full;
+  }
+}

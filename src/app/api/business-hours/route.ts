@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
     if (action === 'bulk-slots' && Array.isArray(dates)) {
       // Get slots for multiple dates
       const currentDateTime = body.currentDateTime ? new Date(body.currentDateTime) : new Date()
-      
+
       const results = await Promise.all(
         dates.map(async (date: string) => {
           try {
@@ -221,10 +221,66 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('❌ [BUSINESS_HOURS_API_POST] Error:', error)
-    
+
     return NextResponse.json({
       success: false,
       error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error occurred'
+    }, { status: 500 })
+  }
+}
+
+// PUT endpoint for updating business hours
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { day_of_week, updates } = body
+
+    if (typeof day_of_week !== 'number' || day_of_week < 0 || day_of_week > 6) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid day_of_week. Must be 0-6 (Sunday-Saturday)'
+      }, { status: 400 })
+    }
+
+    // Update via Supabase
+    const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/business_hours?day_of_week=eq.${day_of_week}&restaurant_id=eq.rest_enigma_001`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Accept-Profile': 'restaurante',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'apikey': SUPABASE_SERVICE_KEY,
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(updates)
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error(`Supabase error: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    return NextResponse.json({
+      success: true,
+      data: data[0],
+      message: 'Business hours updated successfully'
+    })
+
+  } catch (error) {
+    console.error('❌ [BUSINESS_HOURS_API_PUT] Error:', error)
+
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to update business hours',
       message: error instanceof Error ? error.message : 'Unknown error occurred'
     }, { status: 500 })
   }

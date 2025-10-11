@@ -24,6 +24,7 @@ import dynamic from 'next/dynamic'
 import { useRestaurant } from '@/hooks/use-restaurant'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { useMediaLibrary } from "@/hooks/use-media-library"
+import { sortDaysSpanishWeek, DAY_NAMES_ES, DAY_NAMES_SHORT_ES } from '@/lib/business-hours-utils'
 
 // Dynamic import for browser-only map component
 const RestaurantMap = dynamic(() => import('@/components/maps/RestaurantMap').then(mod => ({ default: mod.RestaurantMap })), {
@@ -53,20 +54,10 @@ export default function ContactoPage() {
       }
     }
 
-    const daysMap = {
-      0: 'Domingo',
-      1: 'Lunes',
-      2: 'Martes',
-      3: 'Miércoles',
-      4: 'Jueves',
-      5: 'Viernes',
-      6: 'Sábado'
-    }
-
-    // Filter valid days only (0-6) and sort
+    // Filter valid days only (0-6) and sort Spanish week (Monday first)
     const validHours = businessHours.filter(h => h.day_of_week >= 0 && h.day_of_week <= 6)
-    const openDays = validHours.filter(h => h.is_open || h.lunch_enabled).sort((a, b) => a.day_of_week - b.day_of_week)
-    const closedDays = validHours.filter(h => !h.is_open && !h.lunch_enabled).map(h => daysMap[h.day_of_week as keyof typeof daysMap]).filter(Boolean)
+    const openDays = sortDaysSpanishWeek(validHours.filter(h => h.is_open || h.lunch_enabled))
+    const closedDays = validHours.filter(h => !h.is_open && !h.lunch_enabled).map(h => DAY_NAMES_ES[h.day_of_week as keyof typeof DAY_NAMES_ES]).filter(Boolean)
 
     // Check current status (dual shift aware)
     const now = new Date()
@@ -89,9 +80,9 @@ export default function ContactoPage() {
       isCurrentlyOpen = inLunchService || inDinnerService
     }
 
-    // Create detailed schedule with dual shift support
-    const scheduleDetails = validHours.map(h => {
-      const dayName = daysMap[h.day_of_week as keyof typeof daysMap]
+    // Create detailed schedule with dual shift support (Spanish week order)
+    const scheduleDetails = sortDaysSpanishWeek(validHours).map(h => {
+      const dayName = DAY_NAMES_ES[h.day_of_week as keyof typeof DAY_NAMES_ES]
       let hours = ''
 
       if (!h.is_open && !h.lunch_enabled) {
@@ -131,9 +122,7 @@ export default function ContactoPage() {
     return businessHours.reduce((groups: any[], hours) => {
       const schedule = getDualScheduleDisplay(hours.day_of_week)
       const existing = groups.find(g => g.schedule === schedule)
-      const dayName = {
-        0: 'Dom', 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb'
-      }[hours.day_of_week]
+      const dayName = DAY_NAMES_SHORT_ES[hours.day_of_week as keyof typeof DAY_NAMES_SHORT_ES]
 
       if (existing) {
         existing.days.push(dayName)
@@ -537,11 +526,10 @@ export default function ContactoPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto">
             <h2 className="enigma-section-title-large">
-              Te Esperamos en Enigma
+              {restaurant?.contacto_final_title || 'Te Esperamos en Enigma'}
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 leading-relaxed">
-              Entre callejones históricos rodeados de plantas, descubre un ambiente auténtico y acogedor 
-              donde cada plato es una historia de tradición, pasión y sabores únicos.
+              {restaurant?.contacto_final_content}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">

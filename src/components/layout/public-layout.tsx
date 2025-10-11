@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react'
 import { FloatingNavbar } from '@/components/navigation/floating-navbar'
+import { ThemeSwitcher } from '@/components/theme/theme-switcher'
 import { CartFloatingButton } from '@/components/cart/CartFloatingButton'
 import { CartSidebar } from '@/components/cart/CartSidebar'
 import { CookieConsentBanner } from '@/components/legal/CookieConsentBanner'
@@ -33,6 +34,9 @@ export function PublicLayout({
 
       {/* Floating Navigation */}
       {showNavbar && <FloatingNavbar />}
+
+      {/* Theme Switcher - Floating left side */}
+      <ThemeSwitcher />
 
       {/* Cart Components - Global across all public pages */}
       <CartFloatingButton />

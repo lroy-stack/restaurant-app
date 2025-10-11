@@ -33,19 +33,7 @@ export const CartFloatingButton: React.FC<CartFloatingButtonProps> = ({
     return null
   }
 
-  // Glassmorphism style matching navbar pattern
-  const liquidGlassStyle = {
-    background: isScrolled
-      ? 'linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.75) 100%)'
-      : 'linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.70) 100%)',
-    boxShadow: `
-      0 12px 40px rgba(0,0,0,0.25),
-      0 6px 20px rgba(0,0,0,0.20),
-      0 3px 12px rgba(0,0,0,0.15),
-      inset 0 1px 0 rgba(255,255,255,0.8),
-      inset 0 -1px 0 rgba(0,0,0,0.05)
-    `
-  }
+  // Removed hardcoded glassmorphism - using CSS variables for theme support
 
   return (
     <div className={cn(
@@ -60,24 +48,17 @@ export const CartFloatingButton: React.FC<CartFloatingButtonProps> = ({
         className={cn(
           // CUADRADO con esquinas redondeadas (siguiendo patrón de cards) - Más compacto
           'w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center',
-          'backdrop-blur-2xl border',
+          'backdrop-blur-2xl border border-border/40',
           'transition-all duration-300 group',
           'hover:scale-105 active:scale-95',
-          'focus:outline-none focus:ring-2 focus:ring-primary/50',
-          isScrolled
-            ? 'bg-white/30 border-white/40 shadow-2xl'
-            : 'bg-white/25 border-white/35 shadow-xl'
+          'focus:outline-none focus:ring-2 focus:ring-primary/20',
+          'bg-card/80 hover:bg-card/90',
+          isScrolled ? 'shadow-2xl' : 'shadow-xl'
         )}
-        style={liquidGlassStyle}
         aria-label={state.language === 'es' ? 'Abrir carrito' : 'Open cart'}
       >
         {/* Top shine effect */}
-        <div
-          className="absolute top-2 left-2 right-2 h-px opacity-30"
-          style={{
-            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)'
-          }}
-        />
+        <div className="absolute top-2 left-2 right-2 h-px opacity-20 bg-gradient-to-r from-transparent via-foreground/30 to-transparent" />
 
         <div className="relative">
           <ShoppingCart
@@ -104,8 +85,8 @@ export const CartFloatingButton: React.FC<CartFloatingButtonProps> = ({
         <div
           className={cn(
             'absolute left-full ml-3 top-1/2 transform -translate-y-1/2',
-            'px-3 py-2 bg-white/90 backdrop-blur-sm border border-white/40',
-            'text-gray-900 text-sm rounded-lg whitespace-nowrap',
+            'px-3 py-2 bg-popover/95 backdrop-blur-sm border border-border',
+            'text-popover-foreground text-sm rounded-lg whitespace-nowrap',
             'opacity-0 group-hover:opacity-100 transition-opacity duration-200',
             'shadow-lg pointer-events-none'
           )}
@@ -114,7 +95,7 @@ export const CartFloatingButton: React.FC<CartFloatingButtonProps> = ({
             ? `Carrito (${cartCount})`
             : `Cart (${cartCount})`
           }
-          <div className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-white/90 border-l border-b border-white/40 rotate-45" />
+          <div className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-popover/95 border-l border-b border-border rotate-45" />
         </div>
       </button>
     </div>

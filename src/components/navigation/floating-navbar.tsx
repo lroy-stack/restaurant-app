@@ -15,12 +15,12 @@ import {
   Heart,
   Utensils,
   Clock,
-  MessageCircle,
   ShoppingCart,
   Calendar
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EnigmaLogo } from '@/components/ui/enigma-logo'
+import { WhatsAppIcon } from '@/components/ui/whatsapp-icon'
 import {
   Sheet,
   SheetContent,
@@ -242,10 +242,10 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
             href={getWhatsAppUrl()}
             target="_blank"
             rel="noopener noreferrer"
-            className="relative w-10 h-10 rounded-lg flex items-center justify-center bg-[#9FB289]/20 text-[#9FB289] hover:bg-[#9FB289]/30 transition-all duration-300 group hover:scale-105 active:scale-98"
+            className="relative w-10 h-10 rounded-lg flex items-center justify-center bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-all duration-300 group hover:scale-105 active:scale-98 border border-[#25D366]/20"
           >
-            <MessageCircle className="w-4 h-4" strokeWidth={2} />
-            
+            <WhatsAppIcon className="w-4 h-4" size={16} />
+
             {/* WhatsApp tooltip */}
             <div
               className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 px-3 py-2 bg-popover/95 backdrop-blur-sm border border-border text-popover-foreground text-sm rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
@@ -411,8 +411,11 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
                   rel="noopener noreferrer"
                   className="block"
                 >
-                  <Button variant="outline" className="w-full border-secondary text-secondary-foreground hover:bg-secondary/20">
-                    <MessageCircle className="w-4 h-4 mr-2" />
+                  <Button
+                    variant="outline"
+                    className="w-full border-[#25D366] text-[#25D366] hover:bg-[#25D366]/10 hover:border-[#25D366]/80"
+                  >
+                    <WhatsAppIcon className="w-4 h-4 mr-2" size={16} />
                     WhatsApp
                   </Button>
                 </a>

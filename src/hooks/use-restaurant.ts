@@ -17,6 +17,14 @@ export interface RestaurantInfo {
   awards: string
   hero_title: string
   // Dynamic Historia sections
+  historia_hero_title: string
+  historia_hero_subtitle: string
+  historia_pasion_title: string
+  historia_pasion_paragraph1: string
+  historia_pasion_paragraph2: string
+  historia_valor_tradicion_content: string
+  historia_valor_pasion_content: string
+  historia_valor_comunidad_content: string
   historia_location_title: string
   historia_location_content: string
   historia_quote: string
@@ -35,6 +43,13 @@ export interface RestaurantInfo {
   instagram_url: string
   facebook_url: string
   whatsapp_number: string
+
+  // Footer
+  footer_newsletter_title: string
+  footer_newsletter_description: string
+  footer_newsletter_image_url: string
+  footer_tripadvisor_url: string
+  footer_copyright_text: string
 }
 
 export interface RestaurantData {
@@ -82,9 +97,17 @@ export function useRestaurant() {
           awards: 'Restaurante Recomendado',
           hero_title: 'Enigma Cocina Con Alma',
           // Dynamic Historia sections
+          historia_hero_title: 'Tradición y Pasión',
+          historia_hero_subtitle: 'Enigma es la historia de una segunda oportunidad, de resurgir con más fuerza, poniendo cariño a todos los detalles, recuperando una cocina de tradición.',
+          historia_pasion_title: 'Una Pasión Que Nace del Corazón',
+          historia_pasion_paragraph1: 'Enigma es la historia de una segunda oportunidad, de resurgir con más fuerza, poniendo cariño a todos los detalles, recuperando una cocina de tradición.',
+          historia_pasion_paragraph2: 'Pasión y alma nos definen. Es la historia de un sueño y el nuestro es que disfruten la experiencia en la que tanto amor hemos puesto.',
+          historia_valor_tradicion_content: 'Respetamos las raíces culinarias atlántico-mediterráneas, honrando cada receta tradicional con técnicas ancestrales.',
+          historia_valor_pasion_content: 'Cada plato se elabora con dedicación absoluta, convirtiendo ingredientes selectos en experiencias gastronómicas memorables.',
+          historia_valor_comunidad_content: 'Somos parte del corazón de Calpe, creando conexiones auténticas con nuestra comunidad local e internacional.',
           historia_location_title: 'Un Lugar Con Historia',
-          historia_location_content: 'El casco antiguo de Calpe es un testimonio vivo de siglos de historia mediterránea.',
-          historia_quote: 'Entre callejones históricos rodeados de plantas, descubre un ambiente auténtico y acogedor.',
+          historia_location_content: 'El casco antiguo de Calpe es un testimonio vivo de siglos de historia mediterránea. Nuestro restaurante se encuentra en Carrer Justicia 6A, una ubicación que respira autenticidad y tradición en cada rincón. Las calles empedradas y las fachadas centenarias crean el escenario perfecto para nuestra propuesta gastronómica. Aquí, rodeados de historia, ofrecemos una experiencia culinaria que honra el pasado mientras abraza el presente.',
+          historia_quote: 'Entre callejones históricos rodeados de plantas, descubre un ambiente auténtico y acogedor donde cada comida se convierte en una experiencia memorable.',
           vive_historia_title: 'Vive Nuestra Historia',
           vive_historia_content: 'Te invitamos a ser parte de nuestra historia. Reserva tu mesa y descubre por qué somos el restaurante recomendado en el auténtico casco antiguo de Calpe.',
           // Dynamic Galería sections
@@ -99,7 +122,14 @@ export function useRestaurant() {
           // Social Media URLs
           instagram_url: 'https://www.instagram.com/enigmaconalma/',
           facebook_url: 'https://www.facebook.com/enigma.restaurante.calpe/',
-          whatsapp_number: '+34 672 79 60 06'
+          whatsapp_number: '+34 672 79 60 06',
+
+          // Footer
+          footer_newsletter_title: 'Mantente al día con nuestro newsletter',
+          footer_newsletter_description: 'Descubre nuestros platos especiales, eventos exclusivos y ofertas únicas directamente en tu email.',
+          footer_newsletter_image_url: 'https://ik.imagekit.io/insomnialz/feeling.jpg?updatedAt=1754141886874',
+          footer_tripadvisor_url: 'https://www.tripadvisor.es/Restaurant_Review-g187526-d23958723-Reviews-Enigma_Cocina_Con_Alma-Calpe_Costa_Blanca_Province_of_Alicante_Valencian_Communi.html',
+          footer_copyright_text: 'Enigma Cocina Con Alma. Todos los derechos reservados.'
         }
         setRestaurant(fallbackData)
       }
