@@ -70,9 +70,10 @@ export function ReservationHero({ language, onLanguageChange, isConnected = true
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/50 z-10" />
         <div
-          className="w-full h-full bg-cover bg-center bg-no-repeat"
+          className="w-full h-full bg-cover bg-no-repeat"
           style={{
-            backgroundImage: 'url(https://ik.imagekit.io/insomnialz/taboulee.jpg?updatedAt=1754141888431)'
+            backgroundImage: 'url(https://ik.imagekit.io/insomnialz/taboulee.jpg?updatedAt=1754141888431)',
+            backgroundPosition: 'center 35%'
           }}
         />
       </div>
