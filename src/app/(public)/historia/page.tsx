@@ -33,7 +33,7 @@ export default function HistoriaPage() {
           />
         </div>
         
-        <div className="relative z-20 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-10" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+        <div className="relative z-20 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 sm:pt-10" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
           <h1 className="enigma-hero-title">
             {restaurant?.historia_hero_title || 'Tradición y Pasión'}
           </h1>
