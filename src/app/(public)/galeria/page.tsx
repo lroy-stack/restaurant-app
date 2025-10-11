@@ -89,12 +89,12 @@ export default function GaleriaPage() {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-black/45 z-10" />
           <div
-            className="w-full h-full bg-cover bg-center bg-no-repeat"
+            className="w-full h-full bg-cover bg-no-repeat"
             style={{
               backgroundImage: heroImage
                 ? `url(${buildImageUrl(heroImage)})`
                 : 'url(https://ik.imagekit.io/insomnialz/mariposas.jpg?updatedAt=1758793673956)',
-              backgroundAttachment: 'scroll'
+              backgroundPosition: 'center center'
             }}
           />
         </div>

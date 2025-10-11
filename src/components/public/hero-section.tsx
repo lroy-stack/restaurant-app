@@ -64,12 +64,12 @@ export function HeroSection({ className }: HeroSectionProps) {
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/40 z-10" />
         <div
-          className="w-full h-full bg-cover bg-center bg-no-repeat"
+          className="w-full h-full bg-cover bg-no-repeat"
           style={{
             backgroundImage: heroImage
               ? `url(${buildImageUrl(heroImage)})`
               : 'url(https://ik.imagekit.io/insomnialz/compressed/enigma_night.png?updatedAt=1754141731421)',
-            backgroundAttachment: 'scroll'
+            backgroundPosition: 'center center'
           }}
         />
       </div>

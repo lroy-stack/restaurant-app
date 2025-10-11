@@ -23,17 +23,17 @@ export default function HistoriaPage() {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-black/45 z-10" />
           <div
-            className="w-full h-full bg-cover bg-center bg-no-repeat"
+            className="w-full h-full bg-cover bg-no-repeat"
             style={{
               backgroundImage: heroImage
                 ? `url(${buildImageUrl(heroImage)})`
                 : 'url(https://ik.imagekit.io/insomnialz/_DSC0559.jpg?tr=w-1920,h-1080,c-at_max,f-auto,q-auto,pr-true)',
-              backgroundAttachment: 'scroll'
+              backgroundPosition: 'center center'
             }}
           />
         </div>
         
-        <div className="relative z-20 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-10" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+        <div className="relative z-20 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-10" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
           <h1 className="enigma-hero-title">
             {restaurant?.historia_hero_title || 'Tradición y Pasión'}
           </h1>

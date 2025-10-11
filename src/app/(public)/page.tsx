@@ -27,9 +27,10 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-black/20 z-10" />
           {/* Optimized hero image with proper loading */}
           <div
-            className="w-full h-full bg-cover bg-center bg-no-repeat"
+            className="w-full h-full bg-cover bg-no-repeat"
             style={{
-              backgroundImage: 'url(https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1754141731421)'
+              backgroundImage: 'url(https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1754141731421)',
+              backgroundPosition: 'center center'
             }}
           />
         </div>

@@ -344,12 +344,12 @@ export default function MenuPage() {
           <div className="absolute inset-0 bg-black/40 z-10" />
           {/* Real restaurant gastronomic atmosphere image */}
           <div
-            className="w-full h-full bg-cover bg-center bg-no-repeat"
+            className="w-full h-full bg-cover bg-no-repeat"
             style={{
               backgroundImage: heroImage
                 ? `url(${buildImageUrl(heroImage)})`
                 : 'url(https://ik.imagekit.io/insomnialz/IMG_9755.HEIC?updatedAt=1754141888431&tr=w-1920,h-1080,c-at_max,f-auto,q-auto,pr-true)',
-              backgroundAttachment: 'scroll'
+              backgroundPosition: 'center center'
             }}
           />
         </div>

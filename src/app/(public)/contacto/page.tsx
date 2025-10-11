@@ -147,12 +147,12 @@ export default function ContactoPage() {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-black/40 z-10" />
           <div
-            className="w-full h-full bg-cover bg-center bg-no-repeat"
+            className="w-full h-full bg-cover bg-no-repeat"
             style={{
               backgroundImage: heroImage
                 ? `url(${buildImageUrl(heroImage)})`
                 : 'url(https://ik.imagekit.io/insomnialz/_DSC1121.jpg?updatedAt=1754863669504&tr=w-1920,h-1080,c-at_max,f-auto,q-auto,pr-true)',
-              backgroundAttachment: 'scroll'
+              backgroundPosition: 'center center'
             }}
           />
         </div>
