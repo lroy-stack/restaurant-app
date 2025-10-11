@@ -157,11 +157,6 @@ export default function ContactoPage() {
         </div>
         
         <div className="relative z-20 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-          <Badge variant="outline" className="mb-6 text-white border-white/50 bg-black/60 backdrop-blur-sm">
-            <MapPin className="h-3 w-3 mr-1 text-white" />
-            📍 Casco Antiguo de Calpe
-          </Badge>
-          
           <h1 className="enigma-hero-title">
             Encuéntranos en Calpe
           </h1>

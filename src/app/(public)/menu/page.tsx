@@ -354,10 +354,6 @@ export default function MenuPage() {
         </div>
         <div className="relative z-20 container mx-auto px-4">
           <div className="text-center mb-8 sm:mb-12 mt-16 sm:mt-20">
-            <Badge className="mb-4 bg-white/20 text-white border-white/30" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
-              {language === 'en' ? '🏛️ In the Authentic Old Town of Calpe' : '🏛️ En el Auténtico Casco Antiguo de Calpe'}
-            </Badge>
-
             <h1 className="enigma-hero-title">
               {language === 'en' ? 'Our Menu' : 'Nuestra Carta'}
             </h1>

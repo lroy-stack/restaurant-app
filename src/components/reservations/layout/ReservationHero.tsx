@@ -80,11 +80,6 @@ export function ReservationHero({ language, onLanguageChange, isConnected = true
 
       <div className="relative z-20 container mx-auto px-4">
         <div className="text-center">
-          <Badge className="mb-4 bg-white/20 text-white border-white/30">
-            <Utensils className="h-4 w-4 mr-2" />
-            {t.hero.badge}
-          </Badge>
-
           <h1 className="enigma-hero-title">
             {t.hero.title}
           </h1>
