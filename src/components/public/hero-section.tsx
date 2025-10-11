@@ -68,12 +68,13 @@ export function HeroSection({ className }: HeroSectionProps) {
           style={{
             backgroundImage: heroImage
               ? `url(${buildImageUrl(heroImage)})`
-              : 'url(https://ik.imagekit.io/insomnialz/compressed/enigma_night.png?updatedAt=1754141731421)'
+              : 'url(https://ik.imagekit.io/insomnialz/compressed/enigma_night.png?updatedAt=1754141731421)',
+            backgroundAttachment: 'scroll'
           }}
         />
       </div>
       
-      <div className="relative z-20 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+      <div className="relative z-20 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
         {/* Trust Signals - Enhanced Responsive Design */}
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 mb-6 text-sm">
           {trustSignals.map((signal, index) => {
@@ -98,11 +99,11 @@ export function HeroSection({ className }: HeroSectionProps) {
         </h1>
 
         <p className="enigma-hero-subtitle opacity-90">
-          {restaurant?.description || "Cada plato es una historia de tradición, pasión y sabores únicos en el auténtico casco antiguo de Calpe"}
+          {restaurant?.description || "Cocina mediterránea de autor en el corazón del casco antiguo de Calpe. Ingredientes de proximidad, técnicas tradicionales y pasión en cada plato."}
         </p>
 
         <div className="enigma-hero-description mb-6 sm:mb-8 opacity-80">
-          <p>{restaurant?.ambiente || "Entre callejones históricos rodeados de plantas, descubre un ambiente auténtico y acogedor donde cada plato cuenta una historia."}</p>
+          <p>{restaurant?.ambiente || "Un refugio gastronómico en el auténtico casco antiguo, donde las calles empedradas y la arquitectura centenaria crean el escenario perfecto para tu experiencia culinaria."}</p>
         </div>
 
         {/* Enhanced CTA Buttons with Urgency Messaging */}

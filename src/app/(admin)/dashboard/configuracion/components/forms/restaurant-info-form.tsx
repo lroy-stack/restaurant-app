@@ -532,7 +532,7 @@ export function RestaurantInfoForm({ data, onSubmit, loading }: RestaurantInfoFo
                     <FormLabel>Quote Destacada</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Entre callejones históricos rodeados de plantas..."
+                        placeholder="Donde cada rincón respira historia y cada plato cuenta una tradición que honramos con dedicación."
                         className="enigma-config-input min-h-[80px]"
                         {...field}
                       />
@@ -715,7 +715,7 @@ export function RestaurantInfoForm({ data, onSubmit, loading }: RestaurantInfoFo
                   <FormLabel>Contenido Final Contacto</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Entre callejones históricos rodeados de plantas..."
+                      placeholder="Te invitamos a vivir una experiencia gastronómica única en nuestro rincón del casco antiguo. Reserva tu mesa y déjate sorprender por nuestra cocina mediterránea con alma."
                       className="enigma-config-input min-h-[120px]"
                       {...field}
                     />

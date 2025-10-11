@@ -93,18 +93,19 @@ export default function GaleriaPage() {
             style={{
               backgroundImage: heroImage
                 ? `url(${buildImageUrl(heroImage)})`
-                : 'url(https://ik.imagekit.io/insomnialz/mariposas.jpg?updatedAt=1758793673956)'
+                : 'url(https://ik.imagekit.io/insomnialz/mariposas.jpg?updatedAt=1758793673956)',
+              backgroundAttachment: 'scroll'
             }}
           />
         </div>
 
-        <div className="relative z-20 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+        <div className="relative z-20 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-12" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
           <h1 className="enigma-hero-title">
             {restaurant?.galeria_experiencia_title || "Descubre Nuestro Mundo"}
           </h1>
 
           <p className="enigma-hero-subtitle">
-            {restaurant?.ambiente || "Entre callejones históricos rodeados de plantas, descubre un ambiente auténtico y acogedor"}
+            {restaurant?.ambiente || "Un refugio gastronómico en el auténtico casco antiguo, donde las calles empedradas y la arquitectura centenaria crean el escenario perfecto para tu experiencia culinaria."}
           </p>
 
           <div className="flex justify-center items-center text-sm sm:text-base text-white/90 mb-8">
@@ -313,7 +314,7 @@ export default function GaleriaPage() {
             </div>
 
             <p className="text-sm sm:text-base text-muted-foreground mt-6 italic">
-              &quot;{restaurant?.ambiente || "Entre callejones históricos rodeados de plantas, descubre un ambiente auténtico y acogedor"}&quot;
+              &quot;{restaurant?.ambiente || "Un refugio gastronómico en el auténtico casco antiguo, donde las calles empedradas y la arquitectura centenaria crean el escenario perfecto para tu experiencia culinaria."}&quot;
             </p>
           </div>
         </div>

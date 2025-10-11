@@ -348,12 +348,13 @@ export default function MenuPage() {
             style={{
               backgroundImage: heroImage
                 ? `url(${buildImageUrl(heroImage)})`
-                : 'url(https://ik.imagekit.io/insomnialz/IMG_9755.HEIC?updatedAt=1754141888431&tr=w-1920,h-1080,c-at_max,f-auto,q-auto,pr-true)'
+                : 'url(https://ik.imagekit.io/insomnialz/IMG_9755.HEIC?updatedAt=1754141888431&tr=w-1920,h-1080,c-at_max,f-auto,q-auto,pr-true)',
+              backgroundAttachment: 'scroll'
             }}
           />
         </div>
         <div className="relative z-20 container mx-auto px-4">
-          <div className="text-center mb-8 sm:mb-12 mt-16 sm:mt-20 pt-4 sm:pt-6">
+          <div className="text-center mb-8 sm:mb-12 mt-20 sm:mt-20 pt-8 sm:pt-6">
             <h1 className="enigma-hero-title">
               {language === 'en' ? 'Our Menu' : 'Nuestra Carta'}
             </h1>
