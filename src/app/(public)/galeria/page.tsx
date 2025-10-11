@@ -98,7 +98,7 @@ export default function GaleriaPage() {
           />
         </div>
 
-        <div className="relative z-20 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+        <div className="relative z-20 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
           <h1 className="enigma-hero-title">
             {restaurant?.galeria_experiencia_title || "Descubre Nuestro Mundo"}
           </h1>
@@ -107,11 +107,7 @@ export default function GaleriaPage() {
             {restaurant?.ambiente || "Entre callejones históricos rodeados de plantas, descubre un ambiente auténtico y acogedor"}
           </p>
 
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 text-sm sm:text-base text-white/90 mb-8">
-            <div className="flex items-center gap-2">
-              <Award className="h-4 w-4 text-yellow-400" />
-              <span className="font-medium">{restaurant?.awards || "Restaurante Recomendado"}</span>
-            </div>
+          <div className="flex justify-center items-center text-sm sm:text-base text-white/90 mb-8">
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-white" />
               <span>{restaurant?.address || "Carrer Justicia 6A, Calpe"}</span>

@@ -353,7 +353,7 @@ export default function MenuPage() {
           />
         </div>
         <div className="relative z-20 container mx-auto px-4">
-          <div className="text-center mb-8 sm:mb-12 mt-16 sm:mt-20">
+          <div className="text-center mb-8 sm:mb-12 mt-16 sm:mt-20 pt-4 sm:pt-6">
             <h1 className="enigma-hero-title">
               {language === 'en' ? 'Our Menu' : 'Nuestra Carta'}
             </h1>

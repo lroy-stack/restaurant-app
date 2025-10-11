@@ -79,7 +79,7 @@ export function ReservationHero({ language, onLanguageChange, isConnected = true
       </div>
 
       <div className="relative z-20 container mx-auto px-4">
-        <div className="text-center">
+        <div className="text-center pt-4 sm:pt-6">
           <h1 className="enigma-hero-title">
             {t.hero.title}
           </h1>
