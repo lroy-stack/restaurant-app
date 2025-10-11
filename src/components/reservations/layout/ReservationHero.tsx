@@ -73,7 +73,7 @@ export function ReservationHero({ language, onLanguageChange, isConnected = true
           className="w-full h-full bg-cover bg-no-repeat"
           style={{
             backgroundImage: 'url(https://ik.imagekit.io/insomnialz/taboulee.jpg?updatedAt=1754141888431)',
-            backgroundPosition: 'center 35%'
+            backgroundPosition: 'center 60%'
           }}
         />
       </div>
