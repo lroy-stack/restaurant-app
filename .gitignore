@@ -53,3 +53,20 @@ next-env.d.ts
 
 # Vercel
 .vercel
+
+# Development artifacts (NOT for production)
+reports/
+PRPs/
+previews/
+ai_docs/
+whatsapp_agent_n8n/
+test-*.js
+*.zip
+*.tar.gz
+*.rar
+
+# Large binaries
+*.mp3
+*.mp4
+*.avi
+*.mov
