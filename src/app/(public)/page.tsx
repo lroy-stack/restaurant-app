@@ -22,7 +22,7 @@ export default function HomePage() {
   return (
     <>
       {/* Hero Section - 100% Responsive */}
-      <section className="relative py-16 sm:py-20 md:py-28 xl:py-32 flex items-center justify-center overflow-hidden -mt-16 pt-16">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden -mt-16 pt-16">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-black/20 z-10" />
           {/* Optimized hero image with proper loading */}
