@@ -484,7 +484,7 @@ export default function ContactAndConfirmStep({
           {/* Reservation Summary */}
           <div>
             <div className="grid gap-2 md:gap-3">
-              <div className="flex justify-between items-center p-2 md:p-3 bg-gray-50 rounded-lg">
+              <div className="flex justify-between items-center p-2 md:p-3 bg-muted rounded-lg">
                 <span className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
                   <Calendar className="h-3 w-3 md:h-4 md:w-4" />
                   {t.date}
@@ -492,7 +492,7 @@ export default function ContactAndConfirmStep({
                 <span className="font-medium text-xs md:text-sm">{formatDate(selectedDate)}</span>
               </div>
 
-              <div className="flex justify-between items-center p-2 md:p-3 bg-gray-50 rounded-lg">
+              <div className="flex justify-between items-center p-2 md:p-3 bg-muted rounded-lg">
                 <span className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
                   <Clock className="h-3 w-3 md:h-4 md:w-4" />
                   {t.time}
@@ -500,7 +500,7 @@ export default function ContactAndConfirmStep({
                 <span className="font-medium text-xs md:text-sm">{selectedTime}</span>
               </div>
 
-              <div className="flex justify-between items-center p-2 md:p-3 bg-gray-50 rounded-lg">
+              <div className="flex justify-between items-center p-2 md:p-3 bg-muted rounded-lg">
                 <span className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
                   <Users className="h-3 w-3 md:h-4 md:w-4" />
                   {t.people}
@@ -517,7 +517,7 @@ export default function ContactAndConfirmStep({
 
               {/* Multi-table support (new) */}
               {selectedTables.length > 0 && (
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
                   <span className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
                     {t.table}
@@ -530,7 +530,7 @@ export default function ContactAndConfirmStep({
 
               {/* Legacy single table fallback */}
               {selectedTables.length === 0 && selectedTable && (
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
                   <span className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
                     {t.table}
