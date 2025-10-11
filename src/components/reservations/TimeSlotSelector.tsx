@@ -468,52 +468,47 @@ export default function TimeSlotSelector({
 
                       {/* Contenido del slot */}
                       <div className="space-y-1">
-                        <p className="text-lg font-semibold">
+                        <p className="text-base md:text-lg font-semibold">
                           {slot.time}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground hidden md:block">
                           {slot.label}
                         </p>
                       </div>
 
-                      {/* Estado de disponibilidad */}
-                      <div className="mt-2 space-y-1">
+                      {/* Estado de disponibilidad - Solo iconos en móvil */}
+                      <div className="mt-2 flex items-center justify-center gap-1 md:space-y-1 md:block">
                         {slot.available ? (
-                          <div className="flex items-center gap-1 text-xs">
-                            <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-500" />
-                            <span className="text-green-600 dark:text-green-500">
+                          <>
+                            <CheckCircle className="h-3.5 w-3.5 text-green-600 dark:text-green-500" title={slot.capacity > 4 ? t.available : t.lastTables} />
+                            <span className="hidden md:inline text-xs text-green-600 dark:text-green-500 md:ml-1">
                               {slot.capacity > 4 ? t.available : t.lastTables}
                             </span>
-                          </div>
+                          </>
                         ) : (
-                          <div className="flex items-center gap-1 text-xs">
-                            <AlertCircle className="h-3 w-3 text-red-600 dark:text-red-500" />
-                            <span className="text-red-600 dark:text-red-500">{t.full}</span>
-                          </div>
+                          <>
+                            <AlertCircle className="h-3.5 w-3.5 text-red-600 dark:text-red-500" title={t.full} />
+                            <span className="hidden md:inline text-xs text-red-600 dark:text-red-500 md:ml-1">{t.full}</span>
+                          </>
                         )}
 
-                        {/* Indicador de demanda */}
+                        {/* Indicador de demanda - Solo icono en móvil */}
                         {slot.available && (
-                          <div className="flex items-center gap-1">
+                          <>
                             {slot.demand === 'high' && (
                               <>
-                                <TrendingUp className="h-3 w-3 text-orange-600 dark:text-orange-500" />
-                                <span className="text-xs text-orange-600 dark:text-orange-500">
+                                <TrendingUp className="h-3.5 w-3.5 text-orange-600 dark:text-orange-500" title={t.highDemand} />
+                                <span className="hidden md:inline text-xs text-orange-600 dark:text-orange-500 md:ml-1">
                                   {t.highDemand}
                                 </span>
                               </>
                             )}
-                            {slot.demand === 'medium' && (
-                              <span className="text-xs text-muted-foreground">
-                                {t.mediumDemand}
-                              </span>
-                            )}
                             {slot.demand === 'low' && (
-                              <span className="text-xs text-green-600 dark:text-green-500">
+                              <span className="hidden md:block text-xs text-green-600 dark:text-green-500">
                                 {t.lowDemand}
                               </span>
                             )}
-                          </div>
+                          </>
                         )}
                       </div>
 
@@ -639,52 +634,47 @@ export default function TimeSlotSelector({
 
                       {/* Contenido del slot */}
                       <div className="space-y-1">
-                        <p className="text-lg font-semibold">
+                        <p className="text-base md:text-lg font-semibold">
                           {slot.time}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground hidden md:block">
                           {slot.label}
                         </p>
                       </div>
 
-                      {/* Estado de disponibilidad */}
-                      <div className="mt-2 space-y-1">
+                      {/* Estado de disponibilidad - Solo iconos en móvil */}
+                      <div className="mt-2 flex items-center justify-center gap-1 md:space-y-1 md:block">
                         {slot.available ? (
-                          <div className="flex items-center gap-1 text-xs">
-                            <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-500" />
-                            <span className="text-green-600 dark:text-green-500">
+                          <>
+                            <CheckCircle className="h-3.5 w-3.5 text-green-600 dark:text-green-500" title={slot.capacity > 4 ? t.available : t.lastTables} />
+                            <span className="hidden md:inline text-xs text-green-600 dark:text-green-500 md:ml-1">
                               {slot.capacity > 4 ? t.available : t.lastTables}
                             </span>
-                          </div>
+                          </>
                         ) : (
-                          <div className="flex items-center gap-1 text-xs">
-                            <AlertCircle className="h-3 w-3 text-red-600 dark:text-red-500" />
-                            <span className="text-red-600 dark:text-red-500">{t.full}</span>
-                          </div>
+                          <>
+                            <AlertCircle className="h-3.5 w-3.5 text-red-600 dark:text-red-500" title={t.full} />
+                            <span className="hidden md:inline text-xs text-red-600 dark:text-red-500 md:ml-1">{t.full}</span>
+                          </>
                         )}
 
-                        {/* Indicador de demanda */}
+                        {/* Indicador de demanda - Solo icono en móvil */}
                         {slot.available && (
-                          <div className="flex items-center gap-1">
+                          <>
                             {slot.demand === 'high' && (
                               <>
-                                <TrendingUp className="h-3 w-3 text-orange-600 dark:text-orange-500" />
-                                <span className="text-xs text-orange-600 dark:text-orange-500">
+                                <TrendingUp className="h-3.5 w-3.5 text-orange-600 dark:text-orange-500" title={t.highDemand} />
+                                <span className="hidden md:inline text-xs text-orange-600 dark:text-orange-500 md:ml-1">
                                   {t.highDemand}
                                 </span>
                               </>
                             )}
-                            {slot.demand === 'medium' && (
-                              <span className="text-xs text-muted-foreground">
-                                {t.mediumDemand}
-                              </span>
-                            )}
                             {slot.demand === 'low' && (
-                              <span className="text-xs text-green-600 dark:text-green-500">
+                              <span className="hidden md:block text-xs text-green-600 dark:text-green-500">
                                 {t.lowDemand}
                               </span>
                             )}
-                          </div>
+                          </>
                         )}
                       </div>
 
