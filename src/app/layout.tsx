@@ -11,19 +11,52 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Panel de Administración - Enigma Cocina Con Alma",
-    template: "%s | Admin Panel"
+    default: "Enigma Cocina Con Alma - Restaurante en el Casco Antiguo de Calpe",
+    template: "%s | Enigma Calpe"
   },
-  description: "Panel de gestión interno del restaurante Enigma Cocina Con Alma. Acceso privado para personal autorizado.",
+  description: "Cocina de autor en el corazón histórico de Calpe. Fusionamos tradición atlántica y mediterránea en un ambiente auténtico. Carrer Justicia 6A. Reserva tu mesa.",
+  keywords: "restaurante Calpe, casco antiguo Calpe, cocina mediterránea, restaurante histórico, cocina de autor, fusión atlántica, restaurante tradicional Alicante",
+  authors: [{ name: "Enigma Cocina Con Alma" }],
+  creator: "Enigma Cocina Con Alma",
+  publisher: "Enigma Cocina Con Alma",
+  metadataBase: new URL('https://www.enigmaconalma.com'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'es_ES',
+    url: 'https://www.enigmaconalma.com',
+    siteName: 'Enigma Cocina Con Alma',
+    title: 'Enigma Cocina Con Alma - Restaurante en el Casco Antiguo de Calpe',
+    description: 'Cocina de autor en el corazón histórico de Calpe. Fusionamos tradición atlántica y mediterránea en un ambiente auténtico.',
+    images: [
+      {
+        url: 'https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1754141731421',
+        width: 1200,
+        height: 630,
+        alt: 'Enigma Cocina Con Alma - Restaurante Calpe',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Enigma Cocina Con Alma - Restaurante en Calpe',
+    description: 'Cocina de autor en el casco antiguo de Calpe. Tradición atlántica y mediterránea.',
+    images: ['https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1754141731421'],
+  },
   robots: {
-    index: false,
-    follow: false,
-    noarchive: true,
-    nosnippet: true,
-    noimageindex: true,
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
-  other: {
-    'X-Robots-Tag': 'noindex, nofollow, nosnippet, noarchive'
+  verification: {
+    google: 'verification_token',
   },
 };
 
