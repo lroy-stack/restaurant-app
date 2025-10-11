@@ -154,29 +154,29 @@ function getPeriodIcon(period: string) {
   }
 }
 
-// Función para obtener el color del periodo
+// Función para obtener el color del periodo (theme-aware)
 function getPeriodColors(period: string) {
   switch (period) {
     case 'morning':
-      return 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200 hover:border-amber-300'
+      return 'bg-amber-500/5 dark:bg-amber-500/10 border-amber-500/20 dark:border-amber-500/30 hover:border-amber-500/40'
     case 'afternoon':
-      return 'bg-gradient-to-br from-blue-50 to-sky-50 border-blue-200 hover:border-blue-300'
+      return 'bg-blue-500/5 dark:bg-blue-500/10 border-blue-500/20 dark:border-blue-500/30 hover:border-blue-500/40'
     case 'evening':
-      return 'bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 hover:border-purple-300'
+      return 'bg-purple-500/5 dark:bg-purple-500/10 border-purple-500/20 dark:border-purple-500/30 hover:border-purple-500/40'
     case 'night':
-      return 'bg-gradient-to-br from-indigo-50 to-slate-50 border-indigo-200 hover:border-indigo-300'
+      return 'bg-indigo-500/5 dark:bg-indigo-500/10 border-indigo-500/20 dark:border-indigo-500/30 hover:border-indigo-500/40'
     default:
       return 'bg-card border-border'
   }
 }
 
-// Función para obtener el indicador superior del slot
+// Función para obtener el indicador superior del slot (theme-aware)
 function getSlotIndicator(period: string) {
   const colors = {
-    morning: 'bg-gradient-to-r from-amber-400 to-orange-400',
-    afternoon: 'bg-gradient-to-r from-blue-400 to-sky-400',
-    evening: 'bg-gradient-to-r from-purple-400 to-pink-400',
-    night: 'bg-gradient-to-r from-indigo-400 to-slate-600'
+    morning: 'bg-gradient-to-r from-amber-500 to-orange-500 dark:from-amber-400 dark:to-orange-400',
+    afternoon: 'bg-gradient-to-r from-blue-500 to-sky-500 dark:from-blue-400 dark:to-sky-400',
+    evening: 'bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-400 dark:to-pink-400',
+    night: 'bg-gradient-to-r from-indigo-500 to-slate-600 dark:from-indigo-400 dark:to-slate-500'
   }
   return colors[period as keyof typeof colors] || 'bg-primary'
 }
@@ -460,8 +460,8 @@ export default function TimeSlotSelector({
                       {/* Badges */}
                       <div className="absolute -top-2 -right-2 flex gap-1">
                         {slot.recommended && (
-                          <Badge className="text-xs" variant="default">
-                            {t.recommended}
+                          <Badge className="h-6 w-6 p-0 flex items-center justify-center rounded-full" variant="default" title={t.recommended}>
+                            <span className="text-sm">★</span>
                           </Badge>
                         )}
                       </div>
@@ -480,15 +480,15 @@ export default function TimeSlotSelector({
                       <div className="mt-2 space-y-1">
                         {slot.available ? (
                           <div className="flex items-center gap-1 text-xs">
-                            <CheckCircle className="h-3 w-3 text-green-600" />
-                            <span className="text-green-600">
+                            <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-500" />
+                            <span className="text-green-600 dark:text-green-500">
                               {slot.capacity > 4 ? t.available : t.lastTables}
                             </span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1 text-xs">
-                            <AlertCircle className="h-3 w-3 text-red-600" />
-                            <span className="text-red-600">{t.full}</span>
+                            <AlertCircle className="h-3 w-3 text-red-600 dark:text-red-500" />
+                            <span className="text-red-600 dark:text-red-500">{t.full}</span>
                           </div>
                         )}
 
@@ -497,8 +497,8 @@ export default function TimeSlotSelector({
                           <div className="flex items-center gap-1">
                             {slot.demand === 'high' && (
                               <>
-                                <TrendingUp className="h-3 w-3 text-orange-500" />
-                                <span className="text-xs text-orange-500">
+                                <TrendingUp className="h-3 w-3 text-orange-600 dark:text-orange-500" />
+                                <span className="text-xs text-orange-600 dark:text-orange-500">
                                   {t.highDemand}
                                 </span>
                               </>
@@ -509,7 +509,7 @@ export default function TimeSlotSelector({
                               </span>
                             )}
                             {slot.demand === 'low' && (
-                              <span className="text-xs text-green-600">
+                              <span className="text-xs text-green-600 dark:text-green-500">
                                 {t.lowDemand}
                               </span>
                             )}
@@ -639,8 +639,8 @@ export default function TimeSlotSelector({
                       {/* Badges */}
                       <div className="absolute -top-2 -right-2 flex gap-1">
                         {slot.recommended && (
-                          <Badge className="text-xs" variant="default">
-                            {t.recommended}
+                          <Badge className="h-6 w-6 p-0 flex items-center justify-center rounded-full" variant="default" title={t.recommended}>
+                            <span className="text-sm">★</span>
                           </Badge>
                         )}
                       </div>
@@ -659,15 +659,15 @@ export default function TimeSlotSelector({
                       <div className="mt-2 space-y-1">
                         {slot.available ? (
                           <div className="flex items-center gap-1 text-xs">
-                            <CheckCircle className="h-3 w-3 text-green-600" />
-                            <span className="text-green-600">
+                            <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-500" />
+                            <span className="text-green-600 dark:text-green-500">
                               {slot.capacity > 4 ? t.available : t.lastTables}
                             </span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1 text-xs">
-                            <AlertCircle className="h-3 w-3 text-red-600" />
-                            <span className="text-red-600">{t.full}</span>
+                            <AlertCircle className="h-3 w-3 text-red-600 dark:text-red-500" />
+                            <span className="text-red-600 dark:text-red-500">{t.full}</span>
                           </div>
                         )}
 
@@ -676,8 +676,8 @@ export default function TimeSlotSelector({
                           <div className="flex items-center gap-1">
                             {slot.demand === 'high' && (
                               <>
-                                <TrendingUp className="h-3 w-3 text-orange-500" />
-                                <span className="text-xs text-orange-500">
+                                <TrendingUp className="h-3 w-3 text-orange-600 dark:text-orange-500" />
+                                <span className="text-xs text-orange-600 dark:text-orange-500">
                                   {t.highDemand}
                                 </span>
                               </>
@@ -688,7 +688,7 @@ export default function TimeSlotSelector({
                               </span>
                             )}
                             {slot.demand === 'low' && (
-                              <span className="text-xs text-green-600">
+                              <span className="text-xs text-green-600 dark:text-green-500">
                                 {t.lowDemand}
                               </span>
                             )}
@@ -723,7 +723,7 @@ export default function TimeSlotSelector({
             <span>{t.recommended}</span>
           </div>
           <div className="flex items-center gap-1">
-            <TrendingUp className="h-3 w-3 text-orange-500" />
+            <TrendingUp className="h-3 w-3 text-orange-600 dark:text-orange-500" />
             <span>{t.highDemand}</span>
           </div>
         </div>

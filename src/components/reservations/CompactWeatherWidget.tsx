@@ -48,15 +48,15 @@ function getWeatherIcon(description: string, size: 'sm' | 'md' = 'md') {
   const className = size === 'sm' ? 'h-5 w-5' : 'h-6 w-6'
 
   if (desc.includes('sol') || desc.includes('sun') || desc.includes('clear')) {
-    return <Sun className={cn(className, 'text-yellow-500')} />
+    return <Sun className={cn(className, 'text-amber-500 dark:text-amber-400')} />
   }
   if (desc.includes('lluv') || desc.includes('rain')) {
-    return <CloudRain className={cn(className, 'text-blue-500')} />
+    return <CloudRain className={cn(className, 'text-blue-500 dark:text-blue-400')} />
   }
   if (desc.includes('nub') || desc.includes('cloud')) {
-    return <Cloud className={cn(className, 'text-gray-500')} />
+    return <Cloud className={cn(className, 'text-muted-foreground')} />
   }
-  return <Sun className={cn(className, 'text-yellow-500')} />
+  return <Sun className={cn(className, 'text-amber-500 dark:text-amber-400')} />
 }
 
 function formatCompactDate(date: Date, language: Language, isToday: boolean, isTomorrow: boolean): string {
@@ -152,7 +152,7 @@ export default function CompactWeatherWidget({
                 ? 'border-primary bg-primary/10 shadow-md'
                 : 'border-border bg-card hover:border-primary/50',
               isClosed && 'opacity-40 cursor-not-allowed',
-              goodWeather && !isSelected && 'border-green-200 bg-green-50/50'
+              goodWeather && !isSelected && 'border-green-500/30 bg-green-500/5 dark:border-green-500/20 dark:bg-green-500/10'
             )}
           >
             {/* Day label */}
@@ -180,9 +180,9 @@ export default function CompactWeatherWidget({
             {!isClosed && (
               <div className={cn(
                 'w-1.5 h-1.5 rounded-full',
-                goodWeather ? 'bg-green-500' :
-                day.precipProbability > 60 ? 'bg-blue-500' :
-                'bg-yellow-500'
+                goodWeather ? 'bg-green-500 dark:bg-green-400' :
+                day.precipProbability > 60 ? 'bg-blue-500 dark:bg-blue-400' :
+                'bg-amber-500 dark:bg-amber-400'
               )} />
             )}
 
