@@ -31,8 +31,6 @@ const restaurantInfoSchema = z.object({
   email: z.string().email('Email inválido'),
   phone: z.string().regex(/^\+?[0-9\s-]{9,}$/, 'Teléfono inválido'),
   address: z.string().min(10, 'La dirección debe tener al menos 10 caracteres'),
-  description: z.string().min(20, 'La descripción debe tener al menos 20 caracteres'),
-  ambiente: z.string().min(10, 'La descripción del ambiente debe tener al menos 10 caracteres'),
   google_rating: z.number().min(0).max(5),
   monthly_customers: z.number().min(0),
   hours_operation: z.string().min(5, 'Horario requerido'),
@@ -94,8 +92,6 @@ export function RestaurantInfoForm({ data, onSubmit, loading }: RestaurantInfoFo
       email: data?.email || '',
       phone: data?.phone || '',
       address: data?.address || '',
-      description: data?.description || '',
-      ambiente: data?.ambiente || '',
       google_rating: data?.google_rating || 4.8,
       monthly_customers: data?.monthly_customers || 200,
       hours_operation: data?.hours_operation || '',
@@ -287,48 +283,6 @@ export function RestaurantInfoForm({ data, onSubmit, loading }: RestaurantInfoFo
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Historia - Párrafo 1 (Description)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enigma es la historia de una segunda oportunidad..."
-                      className="enigma-config-input min-h-[100px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Primer párrafo sección "Una Pasión Que Nace del Corazón" (también usado en hero de historia)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="ambiente"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Historia - Párrafo 2 (Ambiente)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Pasión y alma nos definen..."
-                      className="enigma-config-input min-h-[80px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Segundo párrafo sección "Una Pasión Que Nace del Corazón"
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
