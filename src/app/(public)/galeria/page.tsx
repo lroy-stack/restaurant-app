@@ -219,7 +219,7 @@ export default function GaleriaPage() {
             </h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
-              <Card className="p-6 sm:p-8 bg-white/50 backdrop-blur-sm border-none shadow-lg">
+              <Card className="p-6 sm:p-8 bg-card/80 backdrop-blur-sm border border-border/40 shadow-lg">
                 <CardContent className="p-6 sm:p-8 pt-0">
                   <h3 className="enigma-card-title">
                     {restaurant?.galeria_ambiente_title || "Ambiente Histórico"}
@@ -234,7 +234,7 @@ export default function GaleriaPage() {
                 </CardContent>
               </Card>
 
-              <Card className="p-6 sm:p-8 bg-gradient-to-br from-primary/5 to-secondary/5 border-none shadow-lg">
+              <Card className="p-6 sm:p-8 bg-card/80 backdrop-blur-sm border border-border/40 shadow-lg">
                 <CardContent className="p-6 sm:p-8 pt-0">
                   <h3 className="enigma-card-title">
                     {restaurant?.galeria_cocina_title || "Cocina Con Alma"}
@@ -294,25 +294,27 @@ export default function GaleriaPage() {
               Encuéntranos en Calpe
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-sm sm:text-base">
-              <div className="flex items-center justify-center gap-2 p-3 bg-white/50 rounded-lg">
-                <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
-                <span>{restaurant?.address || "Carrer Justicia 6A, 03710 Calpe, Alicante"}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              <div className="flex items-center gap-3 p-4 bg-card/80 backdrop-blur-sm border border-border/40 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                <MapPin className="h-5 w-5 text-primary flex-shrink-0" />
+                <span className="text-sm sm:text-base text-foreground break-words">
+                  {restaurant?.address || "Carrer Justicia 6A, 03710 Calpe, Alicante"}
+                </span>
               </div>
-              <div className="flex items-center justify-center gap-2 p-3 bg-white/50 rounded-lg">
-                <span className="h-4 w-4 text-primary flex-shrink-0">📞</span>
+              <div className="flex items-center gap-3 p-4 bg-card/80 backdrop-blur-sm border border-border/40 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                <span className="text-2xl flex-shrink-0">📞</span>
                 <a
                   href={`tel:${restaurant?.phone?.replace(/\s/g, '') || "+34672796006"}`}
-                  className="hover:text-primary transition-colors"
+                  className="text-sm sm:text-base text-foreground hover:text-primary transition-colors break-words"
                 >
                   {restaurant?.phone || "+34 672 79 60 06"}
                 </a>
               </div>
-              <div className="flex items-center justify-center gap-2 p-3 bg-white/50 rounded-lg">
-                <span className="h-4 w-4 text-primary flex-shrink-0">✉️</span>
+              <div className="flex items-center gap-3 p-4 bg-card/80 backdrop-blur-sm border border-border/40 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                <span className="text-2xl flex-shrink-0">✉️</span>
                 <a
                   href={`mailto:${restaurant?.email || "reservas@enigmaconalma.com"}`}
-                  className="hover:text-primary transition-colors"
+                  className="text-sm sm:text-base text-foreground hover:text-primary transition-colors break-words truncate"
                 >
                   {restaurant?.email || "reservas@enigmaconalma.com"}
                 </a>
