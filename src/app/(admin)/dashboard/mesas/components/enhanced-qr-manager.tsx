@@ -730,56 +730,63 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
             </CardContent>
           </Card>
 
-          {/* Tables Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tables.map((table) => (
+          {/* Tables Grid - MOBILE FIRST: 1 col móvil, 2 tablet, 3 desktop */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {localTables.map((table) => (
               <Card
                 key={table.id}
-                className={`cursor-pointer transition-all aspect-square max-w-none ${
-                  selectedTables.includes(table.id) 
-                    ? 'border-primary bg-primary/5' 
+                className={`cursor-pointer transition-all ${
+                  selectedTables.includes(table.id)
+                    ? 'border-primary bg-primary/5'
                     : 'hover:bg-muted/50'
                 } ${!table.isActive ? 'opacity-50' : ''}`}
                 onClick={() => table.isActive && toggleTableSelection(table.id)}
               >
-                <CardContent className="p-2 sm:p-3 h-full flex flex-col">
-                  <div className="flex items-center justify-between mb-1">
-                    <h4 className="font-semibold text-xs sm:text-sm truncate">Mesa {table.number}</h4>
-                    <div className="flex items-center gap-1 flex-shrink-0">
+                <CardContent className="p-4 sm:p-3">
+                  {/* Header: Mesa info + Estado */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <h4 className="font-bold text-base sm:text-sm truncate">Mesa {table.number}</h4>
                       {table.isActive && (
-                        <Checkbox checked={selectedTables.includes(table.id)} className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                        <Checkbox
+                          checked={selectedTables.includes(table.id)}
+                          className="h-4 w-4 sm:h-3 sm:w-3 flex-shrink-0"
+                        />
                       )}
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
                       {table.qrCode && table.isActive && (
-                        <div className="w-2 h-2 bg-[#9FB289] rounded-full" title="QR Activo" />
+                        <div className="w-2.5 h-2.5 bg-[#9FB289] rounded-full" title="QR Activo" />
                       )}
                       {!table.isActive && (
-                        <div className="w-2 h-2 bg-muted-foreground rounded-full" title="Inactiva" />
+                        <div className="w-2.5 h-2.5 bg-muted-foreground rounded-full" title="Inactiva" />
                       )}
                     </div>
                   </div>
-                  
-                  <div className="space-y-0.5 text-xs text-muted-foreground flex-1">
-                    <div className="flex items-center gap-1 truncate">
-                      <MapPin className="h-2 w-2 flex-shrink-0" />
-                      <span className="truncate text-xs">{getLocationLabel(table.location)}</span>
+
+                  {/* Info: Location + Capacity */}
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
+                    <div className="flex items-center gap-1.5 truncate flex-1">
+                      <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+                      <span className="truncate">{getLocationLabel(table.location)}</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="h-2 w-2 flex-shrink-0" />
-                      <span className="text-xs">{table.capacity}p</span>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <Users className="h-3.5 w-3.5" />
+                      <span className="font-medium">{table.capacity}p</span>
                     </div>
                   </div>
-                  
-                  {/* Real QR Code Preview and Actions */}
+
+                  {/* QR Code Preview and Actions */}
                   {table.isActive && (
-                    <div className="mt-auto pt-1">
+                    <div className="space-y-2">
                       {table.qrCode ? (
-                        <div className="space-y-1">
-                          {/* QR Code Display - Responsive and readable */}
-                          <div className="flex justify-center">
-                            <div className="w-full aspect-square max-w-24 bg-card p-2 rounded border border-border flex items-center justify-center mx-auto">
+                        <>
+                          {/* QR Code Display - MOBILE FIRST: Más grande en móvil */}
+                          <div className="flex justify-center py-2">
+                            <div className="w-32 h-32 sm:w-24 sm:h-24 bg-card p-2 rounded-lg border border-border flex items-center justify-center">
                               <QRCodeSVG
                                 value={generateSecureQRContent(table.number, table.id, table.location || 'principal', qrConfig.template)}
-                                size={88}
+                                size={112}
                                 level="H"
                                 bgColor={qrTemplates[qrConfig.template]?.colors.background || '#FFFFFF'}
                                 fgColor={qrTemplates[qrConfig.template]?.colors.foreground || '#2563B5'}
@@ -789,60 +796,65 @@ export function EnhancedQRManager({ tables: initialTables }: EnhancedQRCodeManag
                             </div>
                           </div>
 
-                          {/* Action Buttons - Responsive and usable */}
-                          <div className="flex justify-center gap-1 sm:gap-2">
+                          {/* Action Buttons - MOBILE FIRST: Touch targets 44px mínimo */}
+                          <div className="grid grid-cols-2 gap-2">
                             <Button
                               size="sm"
-                              variant="ghost"
-                              className="h-7 w-7 sm:h-8 sm:w-8 p-0"
+                              variant="outline"
+                              className="h-10 sm:h-9 w-full text-sm"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 const secureQRUrl = generateSecureQRContent(table.number, table.id, table.location || 'principal', qrConfig.template)
                                 copyToClipboard(secureQRUrl, table.number)
                               }}
-                              title="Copiar URL"
                             >
                               {copiedCode === `mesa-${table.number}` ? (
-                                <Check className="h-3 w-3 sm:h-4 sm:w-4 text-[#9FB289]" />
+                                <>
+                                  <Check className="h-4 w-4 mr-1.5 text-[#9FB289]" />
+                                  <span className="hidden sm:inline">Copiado</span>
+                                  <span className="sm:hidden">✓</span>
+                                </>
                               ) : (
-                                <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
+                                <>
+                                  <Copy className="h-4 w-4 mr-1.5" />
+                                  <span className="hidden sm:inline">Copiar</span>
+                                  <span className="sm:hidden">Copiar</span>
+                                </>
                               )}
                             </Button>
                             <Button
                               size="sm"
-                              variant="ghost"
-                              className="h-7 w-7 sm:h-8 sm:w-8 p-0"
+                              variant="outline"
+                              className="h-10 sm:h-9 w-full text-sm"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 downloadStyledQR(table.number, table.id, table.location, 'svg')
                               }}
-                              title="Descargar QR"
                             >
-                              <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+                              <Download className="h-4 w-4 mr-1.5" />
+                              <span className="hidden sm:inline">Descargar</span>
+                              <span className="sm:hidden">Bajar</span>
                             </Button>
                           </div>
-                        </div>
+                        </>
                       ) : (
-                        <div className="text-center py-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 px-3 text-xs sm:text-sm"
-                            onClick={async (e) => {
-                              e.stopPropagation()
-                              try {
-                                await generateAndSaveQRCode(table.id, table.number)
-                                toast.success(`QR generado para Mesa ${table.number}`)
-                              } catch (error) {
-                                toast.error('Error generando QR')
-                              }
-                            }}
-                          >
-                            <QrCode className="h-3 w-3 mr-1" />
-                            <span className="hidden sm:inline">Generar</span>
-                            <span className="sm:hidden">QR</span>
-                          </Button>
-                        </div>
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          className="w-full h-12 sm:h-10"
+                          onClick={async (e) => {
+                            e.stopPropagation()
+                            try {
+                              await generateAndSaveQRCode(table.id, table.number)
+                              toast.success(`QR generado para Mesa ${table.number}`)
+                            } catch (error) {
+                              toast.error('Error generando QR')
+                            }
+                          }}
+                        >
+                          <QrCode className="h-5 w-5 mr-2" />
+                          Generar QR
+                        </Button>
                       )}
                     </div>
                   )}

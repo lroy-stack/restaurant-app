@@ -64,10 +64,16 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
   const pathname = usePathname()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   // Cart integration for Task 5 PRP
   const { getCartCount, toggleCart } = useCart()
   const cartCount = getCartCount()
+
+  // Prevent hydration mismatch - wait for client mount
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Handle scroll effect
   useEffect(() => {
@@ -103,28 +109,11 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
     return `https://wa.me/${phone}?text=${message}`
   }
 
-  const liquidGlassStyle = {
-    background: isScrolled 
-      ? 'linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.75) 100%)'
-      : 'linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.70) 100%)',
-    boxShadow: `
-      0 12px 40px rgba(0,0,0,0.25),
-      0 6px 20px rgba(0,0,0,0.20),
-      0 3px 12px rgba(0,0,0,0.15),
-      inset 0 1px 0 rgba(255,255,255,0.8),
-      inset 0 -1px 0 rgba(0,0,0,0.05)
-    `
-  }
+  // Removed inline hardcoded styles - using CSS variables for dark mode support
 
-  const mobileGlassStyle = {
-    background: isMobileMenuOpen 
-      ? 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)'
-      : isScrolled 
-        ? 'linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.75) 100%)'
-        : 'linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.70) 100%)',
-    boxShadow: isMobileMenuOpen
-      ? '0 20px 60px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.6)'
-      : liquidGlassStyle.boxShadow
+  // Don't render until mounted to prevent hydration mismatch
+  if (!mounted) {
+    return null
   }
 
   return (
@@ -142,19 +131,15 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
             'backdrop-blur-2xl rounded-2xl',
             'px-3 py-4',
             'transition-all duration-500',
-            'border',
-            isScrolled 
-              ? 'bg-white/30 border-white/40 shadow-2xl' 
-              : 'bg-white/25 border-white/35 shadow-xl'
+            'border border-border/40',
+            'bg-card/80 hover:bg-card/90',
+            'shadow-xl hover:shadow-2xl'
           )}
-          style={liquidGlassStyle}
+          suppressHydrationWarning
         >
           {/* Top shine effect */}
-          <div 
-            className="absolute top-4 left-2 right-2 h-px opacity-30"
-            style={{
-              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)'
-            }}
+          <div
+            className="absolute top-4 left-2 right-2 h-px opacity-20 bg-gradient-to-r from-transparent via-foreground/30 to-transparent"
           />
 
           {/* Logo */}
@@ -164,11 +149,11 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
               
               {/* Logo tooltip */}
               <div
-                className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 px-3 py-2 bg-white/90 backdrop-blur-sm border border-white/40 text-gray-900 text-sm rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
+                className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 px-3 py-2 bg-popover/95 backdrop-blur-sm border border-border text-popover-foreground text-sm rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
                 style={{ pointerEvents: 'none' }}
               >
                 Enigma Cocina Con Alma
-                <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-white/90 border-r border-b border-white/40 rotate-45" />
+                <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-popover/95 border-r border-b border-border rotate-45" />
               </div>
             </div>
           </Link>
@@ -187,23 +172,23 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
                     'hover:scale-105 active:scale-95',
                     isActive
                       ? 'bg-primary/25 text-primary shadow-lg border border-primary/20'
-                      : 'text-gray-800 hover:text-primary hover:bg-white/30 shadow-sm'
+                      : 'text-foreground/70 hover:text-primary hover:bg-accent shadow-sm'
                   )}
                 >
                   <Icon className="w-4 h-4" strokeWidth={isActive ? 2.5 : 2} />
-                  
+
                   {/* Active indicator */}
                   {isActive && (
                     <div className="absolute -right-1 -top-1 w-2 h-2 bg-primary rounded-full animate-pulse" />
                   )}
-                  
+
                   {/* Tooltip */}
                   <div
-                    className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 px-3 py-2 bg-white/90 backdrop-blur-sm border border-white/40 text-gray-900 text-sm rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
+                    className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 px-3 py-2 bg-popover/95 backdrop-blur-sm border border-border text-popover-foreground text-sm rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
                     style={{ pointerEvents: 'none' }}
                   >
                     {item.name}
-                    <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-white/90 border-r border-b border-white/40 rotate-45" />
+                    <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-popover/95 border-r border-b border-border rotate-45" />
                   </div>
                 </div>
               </Link>
@@ -211,7 +196,7 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
           })}
 
           {/* Separator */}
-          <div className="w-6 h-px bg-white/30" />
+          <div className="w-6 h-px bg-border/40" />
 
           {/* Cart Button - Task 5 PRP Implementation */}
           {cartCount > 0 && (
@@ -226,11 +211,11 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
 
                 {/* Cart tooltip */}
                 <div
-                  className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 px-3 py-2 bg-white/90 backdrop-blur-sm border border-white/40 text-gray-900 text-sm rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
+                  className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 px-3 py-2 bg-popover/95 backdrop-blur-sm border border-border text-popover-foreground text-sm rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
                   style={{ pointerEvents: 'none' }}
                 >
                   Carrito ({cartCount})
-                  <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-white/90 border-r border-b border-white/40 rotate-45" />
+                  <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-popover/95 border-r border-b border-border rotate-45" />
                 </div>
               </div>
             </button>
@@ -243,11 +228,11 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
               
               {/* Reserve tooltip */}
               <div
-                className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 px-3 py-2 bg-white/90 backdrop-blur-sm border border-white/40 text-gray-900 text-sm rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
+                className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 px-3 py-2 bg-popover/95 backdrop-blur-sm border border-border text-popover-foreground text-sm rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
                 style={{ pointerEvents: 'none' }}
               >
                 Reservar Mesa
-                <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-white/90 border-r border-b border-white/40 rotate-45" />
+                <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-popover/95 border-r border-b border-border rotate-45" />
               </div>
             </div>
           </Link>
@@ -263,11 +248,11 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
             
             {/* WhatsApp tooltip */}
             <div
-              className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 px-3 py-2 bg-white/90 backdrop-blur-sm border border-white/40 text-gray-900 text-sm rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
+              className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 px-3 py-2 bg-popover/95 backdrop-blur-sm border border-border text-popover-foreground text-sm rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
               style={{ pointerEvents: 'none' }}
             >
               WhatsApp
-              <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-white/90 border-r border-b border-white/40 rotate-45" />
+              <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-popover/95 border-r border-b border-border rotate-45" />
             </div>
           </a>
         </div>
@@ -282,22 +267,21 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
         <button
           className={cn(
             'w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center',
-            'backdrop-blur-2xl border',
+            'backdrop-blur-2xl border border-border',
             'transition-all duration-300',
             'hover:scale-105 active:scale-95',
-            isScrolled 
-              ? 'bg-white/85 border-white/60 shadow-2xl' 
-              : 'bg-white/80 border-white/55 shadow-xl',
-            isMobileMenuOpen && 'bg-primary text-white shadow-2xl'
+            'shadow-xl hover:shadow-2xl',
+            isMobileMenuOpen
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-card/80 hover:bg-card/90 text-foreground'
           )}
-          style={mobileGlassStyle}
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           <div className="transition-all duration-200">
             {isMobileMenuOpen ? (
-              <X className="w-4 h-4 text-foreground" />
+              <X className="w-4 h-4" />
             ) : (
-              <Menu className="w-4 h-4 text-foreground" />
+              <Menu className="w-4 h-4" />
             )}
           </div>
         </button>
@@ -307,14 +291,10 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetContent
           side="right"
-          className="w-full sm:w-[400px] md:w-[450px] p-0 border-l border-border bg-card/95"
-          style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)',
-            backdropFilter: 'blur(20px)'
-          }}
+          className="w-full sm:w-[400px] md:w-[450px] p-0 border-l border-border bg-card/95 backdrop-blur-2xl"
         >
           <div className="flex flex-col h-full">
-            <SheetHeader className="p-4 border-b border-border bg-muted/10">
+            <SheetHeader className="p-4 border-b border-border bg-muted/20">
               <div className="flex items-center gap-3">
                 <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
                   <EnigmaLogo className="w-8 h-8" variant="primary" />
@@ -397,7 +377,7 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
 
               {/* Contact Info */}
               <div className="border-t border-border pt-4 mb-4">
-                <div className="space-y-2 text-sm text-muted-foreground">
+                <div className="space-y-2 text-sm text-foreground/70">
                   <div className="flex items-center gap-3">
                     <Phone className="h-4 w-4 text-primary" />
                     <a href="tel:+34672796006" className="hover:text-primary transition-colors">
@@ -417,7 +397,7 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
             </div>
 
             {/* Action Buttons - Fixed at bottom */}
-            <div className="p-4 sm:p-6 border-t border-border bg-card/50">
+            <div className="p-4 sm:p-6 border-t border-border bg-muted/30">
               <div className="space-y-2">
                 <Link href="/reservas" className="block" onClick={() => setIsMobileMenuOpen(false)}>
                   <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">

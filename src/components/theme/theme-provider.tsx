@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 
-type EnigmaTheme = 'atlantic' | 'forest' | 'sunset' | 'obsidian'
+type EnigmaTheme = 'atlantic' | 'forest' | 'sunset' | 'obsidian' | 'chicle' | 'calpe' | 'galaxy'
 
 type ThemeProviderProps = {
   children: React.ReactNode
@@ -49,14 +49,17 @@ export function EnigmaThemeProvider({
     const root = window.document.documentElement
 
     // Remove all theme classes
-    root.classList.remove('theme-atlantic', 'theme-forest', 'theme-sunset', 'theme-obsidian', 'dark')
+    root.classList.remove('theme-atlantic', 'theme-forest', 'theme-sunset', 'theme-obsidian', 'theme-chicle', 'theme-calpe', 'theme-galaxy', 'dark')
 
     // Apply the selected theme
     if (theme === 'atlantic') {
-      // Atlantic is the default, no class needed
-    } else if (theme === 'obsidian') {
-      root.classList.add('theme-obsidian', 'dark')
+      // Atlantic is the default (light mode)
+      // .dark class available globally for manual toggle if needed
+    } else if (theme === 'forest' || theme === 'obsidian' || theme === 'chicle') {
+      // These themes default to dark mode
+      root.classList.add(`theme-${theme}`, 'dark')
     } else {
+      // Other themes (sunset, calpe, galaxy) default to light mode
       root.classList.add(`theme-${theme}`)
     }
   }, [theme, mounted])
@@ -105,5 +108,17 @@ export const themeConfig = {
   obsidian: {
     name: 'Obsidiana',
     icon: 'Moon'
+  },
+  chicle: {
+    name: 'Chicle',
+    icon: 'Candy'
+  },
+  calpe: {
+    name: 'Calpe',
+    icon: 'MapPin'
+  },
+  galaxy: {
+    name: 'Galaxy',
+    icon: 'Sparkles'
   }
 } as const

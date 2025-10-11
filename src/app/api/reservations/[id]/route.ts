@@ -183,6 +183,13 @@ export async function PATCH(
 
     // 🚨 CRITICAL SAFEGUARD: Ensure tableIds is never sent to database
     delete additionalData.tableIds
+
+    // ✅ FIX: Map childrenCount (camelCase frontend) → children_count (snake_case DB) for updates
+    if (additionalData.childrenCount !== undefined) {
+      additionalData.children_count = additionalData.childrenCount
+      delete additionalData.childrenCount
+    }
+
     console.log('🔧 Final additionalData after tableIds removal:', Object.keys(additionalData))
     console.log('🔧 processedTableData contains:', Object.keys(processedTableData))
 
@@ -462,7 +469,7 @@ export async function GET(
 
     // Get reservation using direct fetch
     const getResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/reservations?select=id,customerName,customerEmail,customerPhone,partySize,date,time,status,specialRequests,hasPreOrder,tableId,table_ids,createdAt,updatedAt&id=eq.${reservationId}`,
+      `${SUPABASE_URL}/rest/v1/reservations?select=id,customerName,customerEmail,customerPhone,partySize,children_count,date,time,status,specialRequests,hasPreOrder,tableId,table_ids,createdAt,updatedAt&id=eq.${reservationId}`,
       {
         method: 'GET',
         headers: {
@@ -503,6 +510,11 @@ export async function GET(
       tableIds = [reservation.tableId]  // Legacy: convert single tableId to array
     }
     reservation.tableIds = tableIds
+
+    // ✅ FIX: Map children_count (snake_case DB) → childrenCount (camelCase frontend)
+    if (reservation.children_count !== undefined && reservation.children_count !== null) {
+      reservation.childrenCount = reservation.children_count
+    }
 
     // 2. Fetch table details for allTables field (needed by customer modal)
     if (tableIds.length > 0) {

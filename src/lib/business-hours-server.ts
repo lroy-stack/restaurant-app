@@ -142,13 +142,15 @@ export async function getAvailableTimeSlots(
 ): Promise<TimeSlot[]> {
 
   const businessHours = await getBusinessHours()
-  const selectedDate = new Date(date + 'T00:00:00')
+
+  // Parse date in local timezone to avoid day shift
+  const [year, month, day] = date.split('-').map(Number)
+  const selectedDate = new Date(year, month - 1, day)
   const dayOfWeek = selectedDate.getDay()
 
-  // Get business hours for selected day
   const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
 
-  if (!dayHours || !dayHours.is_open) {
+  if (!dayHours || (!dayHours.is_open && !dayHours.lunch_enabled)) {
     return []
   }
 

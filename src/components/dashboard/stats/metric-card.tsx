@@ -50,12 +50,12 @@ export function MetricCard({
 }: MetricCardProps) {
   return (
     <Card className={cn("@container/card", variantStyles[variant], className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-4 sm:px-6 pt-4 sm:pt-6">
+        <CardTitle className="text-xs sm:text-sm font-medium truncate flex-1 min-w-0">
           {title}
         </CardTitle>
         {trend && (
-          <CardAction>
+          <CardAction className="ml-2 flex-shrink-0">
             <TrendIndicator
               value={trend.value}
               direction={trend.direction}
@@ -63,18 +63,18 @@ export function MetricCard({
             />
           </CardAction>
         )}
-        {!trend && <Icon className="h-4 w-4 text-muted-foreground" />}
+        {!trend && <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0 ml-2" />}
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold @[250px]/card:text-3xl">
+      <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
+        <div className="text-lg font-bold sm:text-2xl @[200px]/card:text-2xl @[280px]/card:text-3xl leading-none">
           {loading ? (
-            <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+            <div className="h-6 sm:h-8 w-16 sm:w-20 bg-muted rounded animate-pulse" />
           ) : (
             value
           )}
         </div>
         {description && (
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 line-clamp-2">
             {description}
           </p>
         )}

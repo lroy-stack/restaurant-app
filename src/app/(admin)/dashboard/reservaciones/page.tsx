@@ -73,13 +73,13 @@ export default function ReservacionesPage() {
 
   if (error) {
     return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground truncate">
               Gestión de Reservaciones
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-muted-foreground line-clamp-1">
               Administrar reservas y disponibilidad del restaurante
             </p>
           </div>
@@ -103,21 +103,22 @@ export default function ReservacionesPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground truncate">
             Gestión de Reservaciones
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-muted-foreground line-clamp-1">
             Administrar reservas y disponibilidad del restaurante
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button onClick={handleRefresh} variant="outline" size="sm" disabled={loading}>
+        <div className="flex gap-2 sm:gap-3 w-full sm:w-auto shrink-0">
+          <Button onClick={handleRefresh} variant="outline" size="sm" disabled={loading} className="flex-1 sm:flex-initial">
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Actualizar
+            <span className="hidden sm:inline">Actualizar</span>
+            <span className="sm:hidden">Refresh</span>
           </Button>
         </div>
       </div>
@@ -160,7 +161,7 @@ export default function ReservacionesPage() {
           currentDate={new Date()}
         />
       ) : (
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6">
           <CompactReservationList
             reservations={reservations}
             loading={loading}

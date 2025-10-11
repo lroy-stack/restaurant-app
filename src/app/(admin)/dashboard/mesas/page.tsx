@@ -170,31 +170,31 @@ async function TablesContent({ searchParams }: { searchParams: Awaited<TablesPag
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header with Real Stats */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header with Real Stats - RESPONSIVE */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground truncate">
             Gestión de Mesas
           </h1>
-          <p className="text-gray-600">
-            {stats.totalTables} mesas total • {stats.activeTables} activas • {stats.inactiveTables} temporalmente cerradas
+          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+            {stats.totalTables} mesas • {stats.activeTables} activas • {stats.inactiveTables} cerradas
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <div className="w-2 h-2 bg-green-500 rounded-full" />
-          <span>En tiempo real</span>
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
+          <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0" />
+          <span className="whitespace-nowrap">En tiempo real</span>
         </div>
       </div>
 
-      {/* Zone Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Zone Quick Stats - RESPONSIVE GRID */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {stats.zoneBreakdown.map(({ zone, label, count, activeCount, inactiveCount }) => (
           <Card key={zone}>
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold">{count}</div>
-              <p className="text-xs text-muted-foreground mb-1">{label}</p>
-              <div className="text-xs text-muted-foreground">
+            <CardContent className="p-3 sm:p-4">
+              <div className="text-xl sm:text-2xl font-bold leading-none">{count}</div>
+              <p className="text-xs text-muted-foreground mt-1 mb-1 truncate" title={label}>{label}</p>
+              <div className="text-[10px] sm:text-xs text-muted-foreground line-clamp-2">
                 {activeCount} activas
                 {inactiveCount > 0 && (
                   <> • <span className="text-amber-600">{inactiveCount} cerradas</span></>
@@ -205,11 +205,9 @@ async function TablesContent({ searchParams }: { searchParams: Awaited<TablesPag
         ))}
       </div>
 
-      {/* QR System Management */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1">
-          <QRSystemToggle />
-        </div>
+      {/* QR System Management - RESPONSIVE FULL WIDTH */}
+      <div className="w-full">
+        <QRSystemToggle />
       </div>
 
       {/* Main Tabs Interface */}

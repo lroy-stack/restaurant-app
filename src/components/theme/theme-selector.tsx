@@ -8,13 +8,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
-import { Waves, Trees, Sun, Moon } from 'lucide-react'
+import { Waves, Trees, Sun, Moon, Candy, MapPin, Sparkles } from 'lucide-react'
 
 const iconMap = {
   Waves,
   Trees,
   Sun,
-  Moon
+  Moon,
+  Candy,
+  MapPin,
+  Sparkles
 } as const
 
 export function ThemeSelector() {

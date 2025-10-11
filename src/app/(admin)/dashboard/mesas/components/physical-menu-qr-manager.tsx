@@ -269,50 +269,50 @@ export function PhysicalMenuQRManager() {
 
   return (
     <div className="space-y-6">
-      {/* Stats Header */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Stats Header - MOBILE FIRST */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Generados</CardTitle>
+          <CardHeader className="pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Total Generados</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{existingMenus.length}</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-xl sm:text-2xl font-bold leading-none">{existingMenus.length}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 line-clamp-2">
               {cartaFisicaMenus.length} cartas + {carteleriaMenus.length} exterior
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Scans</CardTitle>
+          <CardHeader className="pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Total Scans</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-xl sm:text-2xl font-bold flex items-center gap-1.5 leading-none">
               {totalScans}
-              <TrendingUp className="h-4 w-4 text-green-600" />
+              <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 flex-shrink-0" />
             </div>
-            <p className="text-xs text-muted-foreground">Todos los QRs</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Todos los QRs</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Activos</CardTitle>
+          <CardHeader className="pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Activos</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{activeCount}</div>
-            <p className="text-xs text-muted-foreground">de {existingMenus.length} totales</p>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-xl sm:text-2xl font-bold text-green-600 leading-none">{activeCount}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">de {existingMenus.length} totales</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">URL Base</CardTitle>
+          <CardHeader className="pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">URL Base</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-xs font-mono">{BASE_URL}</div>
-            <p className="text-xs text-muted-foreground">Patrón: ?carta=XX</p>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-[10px] sm:text-xs font-mono truncate">{BASE_URL}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">Patrón: ?carta=XX</p>
           </CardContent>
         </Card>
       </div>
@@ -426,15 +426,17 @@ export function PhysicalMenuQRManager() {
       {/* QR List */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Códigos QR Generados</CardTitle>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <CardTitle className="text-base sm:text-lg">Códigos QR Generados</CardTitle>
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'CARTA_FISICA' | 'CARTELERIA')}>
-              <TabsList>
-                <TabsTrigger value="CARTA_FISICA">
-                  Cartas ({cartaFisicaMenus.length})
+              <TabsList className="grid w-full grid-cols-2 sm:w-auto">
+                <TabsTrigger value="CARTA_FISICA" className="text-xs sm:text-sm">
+                  <span className="hidden sm:inline">Cartas</span>
+                  <span className="sm:hidden">Cartas</span> ({cartaFisicaMenus.length})
                 </TabsTrigger>
-                <TabsTrigger value="CARTELERIA">
-                  Exterior ({carteleriaMenus.length})
+                <TabsTrigger value="CARTELERIA" className="text-xs sm:text-sm">
+                  <span className="hidden sm:inline">Exterior</span>
+                  <span className="sm:hidden">Ext.</span> ({carteleriaMenus.length})
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -450,36 +452,58 @@ export function PhysicalMenuQRManager() {
                 </Button>
               )}
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {/* MOBILE FIRST: 1 col móvil, 2 tablet, 3 desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {cartaFisicaMenus.map((menu) => (
-                  <Card key={menu.id} className={!menu.is_active ? 'opacity-50' : ''}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1">
-                          <p className="font-semibold">Carta #{menu.code}</p>
-                          <p className="text-xs text-muted-foreground">{menu.total_scans} scans</p>
+                  <Card key={menu.id} className={!menu.is_active ? 'opacity-50' : 'hover:bg-muted/50 transition-colors'}>
+                    <CardContent className="p-4 sm:p-3 space-y-3 sm:space-y-2">
+                      {/* Header */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-base sm:text-sm truncate">Carta #{menu.code}</h4>
+                          <p className="text-sm sm:text-xs text-muted-foreground mt-0.5">
+                            {menu.total_scans} scans
+                          </p>
                         </div>
-                        <Badge variant={menu.is_active ? 'default' : 'secondary'}>
+                        <Badge
+                          variant={menu.is_active ? 'default' : 'secondary'}
+                          className="ml-2 flex-shrink-0 h-6 sm:h-5 px-2 sm:px-1.5"
+                        >
                           {menu.is_active ? <Power className="h-3 w-3" /> : <PowerOff className="h-3 w-3" />}
                         </Badge>
                       </div>
 
-                      <div className="flex gap-1">
+                      {/* Action Buttons - MOBILE FIRST: Touch targets 44px */}
+                      <div className="grid grid-cols-2 gap-2">
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="outline"
                           onClick={() => handleCopyURL(menu.qr_url, menu.code)}
-                          className="flex-1"
+                          className="h-10 sm:h-9 w-full"
                         >
-                          {copiedCode === menu.code ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                          {copiedCode === menu.code ? (
+                            <>
+                              <Check className="h-4 w-4 mr-1.5 text-green-600" />
+                              <span className="hidden sm:inline">Copiado</span>
+                              <span className="sm:hidden">✓</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-4 w-4 mr-1.5" />
+                              <span className="hidden sm:inline">Copiar</span>
+                              <span className="sm:hidden">Copiar</span>
+                            </>
+                          )}
                         </Button>
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="outline"
                           onClick={() => handleDownloadQR(menu)}
-                          className="flex-1"
+                          className="h-10 sm:h-9 w-full"
                         >
-                          <Download className="h-3 w-3" />
+                          <Download className="h-4 w-4 mr-1.5" />
+                          <span className="hidden sm:inline">Descargar</span>
+                          <span className="sm:hidden">Bajar</span>
                         </Button>
                       </div>
                     </CardContent>
@@ -503,36 +527,58 @@ export function PhysicalMenuQRManager() {
                 </Button>
               )}
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {/* MOBILE FIRST: 1 col móvil, 2 tablet, 3 desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {carteleriaMenus.map((menu) => (
-                  <Card key={menu.id} className={!menu.is_active ? 'opacity-50' : ''}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1">
-                          <p className="font-semibold truncate">{menu.code}</p>
-                          <p className="text-xs text-muted-foreground">{menu.total_scans} scans</p>
+                  <Card key={menu.id} className={!menu.is_active ? 'opacity-50' : 'hover:bg-muted/50 transition-colors'}>
+                    <CardContent className="p-4 sm:p-3 space-y-3 sm:space-y-2">
+                      {/* Header */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-base sm:text-sm truncate">Exterior #{menu.code}</h4>
+                          <p className="text-sm sm:text-xs text-muted-foreground mt-0.5">
+                            {menu.total_scans} scans
+                          </p>
                         </div>
-                        <Badge variant={menu.is_active ? 'default' : 'secondary'}>
+                        <Badge
+                          variant={menu.is_active ? 'default' : 'secondary'}
+                          className="ml-2 flex-shrink-0 h-6 sm:h-5 px-2 sm:px-1.5"
+                        >
                           {menu.is_active ? <Power className="h-3 w-3" /> : <PowerOff className="h-3 w-3" />}
                         </Badge>
                       </div>
 
-                      <div className="flex gap-1">
+                      {/* Action Buttons - MOBILE FIRST: Touch targets 44px */}
+                      <div className="grid grid-cols-2 gap-2">
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="outline"
                           onClick={() => handleCopyURL(menu.qr_url, menu.code)}
-                          className="flex-1"
+                          className="h-10 sm:h-9 w-full"
                         >
-                          {copiedCode === menu.code ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                          {copiedCode === menu.code ? (
+                            <>
+                              <Check className="h-4 w-4 mr-1.5 text-green-600" />
+                              <span className="hidden sm:inline">Copiado</span>
+                              <span className="sm:hidden">✓</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-4 w-4 mr-1.5" />
+                              <span className="hidden sm:inline">Copiar</span>
+                              <span className="sm:hidden">Copiar</span>
+                            </>
+                          )}
                         </Button>
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="outline"
                           onClick={() => handleDownloadQR(menu)}
-                          className="flex-1"
+                          className="h-10 sm:h-9 w-full"
                         >
-                          <Download className="h-3 w-3" />
+                          <Download className="h-4 w-4 mr-1.5" />
+                          <span className="hidden sm:inline">Descargar</span>
+                          <span className="sm:hidden">Bajar</span>
                         </Button>
                       </div>
                     </CardContent>

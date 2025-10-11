@@ -45,6 +45,7 @@ interface Reservation {
   customerEmail: string
   customerPhone: string
   partySize: number
+  childrenCount?: number | null // NEW: Niños hasta 8 años
   date: string
   time: string
   status: 'PENDING' | 'CONFIRMED' | 'SEATED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW'
@@ -72,12 +73,12 @@ interface ReservationDetailModalProps {
 }
 
 const statusStyles = {
-  PENDING: { label: 'Pendiente', color: 'bg-yellow-100 text-yellow-800', icon: '🟡' },
-  CONFIRMED: { label: 'Confirmada', color: 'bg-green-100 text-green-800', icon: '🟢' },
-  SEATED: { label: 'En Mesa', color: 'bg-blue-100 text-blue-800', icon: '🔵' },
-  COMPLETED: { label: 'Completada', color: 'bg-gray-100 text-gray-800', icon: '⚪' },
-  CANCELLED: { label: 'Cancelada', color: 'bg-red-100 text-red-800', icon: '🔴' },
-  NO_SHOW: { label: 'No Show', color: 'bg-orange-100 text-orange-800', icon: '🟠' }
+  PENDING: { label: 'Pendiente', color: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400', icon: '🟡' },
+  CONFIRMED: { label: 'Confirmada', color: 'bg-green-500/10 text-green-700 dark:text-green-400', icon: '🟢' },
+  SEATED: { label: 'En Mesa', color: 'bg-blue-500/10 text-blue-700 dark:text-blue-400', icon: '🔵' },
+  COMPLETED: { label: 'Completada', color: 'bg-muted text-muted-foreground', icon: '⚪' },
+  CANCELLED: { label: 'Cancelada', color: 'bg-red-500/10 text-red-700 dark:text-red-400', icon: '🔴' },
+  NO_SHOW: { label: 'No Show', color: 'bg-orange-500/10 text-orange-700 dark:text-orange-400', icon: '🟠' }
 }
 
 const locationLabels = {
@@ -214,7 +215,7 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
                   <Star className="w-4 h-4 text-yellow-500" title="Cliente VIP" />
                 )}
               </div>
-              <p className="text-sm text-gray-500">ID: {reservation.id}</p>
+              <p className="text-sm text-muted-foreground">ID: {reservation.id}</p>
             </div>
             <Badge className={`${statusInfo.color} flex items-center gap-2`}>
               <span>{statusInfo.icon}</span>
@@ -226,51 +227,56 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
 
           {/* Date & Time */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <Calendar className="w-5 h-5 text-gray-600" />
+            <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
+              <Calendar className="w-5 h-5 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium text-foreground">{dateLabel}</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   {createReservationMadridDate(reservation.date).toLocaleDateString('es-ES')}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <Clock className="w-5 h-5 text-gray-600" />
+            <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
+              <Clock className="w-5 h-5 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium text-foreground">{timeLabel}</p>
-                <p className="text-xs text-gray-500">Duración: 2.5 horas</p>
+                <p className="text-xs text-muted-foreground">Duración: 2.5 horas</p>
               </div>
             </div>
           </div>
 
           {/* Party Size & Table */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
-              <Users className="w-5 h-5 text-blue-600" />
+            <div className="flex items-center gap-3 p-4 bg-blue-500/10 rounded-lg">
+              <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               <div>
                 <p className="text-sm font-medium text-foreground">
                   {reservation.partySize} persona{reservation.partySize !== 1 ? 's' : ''}
                 </p>
-                <p className="text-xs text-gray-500">Tamaño del grupo</p>
+                {reservation.childrenCount && reservation.childrenCount > 0 && (
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">
+                    {reservation.partySize - reservation.childrenCount} adulto(s) + {reservation.childrenCount} niño(s)
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">Tamaño del grupo</p>
               </div>
             </div>
 
             {reservation.tables && reservation.tables.length > 0 && (
-              <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg">
-                <MapPin className="w-5 h-5 text-green-600" />
+              <div className="flex items-center gap-3 p-4 bg-green-500/10 rounded-lg">
+                <MapPin className="w-5 h-5 text-green-600 dark:text-green-400" />
                 <div>
                   <p className="text-sm font-medium text-foreground">
                     {reservation.tables.length === 1 ? 'Mesa' : 'Mesas'} {formatTableDisplay(reservation)}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     {reservation.tables.length === 1
                       ? locationLabels[reservation.tables[0].location]
                       : `${reservation.tables.length} mesas en ${[...new Set(reservation.tables.map(t => locationLabels[t.location]))].join(', ')}`
                     }
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Capacidad total: {calculateTotalCapacity(reservation)} personas
                   </p>
                 </div>
@@ -286,10 +292,10 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
 
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <Mail className="w-4 h-4 text-gray-500" />
+                <Mail className="w-4 h-4 text-muted-foreground" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-foreground">{reservation.customerEmail}</p>
-                  <p className="text-xs text-gray-500">Email</p>
+                  <p className="text-xs text-muted-foreground">Email</p>
                 </div>
                 <Button size="sm" variant="outline">
                   Enviar Email
@@ -297,10 +303,10 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
               </div>
 
               <div className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-gray-500" />
+                <Phone className="w-4 h-4 text-muted-foreground" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-foreground">{reservation.customerPhone}</p>
-                  <p className="text-xs text-gray-500">Teléfono</p>
+                  <p className="text-xs text-muted-foreground">Teléfono</p>
                 </div>
                 <Button size="sm" variant="outline">
                   Llamar
@@ -317,32 +323,32 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
                 <h3 className="text-lg font-medium text-foreground">Información Adicional</h3>
 
                 {reservation.specialRequests && (
-                  <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg">
-                    <MessageSquare className="w-5 h-5 text-orange-600 mt-0.5" />
+                  <div className="flex items-start gap-3 p-4 bg-orange-500/10 rounded-lg">
+                    <MessageSquare className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5" />
                     <div>
                       <p className="text-sm font-medium text-foreground mb-1">Solicitudes Especiales</p>
-                      <p className="text-sm text-gray-700">{reservation.specialRequests}</p>
+                      <p className="text-sm text-foreground/80">{reservation.specialRequests}</p>
                     </div>
                   </div>
                 )}
 
                 {reservation.dietaryNotes && (
-                  <div className="flex items-start gap-3 p-4 bg-red-50 rounded-lg">
-                    <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
+                  <div className="flex items-start gap-3 p-4 bg-red-500/10 rounded-lg">
+                    <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
                     <div>
                       <p className="text-sm font-medium text-foreground mb-1">Peticiones Dietéticas</p>
-                      <p className="text-sm text-gray-700">{reservation.dietaryNotes}</p>
+                      <p className="text-sm text-foreground/80">{reservation.dietaryNotes}</p>
                     </div>
                   </div>
                 )}
 
                 {reservation.hasPreOrder && reservation.reservation_items && reservation.reservation_items.length > 0 && (
-                  <div className="bg-green-50 rounded-lg p-4 space-y-3">
+                  <div className="bg-green-500/10 rounded-lg p-4 space-y-3">
                     <div className="flex items-center gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
                       <div>
                         <p className="text-sm font-medium text-foreground">Pre-orden Realizada</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           {reservation.reservation_items.length} producto{reservation.reservation_items.length !== 1 ? 's' : ''} seleccionado{reservation.reservation_items.length !== 1 ? 's' : ''}
                         </p>
                       </div>
@@ -350,22 +356,22 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
 
                     {/* Pre-order Items List */}
                     <div className="space-y-2 mt-3">
-                      <h4 className="text-sm font-medium text-gray-800 mb-2">Productos Pre-ordenados:</h4>
+                      <h4 className="text-sm font-medium text-foreground mb-2">Productos Pre-ordenados:</h4>
                       <div className="space-y-2">
                         {reservation.reservation_items.map((item) => {
                           const total = item.quantity * item.menu_items.price
                           const categoryType = item.menu_items?.menu_categories?.type || 'DISH'
 
                           return (
-                            <div key={item.id} className="flex items-start gap-3 p-3 bg-white rounded-md border border-green-200">
+                            <div key={item.id} className="flex items-start gap-3 p-3 bg-card rounded-md border border-border">
                               {/* Category Icon */}
                               <div className="flex-shrink-0 mt-0.5">
                                 {categoryType === 'WINE' ? (
-                                  <Wine className="w-4 h-4 text-red-600" />
+                                  <Wine className="w-4 h-4 text-red-600 dark:text-red-400" />
                                 ) : categoryType === 'BEVERAGE' ? (
-                                  <Coffee className="w-4 h-4 text-blue-600" />
+                                  <Coffee className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                                 ) : (
-                                  <Utensils className="w-4 h-4 text-green-600" />
+                                  <Utensils className="w-4 h-4 text-green-600 dark:text-green-400" />
                                 )}
                               </div>
 
@@ -373,14 +379,14 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1">
-                                    <h5 className="text-sm font-medium text-gray-900 line-clamp-2">
+                                    <h5 className="text-sm font-medium text-foreground line-clamp-2">
                                       {item.menu_items.name}
                                     </h5>
-                                    <p className="text-xs text-gray-500 mt-0.5">
+                                    <p className="text-xs text-muted-foreground mt-0.5">
                                       {item.menu_items.menu_categories.name} • {categoryType.toLowerCase()}
                                     </p>
                                     {item.notes && (
-                                      <p className="text-xs text-orange-600 mt-1 italic">
+                                      <p className="text-xs text-orange-600 dark:text-orange-400 mt-1 italic">
                                         📝 {item.notes}
                                       </p>
                                     )}
@@ -388,10 +394,10 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
 
                                   {/* Quantity & Price */}
                                   <div className="text-right ml-3 flex-shrink-0">
-                                    <div className="text-sm font-medium text-gray-900">
+                                    <div className="text-sm font-medium text-foreground">
                                       {item.quantity}x €{item.menu_items.price.toFixed(2)}
                                     </div>
-                                    <div className="text-xs text-gray-500">
+                                    <div className="text-xs text-muted-foreground">
                                       Total: €{total.toFixed(2)}
                                     </div>
                                   </div>
@@ -403,18 +409,18 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
                       </div>
 
                       {/* Pre-order Summary */}
-                      <div className="mt-3 pt-3 border-t border-green-200">
+                      <div className="mt-3 pt-3 border-t border-border">
                         <div className="flex justify-between items-center text-sm">
-                          <span className="font-medium text-gray-800">
+                          <span className="font-medium text-foreground">
                             Total Pre-orden:
                           </span>
-                          <span className="font-bold text-green-700">
+                          <span className="font-bold text-green-700 dark:text-green-400">
                             €{reservation.reservation_items.reduce((sum, item) =>
                               sum + (item.quantity * item.menu_items.price), 0
                             ).toFixed(2)}
                           </span>
                         </div>
-                        <div className="flex justify-between items-center text-xs text-gray-500 mt-1">
+                        <div className="flex justify-between items-center text-xs text-muted-foreground mt-1">
                           <span>
                             {reservation.reservation_items.reduce((sum, item) => sum + item.quantity, 0)} productos totales
                           </span>
@@ -432,11 +438,11 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
                 )}
 
                 {reservation.hasPreOrder && (!reservation.reservation_items || reservation.reservation_items.length === 0) && (
-                  <div className="flex items-center gap-3 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                    <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                  <div className="flex items-center gap-3 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+                    <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                     <div>
                       <p className="text-sm font-medium text-foreground">Pre-orden Detectada</p>
-                      <p className="text-xs text-yellow-700">No se pudieron cargar los detalles de la pre-orden</p>
+                      <p className="text-xs text-yellow-700 dark:text-yellow-400">No se pudieron cargar los detalles de la pre-orden</p>
                     </div>
                   </div>
                 )}
@@ -446,7 +452,7 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
 
           {/* Timestamps */}
           <div className="border-t" />
-          <div className="space-y-2 text-xs text-gray-500">
+          <div className="space-y-2 text-xs text-muted-foreground">
             <p>
               <strong>Creado:</strong>{' '}
               {createReservationMadridDate(reservation.createdAt).toLocaleString('es-ES')}

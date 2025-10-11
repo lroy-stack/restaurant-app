@@ -31,26 +31,26 @@ const tierConfig = {
   'VIP Elite': {
     color: 'bg-gradient-to-r from-purple-500 to-pink-500',
     icon: Crown,
-    textColor: 'text-purple-700',
-    bgColor: 'bg-purple-50'
+    textColor: 'text-purple-700 dark:text-purple-400',
+    bgColor: 'bg-purple-500/10'
   },
   'Oro': {
     color: 'bg-gradient-to-r from-yellow-400 to-orange-500',
     icon: Star,
-    textColor: 'text-yellow-700',
-    bgColor: 'bg-yellow-50'
+    textColor: 'text-yellow-700 dark:text-yellow-400',
+    bgColor: 'bg-yellow-500/10'
   },
   'Plata': {
     color: 'bg-gradient-to-r from-gray-300 to-gray-500',
     icon: Shield,
-    textColor: 'text-gray-700',
-    bgColor: 'bg-gray-50'
+    textColor: 'text-foreground',
+    bgColor: 'bg-muted'
   },
   'Bronce': {
     color: 'bg-gradient-to-r from-orange-400 to-red-500',
     icon: Shield,
-    textColor: 'text-orange-700',
-    bgColor: 'bg-orange-50'
+    textColor: 'text-orange-700 dark:text-orange-400',
+    bgColor: 'bg-orange-500/10'
   }
 }
 
@@ -134,7 +134,7 @@ export function CustomerHeader({
                   {customer.firstName} {customer.lastName}
                 </h1>
                 {customer.isVip && (
-                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                  <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20">
                     <Crown className="h-3 w-3 mr-1" />
                     VIP
                   </Badge>
@@ -184,12 +184,12 @@ export function CustomerHeader({
             </div>
 
             {/* Loyalty Score */}
-            <div className="p-4 rounded-lg bg-blue-50 border-l-4 border-l-blue-500">
+            <div className="p-4 rounded-lg bg-blue-500/10 border-l-4 border-l-blue-500">
               <div className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-blue-600" />
+                <Star className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 <div>
                   <div className="text-xs font-medium text-muted-foreground">Score</div>
-                  <div className="text-sm font-semibold text-blue-700">
+                  <div className="text-sm font-semibold text-blue-700 dark:text-blue-400">
                     {loyaltyScore}/100
                   </div>
                 </div>
@@ -197,12 +197,12 @@ export function CustomerHeader({
             </div>
 
             {/* Total Visits */}
-            <div className="p-4 rounded-lg bg-green-50 border-l-4 border-l-green-500">
+            <div className="p-4 rounded-lg bg-green-500/10 border-l-4 border-l-green-500">
               <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-green-600" />
+                <Calendar className="h-5 w-5 text-green-600 dark:text-green-400" />
                 <div>
                   <div className="text-xs font-medium text-muted-foreground">Visitas</div>
-                  <div className="text-sm font-semibold text-green-700">
+                  <div className="text-sm font-semibold text-green-700 dark:text-green-400">
                     {customer.totalVisits}
                   </div>
                 </div>
@@ -210,12 +210,12 @@ export function CustomerHeader({
             </div>
 
             {/* Last Visit */}
-            <div className="p-4 rounded-lg bg-orange-50 border-l-4 border-l-orange-500">
+            <div className="p-4 rounded-lg bg-orange-500/10 border-l-4 border-l-orange-500">
               <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-orange-600" />
+                <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                 <div>
                   <div className="text-xs font-medium text-muted-foreground">Última visita</div>
-                  <div className="text-sm font-semibold text-orange-700">
+                  <div className="text-sm font-semibold text-orange-700 dark:text-orange-400">
                     {formatLastVisit(customer.lastVisit)}
                   </div>
                 </div>

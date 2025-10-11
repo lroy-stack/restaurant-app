@@ -104,6 +104,7 @@ function createReservationSchema(maxPartySize: number) {
     date: z.string(),
     time: z.string(),
     partySize: z.number().int().min(1).max(maxPartySize),
+    childrenCount: z.number().int().min(0).optional().nullable(), // ✅ FIX: Validate children count
     tableIds: z.array(z.string()).min(1), // ✅ NEW: Array of table IDs
     occasion: z.string().nullable().optional(),
     dietaryNotes: z.string().nullable().optional(),
@@ -131,24 +132,20 @@ export async function GET(request: NextRequest) {
       query += `&status=eq.${status}`
     }
 
-    // Date filtering logic: by default show from today to end of week
+    // Date filtering logic: by default show from today + next 30 days
     if (date) {
       // Explicit date filter - show only that specific date
       query += `&date=gte.${date}T00:00:00&date=lte.${date}T23:59:59`
     } else {
-      // Default filter: from today to end of week (Sunday)
+      // ✅ FIX: Default filter shows next 30 days (not just until Sunday)
       const today = new Date()
-      const endOfWeek = new Date(today)
-
-      // Calculate end of week (Sunday)
-      const dayOfWeek = today.getDay() // 0 = Sunday, 1 = Monday, etc.
-      const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek
-      endOfWeek.setDate(today.getDate() + daysUntilSunday)
+      const next30Days = new Date(today)
+      next30Days.setDate(today.getDate() + 30)
 
       const todayStr = today.toISOString().split('T')[0]
-      const endOfWeekStr = endOfWeek.toISOString().split('T')[0]
+      const next30DaysStr = next30Days.toISOString().split('T')[0]
 
-      query += `&date=gte.${todayStr}T00:00:00&date=lte.${endOfWeekStr}T23:59:59`
+      query += `&date=gte.${todayStr}T00:00:00&date=lte.${next30DaysStr}T23:59:59`
     }
 
     query += '&order=date.asc,time.asc'
@@ -229,6 +226,11 @@ export async function GET(request: NextRequest) {
           reservation.tableIds = [reservation.tableId]  // Legacy: convert single tableId to array
         } else {
           reservation.tableIds = []                     // Fallback: empty array
+        }
+
+        // ✅ FIX: Map children_count (snake_case DB) → childrenCount (camelCase frontend)
+        if (reservation.children_count !== undefined && reservation.children_count !== null) {
+          reservation.childrenCount = reservation.children_count
         }
       })
     }
@@ -422,6 +424,7 @@ export async function POST(request: NextRequest) {
       customerEmail: data.email,
       customerPhone: data.phone,
       partySize: data.partySize,
+      children_count: data.childrenCount || null, // ✅ FIX: Include children_count (snake_case for DB)
       date: reservationDateTime,
       time: reservationDateTime,
       status: 'PENDING',

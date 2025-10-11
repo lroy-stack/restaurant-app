@@ -49,13 +49,13 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
               Dashboard Principal
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Panel de control de Enigma Cocina Con Alma
             </p>
           </div>
@@ -77,25 +77,25 @@ export default function DashboardPage() {
     )
   }
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Welcome Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground truncate">
             Dashboard Principal
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-muted-foreground line-clamp-1">
             Panel de control de Enigma Cocina Con Alma
           </p>
         </div>
-        <Button onClick={handleRefresh} variant="outline" size="sm" disabled={loading}>
+        <Button onClick={handleRefresh} variant="outline" size="sm" disabled={loading} className="w-full sm:w-auto shrink-0">
           <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Actualizar
         </Button>
       </div>
 
       {/* Key Metrics - REAL DATA FROM VPS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         {loading ? (
           <>
             <MetricCardSkeleton />
@@ -154,28 +154,28 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Widgets Grid - 7 column system */}
-      <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
-        {/* Table Occupancy Chart - 4 cols */}
-        <Card className="lg:col-span-4 @container/card">
-          <CardHeader>
-            <CardTitle>Ocupación por Zona</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              <span className="hidden @[540px]/card:block">
+      {/* Widgets Grid - Adaptive layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+        {/* Table Occupancy Chart - Takes more space on desktop */}
+        <Card className="lg:col-span-7 @container/card">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base sm:text-lg">Ocupación por Zona</CardTitle>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              <span className="hidden sm:block">
                 Estado actual de mesas en tiempo real por zona
               </span>
-              <span className="@[540px]/card:hidden">
+              <span className="sm:hidden">
                 Estado de mesas
               </span>
             </p>
           </CardHeader>
-          <CardContent className="px-2 sm:px-6">
+          <CardContent className="px-3 sm:px-6">
             <TableOccupancyChart data={occupancyData} loading={occupancyLoading} />
           </CardContent>
         </Card>
 
-        {/* Upcoming Reservations - 3 cols */}
-        <div className="lg:col-span-3">
+        {/* Upcoming Reservations - Complementary space */}
+        <div className="lg:col-span-5">
           <UpcomingReservationsWidget
             reservations={reservations || []}
             loading={reservationsLoading}

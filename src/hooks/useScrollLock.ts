@@ -49,25 +49,30 @@ export function useScrollLock({
   }, [lockId])
 
   // Handle conditional scroll lock
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (condition && !isActiveRef.current) {
+      // scrollContext functions are stable (useCallback) so no need in deps
       scrollContext.enableScrollLock(lockIdRef.current)
       isActiveRef.current = true
     } else if (!condition && isActiveRef.current) {
       scrollContext.disableScrollLock(lockIdRef.current)
       isActiveRef.current = false
     }
-  }, [condition, scrollContext])
+  }, [condition]) // Remove scrollContext from deps - functions are stable
 
   // Cleanup on unmount if autoCleanup is enabled
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     return () => {
       if (autoCleanup && isActiveRef.current) {
+        // Use ref to access latest lockId without causing re-renders
+        // scrollContext functions are stable (useCallback) so no need in deps
         scrollContext.disableScrollLock(lockIdRef.current)
         isActiveRef.current = false
       }
     }
-  }, [autoCleanup, scrollContext])
+  }, [autoCleanup]) // Remove scrollContext from deps - functions are stable
 
   // Manual control functions
   const enable = () => {

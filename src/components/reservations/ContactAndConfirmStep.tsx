@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import Link from 'next/link'
 import { useFormContext } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
@@ -35,6 +36,10 @@ interface ContactAndConfirmStepProps {
   selectedDate: string
   selectedTime: string
   partySize: number
+  childrenCount?: number
+  tableIds?: string[]
+  preOrderItems?: Array<{ id: string; name: string; price: number; quantity: number; type: string }>
+  preOrderTotal?: number
 }
 
 const locations = {
@@ -198,7 +203,11 @@ export default function ContactAndConfirmStep({
   availability,
   selectedDate,
   selectedTime,
-  partySize
+  partySize,
+  childrenCount = 0,
+  tableIds = [],
+  preOrderItems: propPreOrderItems = [],
+  preOrderTotal: propPreOrderTotal = 0
 }: ContactAndConfirmStepProps) {
   const {
     register,
@@ -219,14 +228,23 @@ export default function ContactAndConfirmStep({
   const hasDietaryNotes = watch('stepThree.hasDietaryNotes')
   const hasSpecialRequests = watch('stepThree.hasSpecialRequests')
 
+  // Use props if provided, otherwise fallback to form state (legacy)
   const selectedTableId = watchedStepTwo?.tableId
-  const preOrderItems = watchedStepTwo?.preOrderItems || []
-  const preOrderTotal = watchedStepTwo?.preOrderTotal || 0
+  const preOrderItems = propPreOrderItems.length > 0 ? propPreOrderItems : (watchedStepTwo?.preOrderItems || [])
+  const preOrderTotal = propPreOrderTotal > 0 ? propPreOrderTotal : (watchedStepTwo?.preOrderTotal || 0)
 
-  // Find selected table details
+  // Find selected table details (legacy single table)
   const selectedTable = availability?.recommendations?.find(
     table => table.id === selectedTableId
   )
+
+  // Find multiple tables details (new multi-table support)
+  const selectedTables = useMemo(() => {
+    if (tableIds.length === 0 || !availability?.recommendations) return []
+    return tableIds
+      .map(id => availability.recommendations?.find(table => table.id === id))
+      .filter((table): table is NonNullable<typeof table> => table !== undefined && table !== null)
+  }, [tableIds, availability])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -251,73 +269,73 @@ export default function ContactAndConfirmStep({
     <div className="space-y-6">
       {/* SECCIÓN 1: Contacto (copiar de ReservationStepThree) */}
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 md:p-6">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Users className="h-4 w-4 sm:h-5 sm:w-5" />
             {t.title}
           </CardTitle>
-          <p className="text-sm sm:text-base text-muted-foreground">{t.subtitle}</p>
+          <p className="text-xs md:text-sm text-muted-foreground">{t.subtitle}</p>
         </CardHeader>
-        <CardContent className="p-6">
-          <div className="space-y-8">
+        <CardContent className="p-4 md:p-6">
+          <div className="space-y-4 md:space-y-6">
             <div>
-              <h3 className="font-semibold text-sm sm:text-base mb-4">{t.contactTitle}</h3>
+              <h3 className="font-semibold text-sm sm:text-base mb-3 md:mb-4">{t.contactTitle}</h3>
 
               {/* Personal Information */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-6">
+                <div className="space-y-1.5 md:space-y-2">
+                  <Label htmlFor="firstName" className="text-xs md:text-sm">
                     {t.firstName} <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="firstName"
                     {...register('stepThree.firstName')}
-                    className="mt-2"
+                    className="h-9 md:h-10 text-sm"
                   />
                   {errors.stepThree?.firstName && (
-                    <p className="text-sm text-destructive mt-1">
+                    <p className="text-xs md:text-sm text-destructive">
                       {errors.stepThree.firstName.message}
                     </p>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">
+                <div className="space-y-1.5 md:space-y-2">
+                  <Label htmlFor="lastName" className="text-xs md:text-sm">
                     {t.lastName} <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="lastName"
                     {...register('stepThree.lastName')}
-                    className="mt-2"
+                    className="h-9 md:h-10 text-sm"
                   />
                   {errors.stepThree?.lastName && (
-                    <p className="text-sm text-destructive mt-1">
+                    <p className="text-xs md:text-sm text-destructive">
                       {errors.stepThree.lastName.message}
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">
+              <div className="space-y-3 md:space-y-4">
+                <div className="space-y-1.5 md:space-y-2">
+                  <Label htmlFor="email" className="text-xs md:text-sm">
                     {t.email} <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="email"
                     type="email"
                     {...register('stepThree.email')}
-                    className="mt-2"
+                    className="h-9 md:h-10 text-sm"
                   />
                   {errors.stepThree?.email && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-xs md:text-sm text-red-600">
                       {errors.stepThree.email.message}
                     </p>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone">
+                <div className="space-y-1.5 md:space-y-2">
+                  <Label htmlFor="phone" className="text-xs md:text-sm">
                     {t.phone} <span className="text-red-500">*</span>
                   </Label>
                   <Input
@@ -325,18 +343,18 @@ export default function ContactAndConfirmStep({
                     type="tel"
                     placeholder="+34 600 123 456"
                     {...register('stepThree.phone')}
-                    className="mt-2"
+                    className="h-9 md:h-10 text-sm"
                   />
                   {errors.stepThree?.phone && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-xs md:text-sm text-red-600">
                       {errors.stepThree.phone.message}
                     </p>
                   )}
                 </div>
 
                 {/* Special Information - Modern Checkboxes */}
-                <div className="space-y-6 border-t pt-6">
-                  <h3 className="text-sm font-medium text-muted-foreground">Información adicional (opcional)</h3>
+                <div className="space-y-3 md:space-y-4 border-t pt-3 md:pt-4 mt-3 md:mt-4">
+                  <h3 className="text-xs md:text-sm font-medium text-muted-foreground">Información adicional (opcional)</h3>
 
                   {/* Ocasión especial */}
                   <div className="space-y-3">
@@ -456,41 +474,62 @@ export default function ContactAndConfirmStep({
 
       {/* SECCIÓN 2: Resumen (copiar de ReservationStepFour) */}
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 md:p-6">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
             {t.reservationSummary}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
           {/* Reservation Summary */}
           <div>
-            <div className="grid gap-3">
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
+            <div className="grid gap-2 md:gap-3">
+              <div className="flex justify-between items-center p-2 md:p-3 bg-gray-50 rounded-lg">
+                <span className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
+                  <Calendar className="h-3 w-3 md:h-4 md:w-4" />
                   {t.date}
                 </span>
-                <span className="font-medium">{formatDate(selectedDate)}</span>
+                <span className="font-medium text-xs md:text-sm">{formatDate(selectedDate)}</span>
               </div>
 
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
+              <div className="flex justify-between items-center p-2 md:p-3 bg-gray-50 rounded-lg">
+                <span className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
+                  <Clock className="h-3 w-3 md:h-4 md:w-4" />
                   {t.time}
                 </span>
-                <span className="font-medium">{selectedTime}</span>
+                <span className="font-medium text-xs md:text-sm">{selectedTime}</span>
               </div>
 
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
+              <div className="flex justify-between items-center p-2 md:p-3 bg-gray-50 rounded-lg">
+                <span className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
+                  <Users className="h-3 w-3 md:h-4 md:w-4" />
                   {t.people}
                 </span>
-                <span className="font-medium">{partySize}</span>
+                <div className="text-right">
+                  <span className="font-medium text-xs md:text-sm">{partySize}</span>
+                  {childrenCount > 0 && (
+                    <span className="block text-[10px] md:text-xs text-muted-foreground mt-0.5">
+                      ({partySize - childrenCount} {language === 'es' ? 'adulto(s)' : language === 'en' ? 'adult(s)' : 'Erwachsene'} + {childrenCount} {language === 'es' ? 'niño(s)' : language === 'en' ? 'child(ren)' : 'Kinder'})
+                    </span>
+                  )}
+                </div>
               </div>
 
-              {selectedTable && (
+              {/* Multi-table support (new) */}
+              {selectedTables.length > 0 && (
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <span className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    {t.table}
+                  </span>
+                  <span className="font-medium">
+                    {selectedTables.map((table: any) => `Mesa ${table.number}`).join(', ')}
+                  </span>
+                </div>
+              )}
+
+              {/* Legacy single table fallback */}
+              {selectedTables.length === 0 && selectedTable && (
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
@@ -648,31 +687,31 @@ export default function ContactAndConfirmStep({
             </div>
 
       {/* Navigation */}
-      <div className="flex gap-3 pt-6">
+      <div className="flex flex-col sm:flex-row gap-2 md:gap-3 pt-4 md:pt-6">
         <Button
           variant="outline"
           onClick={onPrevious}
-          className="flex-1"
-          size="lg"
+          className="w-full sm:flex-1 h-10 md:h-11"
+          size="default"
         >
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          {t.previous}
+          <ChevronLeft className="mr-2 h-3 w-3 md:h-4 md:w-4" />
+          <span className="text-sm md:text-base">{t.previous}</span>
         </Button>
         <Button
           onClick={handleSubmit}
           disabled={isSubmitting || !watchedStepFour?.dataProcessingConsent}
-          className="flex-1"
-          size="lg"
+          className="w-full sm:flex-1 h-10 md:h-11"
+          size="default"
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t.processing}
+              <Loader2 className="mr-2 h-3 w-3 md:h-4 md:w-4 animate-spin" />
+              <span className="text-sm md:text-base">{t.processing}</span>
             </>
           ) : (
             <>
-              <CheckCircle className="mr-2 h-4 w-4" />
-              {t.confirmReservation}
+              <CheckCircle className="mr-2 h-3 w-3 md:h-4 md:w-4" />
+              <span className="text-sm md:text-base">{t.confirmReservation}</span>
             </>
           )}
         </Button>

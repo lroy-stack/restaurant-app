@@ -7,6 +7,7 @@ export interface ReservationData {
   dateTime: string // ISO string format from ProfessionalForm
   tableIds: string[] // ✅ NEW: Array of table IDs
   partySize: number
+  childrenCount?: number // ✅ FIX: Children count (up to 8 years old)
   firstName: string
   lastName: string
   email: string
@@ -145,6 +146,7 @@ export const useReservations = () => {
         date: date,
         time: timeOnly,
         partySize: data.partySize,
+        childrenCount: data.childrenCount, // ✅ FIX: Include children count
         tableIds: data.tableIds ? data.tableIds : (data.tableId ? [data.tableId] : []), // ✅ FIXED: Support both tableIds array AND tableId fallback
         specialRequests: data.specialRequests || null,
         preOrderItems: data.preOrderItems || [],

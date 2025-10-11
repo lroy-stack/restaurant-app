@@ -41,7 +41,7 @@ interface UseBusinessHoursReturn {
   loading: boolean
   error: string | null
   refetch: (date: string) => Promise<void>
-  isRestaurantOpen: (date: string) => boolean
+  isRestaurantOpen: (date: string) => boolean | null // null = loading state
   // New calendar-specific properties
   closedDays: number[]
   minAdvanceMinutes: number
@@ -114,10 +114,16 @@ export function useBusinessHours(selectedDate?: string): UseBusinessHoursReturn 
     await fetchTimeSlots(date)
   }
 
-  const isRestaurantOpen = (date: string): boolean => {
-    if (businessHours.length === 0) return false
+  const isRestaurantOpen = (date: string): boolean | null => {
+    // Return null during loading to differentiate from "closed"
+    if (loading) return null
 
-    const selectedDate = new Date(date)
+    // If no business hours loaded yet, return null (still loading)
+    if (businessHours.length === 0) return null
+
+    // Parse date string safely to avoid timezone shift
+    const [year, month, day] = date.split('-').map(Number)
+    const selectedDate = new Date(year, month - 1, day)
     const dayOfWeek = selectedDate.getDay()
     const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
 
@@ -265,7 +271,9 @@ export function useBusinessHours(selectedDate?: string): UseBusinessHoursReturn 
   const hasLunchService = (date: string): boolean => {
     if (businessHours.length === 0) return false
 
-    const selectedDate = new Date(date)
+    // Parse date string safely to avoid timezone shift
+    const [year, month, day] = date.split('-').map(Number)
+    const selectedDate = new Date(year, month - 1, day)
     const dayOfWeek = selectedDate.getDay()
     const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
 
@@ -276,7 +284,9 @@ export function useBusinessHours(selectedDate?: string): UseBusinessHoursReturn 
   const hasDinnerService = (date: string): boolean => {
     if (businessHours.length === 0) return false
 
-    const selectedDate = new Date(date)
+    // Parse date string safely to avoid timezone shift
+    const [year, month, day] = date.split('-').map(Number)
+    const selectedDate = new Date(year, month - 1, day)
     const dayOfWeek = selectedDate.getDay()
     const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
 

@@ -70,6 +70,7 @@ interface Reservation {
   customerEmail: string
   customerPhone: string
   partySize: number
+  childrenCount?: number | null // NEW: Niños hasta 8 años
   date: string
   time: string
   status: 'PENDING' | 'CONFIRMED' | 'SEATED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW'
@@ -102,6 +103,7 @@ interface EditFormData {
   customerEmail: string
   customerPhone: string
   partySize: number
+  childrenCount?: number
   date: string
   time: string
   // 🔧 MULTI-TABLE SUPPORT: Switch to multiple tables
@@ -597,6 +599,7 @@ export function EditReservationModal({ isOpen, onClose, reservation, onSave }: E
         customerEmail: reservation.customerEmail,
         customerPhone: reservation.customerPhone,
         partySize: reservation.partySize,
+        childrenCount: reservation.childrenCount || 0,
         date: reservationDate,
         time: reservationTime, // 🚀 FIXED: Now shows correct time in placeholder
         tableIds: initialTableIds,  // 🔧 NEW: Use multiple tables array
@@ -727,6 +730,7 @@ export function EditReservationModal({ isOpen, onClose, reservation, onSave }: E
         customerEmail: data.customerEmail,
         customerPhone: data.customerPhone,
         partySize: data.partySize,
+        childrenCount: data.childrenCount && data.childrenCount > 0 ? data.childrenCount : null,
         date: dateTime,
         time: dateTime,
         tableIds: data.tableIds, // 🔧 FIXED: Send multiple table IDs
@@ -832,6 +836,35 @@ export function EditReservationModal({ isOpen, onClose, reservation, onSave }: E
                     <span className="text-sm text-destructive">{errors.partySize.message}</span>
                   )}
                 </div>
+
+                {/* Selector de niños (hasta 8 años) */}
+                {watch('partySize') > 1 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="childrenCount">
+                      Niños (hasta 8 años)
+                    </Label>
+                    <Input
+                      id="childrenCount"
+                      type="number"
+                      min="0"
+                      max={(watch('partySize') - 1).toString()}
+                      {...register('childrenCount', {
+                        min: { value: 0, message: 'Mínimo 0' },
+                        max: { value: watch('partySize') - 1, message: `Máximo ${watch('partySize') - 1}` },
+                        valueAsNumber: true
+                      })}
+                      className={errors.childrenCount ? 'border-destructive' : ''}
+                    />
+                    {watch('childrenCount') > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        {watch('partySize') - watch('childrenCount')} adulto(s) + {watch('childrenCount')} niño(s)
+                      </span>
+                    )}
+                    {errors.childrenCount && (
+                      <span className="text-sm text-destructive">{errors.childrenCount.message}</span>
+                    )}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

@@ -333,7 +333,7 @@ export function CustomerContactNew({
             {customer.allergies && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-orange-500" />
+                  <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                   <span className="text-sm font-medium">Alergias</span>
                 </div>
                 <p className="text-sm text-muted-foreground pl-6">{customer.allergies}</p>

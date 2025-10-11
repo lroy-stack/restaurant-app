@@ -47,12 +47,12 @@ interface OrderStats {
 }
 
 const STATUS_CONFIG = {
-  PENDING: { label: 'Pendiente', color: 'bg-yellow-100 text-yellow-800', icon: '⏳' },
-  CONFIRMED: { label: 'Confirmado', color: 'bg-blue-100 text-blue-800', icon: '✅' },
-  PREPARING: { label: 'Preparando', color: 'bg-purple-100 text-purple-800', icon: '👨‍🍳' },
-  READY: { label: 'Listo', color: 'bg-green-100 text-green-800', icon: '🔔' },
-  SERVED: { label: 'Servido', color: 'bg-gray-100 text-gray-800', icon: '✨' },
-  CANCELLED: { label: 'Cancelado', color: 'bg-red-100 text-red-800', icon: '❌' }
+  PENDING: { label: 'Pendiente', color: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400', icon: '⏳' },
+  CONFIRMED: { label: 'Confirmado', color: 'bg-blue-500/10 text-blue-700 dark:text-blue-400', icon: '✅' },
+  PREPARING: { label: 'Preparando', color: 'bg-purple-500/10 text-purple-700 dark:text-purple-400', icon: '👨‍🍳' },
+  READY: { label: 'Listo', color: 'bg-green-500/10 text-green-700 dark:text-green-400', icon: '🔔' },
+  SERVED: { label: 'Servido', color: 'bg-muted text-muted-foreground', icon: '✨' },
+  CANCELLED: { label: 'Cancelado', color: 'bg-red-500/10 text-red-700 dark:text-red-400', icon: '❌' }
 }
 
 export function CustomerOrders({ customerId }: { customerId: string }) {
@@ -96,23 +96,23 @@ export function CustomerOrders({ customerId }: { customerId: string }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Utensils className="h-5 w-5 text-orange-600" />
+          <Utensils className="h-5 w-5 text-orange-600 dark:text-orange-400" />
           Pedidos en Restaurante
         </CardTitle>
       </CardHeader>
       <CardContent>
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
+        <div className="grid grid-cols-3 gap-4 p-4 bg-muted rounded-lg mb-4">
           <div className="text-center">
-            <div className="text-2xl font-bold text-orange-600">{stats.total}</div>
+            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.total}</div>
             <div className="text-sm text-muted-foreground">Total Pedidos</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">€{stats.totalAmount.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">€{stats.totalAmount.toFixed(2)}</div>
             <div className="text-sm text-muted-foreground">Total Gastado</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{stats.served}</div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.served}</div>
             <div className="text-sm text-muted-foreground">Servidos</div>
           </div>
         </div>
@@ -164,7 +164,7 @@ export function CustomerOrders({ customerId }: { customerId: string }) {
                         <div key={item.id} className="text-muted-foreground">
                           • {item.quantity}x {item.menu_items.name}
                           {item.notes && (
-                            <span className="text-orange-600 italic ml-2">({item.notes})</span>
+                            <span className="text-orange-600 dark:text-orange-400 italic ml-2">({item.notes})</span>
                           )}
                         </div>
                       ))}
@@ -173,7 +173,7 @@ export function CustomerOrders({ customerId }: { customerId: string }) {
 
                   {/* General Notes */}
                   {order.notes && (
-                    <div className="text-sm bg-blue-50 p-2 rounded">
+                    <div className="text-sm bg-blue-500/10 p-2 rounded">
                       <span className="font-medium">Nota:</span> {order.notes}
                     </div>
                   )}

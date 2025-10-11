@@ -83,32 +83,32 @@ interface CustomerReservationsProps {
 const STATUS_CONFIG = {
   PENDING: {
     label: 'Pendiente',
-    color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    color: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20',
     icon: '⏳'
   },
   CONFIRMED: {
     label: 'Confirmada',
-    color: 'bg-blue-100 text-blue-800 border-blue-200',
+    color: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
     icon: '✅'
   },
   SEATED: {
     label: 'Sentados',
-    color: 'bg-purple-100 text-purple-800 border-purple-200',
+    color: 'bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20',
     icon: '🪑'
   },
   COMPLETED: {
     label: 'Completada',
-    color: 'bg-green-100 text-green-800 border-green-200',
+    color: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20',
     icon: '✨'
   },
   CANCELLED: {
     label: 'Cancelada',
-    color: 'bg-red-100 text-red-800 border-red-200',
+    color: 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20',
     icon: '❌'
   },
   NO_SHOW: {
     label: 'No-Show',
-    color: 'bg-gray-100 text-gray-800 border-gray-200',
+    color: 'bg-muted text-muted-foreground border-border',
     icon: '👻'
   }
 }
@@ -246,7 +246,7 @@ export function CustomerReservations({
                 {sourceConfig.label}
               </Badge>
               {reservation.hasPreOrder && (
-                <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                <Badge variant="outline" className="bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20">
                   📋 Pre-order
                 </Badge>
               )}
@@ -269,17 +269,17 @@ export function CustomerReservations({
         {/* Basic Info */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-blue-600" />
+            <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             <span className="font-medium">{date}</span>
           </div>
 
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-green-600" />
+            <Clock className="h-4 w-4 text-green-600 dark:text-green-400" />
             <span className="font-medium">{time}</span>
           </div>
 
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-purple-600" />
+            <Users className="h-4 w-4 text-purple-600 dark:text-purple-400" />
             <span className="font-medium">{reservation.partySize} personas</span>
           </div>
         </div>
@@ -287,7 +287,7 @@ export function CustomerReservations({
         {/* Occasion */}
         {reservation.occasion && (
           <div className="flex items-center gap-2 text-sm">
-            <Users className="h-4 w-4 text-pink-600" />
+            <Users className="h-4 w-4 text-pink-600 dark:text-pink-400" />
             <span className="text-muted-foreground">Ocasión:</span>
             <span className="font-medium">{reservation.occasion}</span>
           </div>
@@ -300,10 +300,10 @@ export function CustomerReservations({
             {reservation.specialRequests && (
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="h-4 w-4 text-blue-600" />
+                  <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                   <span className="text-sm font-medium">Solicitudes Especiales</span>
                 </div>
-                <p className="text-sm text-muted-foreground pl-6 bg-blue-50 p-2 rounded">
+                <p className="text-sm text-foreground/80 pl-6 bg-blue-500/10 p-2 rounded">
                   {reservation.specialRequests}
                 </p>
               </div>
@@ -313,10 +313,10 @@ export function CustomerReservations({
             {reservation.dietaryNotes && (
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Users className="h-4 w-4 text-green-600" />
+                  <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
                   <span className="text-sm font-medium">Notas Dietéticas</span>
                 </div>
-                <p className="text-sm text-muted-foreground pl-6 bg-green-50 p-2 rounded">
+                <p className="text-sm text-foreground/80 pl-6 bg-green-500/10 p-2 rounded">
                   {reservation.dietaryNotes}
                 </p>
               </div>
@@ -326,10 +326,10 @@ export function CustomerReservations({
             {reservation.reservation_items && reservation.reservation_items.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Utensils className="h-4 w-4 text-orange-600" />
+                  <Utensils className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                   <span className="text-sm font-medium">Pre-Pedidos ({reservation.reservation_items.length} platos)</span>
                 </div>
-                <div className="bg-orange-50 p-3 rounded space-y-2">
+                <div className="bg-orange-500/10 p-3 rounded space-y-2">
                   {reservation.reservation_items.map((item) => (
                     <div key={item.id} className="flex justify-between items-start text-sm">
                       <div className="flex-1">
@@ -338,12 +338,12 @@ export function CustomerReservations({
                           <div className="text-xs text-muted-foreground italic mt-1">{item.notes}</div>
                         )}
                       </div>
-                      <span className="font-medium text-orange-700">
+                      <span className="font-medium text-orange-700 dark:text-orange-400">
                         €{(item.quantity * item.menu_items.price).toFixed(2)}
                       </span>
                     </div>
                   ))}
-                  <div className="border-t border-orange-200 pt-2 flex justify-between font-semibold text-orange-900">
+                  <div className="border-t border-orange-500/20 pt-2 flex justify-between font-semibold text-orange-900 dark:text-orange-400">
                     <span>Total Pre-Pedido:</span>
                     <span>
                       €{reservation.reservation_items
@@ -358,7 +358,7 @@ export function CustomerReservations({
             {/* Timeline */}
             <div>
               <div className="text-sm font-medium mb-2">Cronología</div>
-              <div className="space-y-1 text-xs text-muted-foreground pl-4 border-l-2 border-gray-200">
+              <div className="space-y-1 text-xs text-muted-foreground pl-4 border-l-2 border-border">
                 <div>📅 Creada: {new Date(reservation.createdAt).toLocaleString('es-ES')}</div>
 
                 {reservation.confirmationSentAt && (
@@ -386,8 +386,8 @@ export function CustomerReservations({
             {/* Cancellation Reason */}
             {reservation.cancellationReason && (
               <div>
-                <div className="text-sm font-medium mb-2 text-red-600">Motivo de Cancelación</div>
-                <p className="text-sm text-muted-foreground bg-red-50 p-2 rounded">
+                <div className="text-sm font-medium mb-2 text-red-600 dark:text-red-400">Motivo de Cancelación</div>
+                <p className="text-sm text-foreground/80 bg-red-500/10 p-2 rounded">
                   {reservation.cancellationReason}
                 </p>
               </div>
@@ -415,7 +415,7 @@ export function CustomerReservations({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-blue-600" />
+            <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             Historial de Reservas
           </CardTitle>
 
@@ -446,21 +446,21 @@ export function CustomerReservations({
 
       <CardContent className="space-y-4">
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{reservations.length}</div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{reservations.length}</div>
             <div className="text-sm text-muted-foreground">Total Reservas</div>
           </div>
 
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
               {reservations.filter(r => r.status === 'COMPLETED').length}
             </div>
             <div className="text-sm text-muted-foreground">Completadas</div>
           </div>
 
           <div className="text-center">
-            <div className="text-2xl font-bold text-orange-600">{upcomingReservations.length}</div>
+            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{upcomingReservations.length}</div>
             <div className="text-sm text-muted-foreground">Próximas</div>
           </div>
         </div>

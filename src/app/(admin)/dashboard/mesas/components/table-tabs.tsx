@@ -61,14 +61,35 @@ export function TableTabs({ tables = [], defaultTab = 'status' }: TableTabsProps
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-      <TabsList className="grid w-full grid-cols-6">
-        <TabsTrigger value="status">Estados</TabsTrigger>
-        <TabsTrigger value="floor-plan">Planta</TabsTrigger>
-        <TabsTrigger value="analytics">Análisis</TabsTrigger>
-        <TabsTrigger value="config">Configuración</TabsTrigger>
-        <TabsTrigger value="qrcodes">QR Mesas</TabsTrigger>
-        <TabsTrigger value="physical-qr">Cartas & Exterior</TabsTrigger>
-      </TabsList>
+      {/* Responsive TabsList: ScrollArea en móvil, grid en tablet+ */}
+      <div className="w-full overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+        <TabsList className="inline-flex sm:grid sm:w-full sm:grid-cols-3 lg:grid-cols-6 min-w-full sm:min-w-0">
+          <TabsTrigger value="status" className="flex-1 sm:flex-initial whitespace-nowrap">
+            <span className="hidden sm:inline">Estados</span>
+            <span className="sm:hidden">Est.</span>
+          </TabsTrigger>
+          <TabsTrigger value="floor-plan" className="flex-1 sm:flex-initial whitespace-nowrap">
+            <span className="hidden sm:inline">Planta</span>
+            <span className="sm:hidden">Plano</span>
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex-1 sm:flex-initial whitespace-nowrap">
+            <span className="hidden sm:inline">Análisis</span>
+            <span className="sm:hidden">Stats</span>
+          </TabsTrigger>
+          <TabsTrigger value="config" className="flex-1 sm:flex-initial whitespace-nowrap">
+            <span className="hidden lg:inline">Configuración</span>
+            <span className="lg:hidden">Config</span>
+          </TabsTrigger>
+          <TabsTrigger value="qrcodes" className="flex-1 sm:flex-initial whitespace-nowrap">
+            <span className="hidden sm:inline">QR Mesas</span>
+            <span className="sm:hidden">QRs</span>
+          </TabsTrigger>
+          <TabsTrigger value="physical-qr" className="flex-1 sm:flex-initial whitespace-nowrap">
+            <span className="hidden lg:inline">Cartas & Exterior</span>
+            <span className="lg:hidden">Cartas</span>
+          </TabsTrigger>
+        </TabsList>
+      </div>
 
 
       <TabsContent value="status" className="space-y-4">

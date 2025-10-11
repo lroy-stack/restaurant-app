@@ -57,9 +57,9 @@ export function Header({ variant = 'default' }: HeaderProps) {
   return (
     <header className={cn(
       "sticky top-0 z-50 border-b transition-colors",
-      isTransparent 
-        ? "bg-black/40 backdrop-blur-sm border-transparent" 
-        : "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      isTransparent
+        ? "bg-black/40 backdrop-blur-sm border-transparent"
+        : "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-border/40"
     )}>
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
@@ -99,12 +99,12 @@ export function Header({ variant = 'default' }: HeaderProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary",
-                  isActive 
-                    ? "text-primary" 
-                    : isTransparent 
-                      ? "text-white/90 hover:text-white" 
-                      : "text-muted-foreground"
+                  "flex items-center gap-2 text-sm font-medium transition-colors",
+                  isActive
+                    ? "text-primary"
+                    : isTransparent
+                      ? "text-white/90 hover:text-white"
+                      : "text-foreground/70 hover:text-primary dark:text-foreground/80 dark:hover:text-primary"
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -115,13 +115,13 @@ export function Header({ variant = 'default' }: HeaderProps) {
           
           {/* CTA Button */}
           <Link href="/reservas">
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               className={cn(
                 "ml-2",
-                isTransparent 
-                  ? "bg-white/90 text-primary hover:bg-white" 
-                  : "bg-primary hover:bg-primary/90"
+                isTransparent
+                  ? "bg-white/90 text-primary hover:bg-white"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
               )}
             >
               <Utensils className="h-4 w-4 mr-2" />
@@ -140,7 +140,7 @@ export function Header({ variant = 'default' }: HeaderProps) {
                 shouldShowMobileNav ? "flex" : "hidden",
                 isTransparent
                   ? "border-white/30 text-white hover:bg-white/10"
-                  : ""
+                  : "border-border hover:bg-accent"
               )}
             >
               <Menu className="h-5 w-5" />
@@ -167,8 +167,8 @@ export function Header({ variant = 'default' }: HeaderProps) {
                     href={item.href}
                     onClick={() => setIsOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-muted",
-                      isActive && "bg-muted text-primary"
+                      "flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-accent",
+                      isActive && "bg-accent text-primary"
                     )}
                   >
                     <Icon className="h-5 w-5" />
@@ -183,16 +183,16 @@ export function Header({ variant = 'default' }: HeaderProps) {
               })}
               
               {/* Contact Info */}
-              <div className="mt-6 pt-6 border-t space-y-3">
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <div className="mt-6 pt-6 border-t border-border space-y-3">
+                <div className="flex items-center gap-3 text-sm text-foreground/70">
                   <Phone className="h-4 w-4" />
                   <span>+34 672 79 60 06</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="flex items-center gap-3 text-sm text-foreground/70">
                   <Clock className="h-4 w-4" />
                   <span>Mar-Dom: 18:00 - 23:00</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="flex items-center gap-3 text-sm text-foreground/70">
                   <MapPin className="h-4 w-4" />
                   <span>Carrer Justicia 6A, Calpe</span>
                 </div>
@@ -201,8 +201,8 @@ export function Header({ variant = 'default' }: HeaderProps) {
               {/* CTA Button */}
               <div className="mt-4">
                 <Link href="/reservas">
-                  <Button 
-                    className="w-full" 
+                  <Button
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={() => setIsOpen(false)}
                   >
                     <Utensils className="h-4 w-4 mr-2" />

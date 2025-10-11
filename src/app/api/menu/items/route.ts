@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Transform the data to match expected format
+    // Transform the data to match expected format (camelCase)
     const transformedItems = filteredItems.map((item: any) => ({
       id: item.id,
       name: item.name,
@@ -163,9 +163,11 @@ export async function GET(request: NextRequest) {
       categoryId: item.categoryId,
       category: item.category,
       allergens: item.allergens?.map((ia: any) => ia.allergen).filter(Boolean) || [],
-      // Wine-specific fields
-      glassprice: item.glassprice ? parseFloat(item.glassprice) : undefined,
-      alcoholcontent: item.alcoholcontent ? parseFloat(item.alcoholcontent) : undefined,
+      // Wine-specific fields - transform lowercase to camelCase
+      glassPrice: item.glassprice ? parseFloat(item.glassprice) : null,
+      alcoholContent: item.alcoholcontent ? parseFloat(item.alcoholcontent) : null,
+      vintage: item.vintage,
+      isOrganic: item.isOrganic,
       richDescription: item.richDescription,
       richDescriptionEn: item.richDescriptionEn,
       createdAt: item.createdAt,
@@ -264,23 +266,32 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create the menu item
+    // Create the menu item with all fields (transform camelCase to lowercase for wine fields)
+    const insertData: Record<string, any> = {
+      name: data.name,
+      nameEn: data.nameEn,
+      description: data.description,
+      descriptionEn: data.descriptionEn,
+      price: data.price,
+      categoryId: data.categoryId,
+      restaurantId: restaurantId,
+      isAvailable: data.isAvailable,
+      isVegetarian: data.isVegetarian,
+      isVegan: data.isVegan,
+      isGlutenFree: data.isGlutenFree,
+      isRecommended: data.isRecommended,
+      stock: data.stock,
+      imageUrl: data.imageUrl,
+      isOrganic: data.isOrganic,
+      vintage: data.vintage,
+      // Transform camelCase to lowercase for wine-specific fields
+      glassprice: data.glassPrice,
+      alcoholcontent: data.alcoholContent
+    }
+
     const { data: newItem, error: insertError } = await supabase
       .from('menu_items')
-      .insert({
-        name: data.name,
-        nameEn: data.nameEn,
-        description: data.description,
-        descriptionEn: data.descriptionEn,
-        price: data.price,
-        categoryId: data.categoryId,
-        restaurantId: restaurantId,
-        isAvailable: data.isAvailable,
-        isVegetarian: data.isVegetarian,
-        isVegan: data.isVegan,
-        isGlutenFree: data.isGlutenFree,
-        imageUrl: data.imageUrl
-      })
+      .insert(insertData)
       .select()
       .single()
 

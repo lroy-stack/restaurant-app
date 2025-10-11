@@ -153,7 +153,7 @@ export default function HistoriaPage() {
               Un Lugar Con Historia
             </h2>
             
-            <Card className="p-6 sm:p-8 bg-white/50 backdrop-blur-sm border-none shadow-lg">
+            <Card className="p-6 sm:p-8 bg-card/50 backdrop-blur-sm border-none shadow-lg">
               <CardContent className="p-6 sm:p-8 pt-0">
                 <div className="prose prose-lg max-w-none">
                   <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-4 sm:mb-6">

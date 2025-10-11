@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo } from 'react'
 
 // Types for scroll lock management
 interface ScrollLockState {
@@ -44,8 +44,8 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
   const scrollRestoreRef = useRef<number>(0)
   const bodyStyleRef = useRef<string>('')
 
-  // Enable scroll lock with unique ID
-  const enableScrollLock = (lockId: string) => {
+  // Enable scroll lock with unique ID - MEMOIZED to prevent infinite loops
+  const enableScrollLock = useCallback((lockId: string) => {
     setScrollState(prev => {
       const newLockedBy = new Set(prev.lockedBy)
       newLockedBy.add(lockId)
@@ -72,10 +72,10 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
         lockedBy: newLockedBy
       }
     })
-  }
+  }, [])
 
-  // Disable scroll lock for specific ID
-  const disableScrollLock = (lockId: string) => {
+  // Disable scroll lock for specific ID - MEMOIZED to prevent infinite loops
+  const disableScrollLock = useCallback((lockId: string) => {
     setScrollState(prev => {
       const newLockedBy = new Set(prev.lockedBy)
       newLockedBy.delete(lockId)
@@ -103,11 +103,11 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
         lockedBy: newLockedBy
       }
     })
-  }
+  }, [])
 
-  // Utility functions
-  const hasActiveLocks = () => scrollState.lockedBy.size > 0
-  const getActiveLocks = () => Array.from(scrollState.lockedBy)
+  // Utility functions - MEMOIZED to prevent infinite loops
+  const hasActiveLocks = useCallback(() => scrollState.lockedBy.size > 0, [scrollState.lockedBy])
+  const getActiveLocks = useCallback(() => Array.from(scrollState.lockedBy), [scrollState.lockedBy])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -119,13 +119,15 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const contextValue: ScrollContextType = {
+  // MEMOIZE contextValue to prevent infinite loops
+  // Only recreate when isLocked actually changes, not on every render
+  const contextValue: ScrollContextType = useMemo(() => ({
     isScrollLocked: scrollState.isLocked,
     enableScrollLock,
     disableScrollLock,
     hasActiveLocks,
     getActiveLocks
-  }
+  }), [scrollState.isLocked, enableScrollLock, disableScrollLock, hasActiveLocks, getActiveLocks])
 
   return (
     <ScrollContext.Provider value={contextValue}>

@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import { Users, MapPin, Check } from 'lucide-react'
 
@@ -64,32 +63,32 @@ export function MultiTableSelector({
     }, 0)
   }, [selectedTableIds, tables])
 
-  const isTableSelected = (tableId: string) => selectedTableIds.includes(tableId)
+  const isTableSelected = useCallback((tableId: string) => {
+    return selectedTableIds.includes(tableId)
+  }, [selectedTableIds])
 
-  const canSelectTable = (tableId: string) => {
+  const canSelectTable = useCallback((tableId: string) => {
     if (isTableSelected(tableId)) return true // Can always deselect
     return selectedTableIds.length < maxSelections
-  }
+  }, [selectedTableIds, maxSelections, isTableSelected])
 
-  const handleTableToggle = (tableId: string) => {
-    if (isTableSelected(tableId)) {
+  const handleTableToggle = useCallback((tableId: string) => {
+    if (selectedTableIds.includes(tableId)) {
       // Deselect table
       onSelectionChange(selectedTableIds.filter(id => id !== tableId))
-    } else if (canSelectTable(tableId)) {
+    } else if (selectedTableIds.length < maxSelections) {
       // Select table
       onSelectionChange([...selectedTableIds, tableId])
     }
-  }
+  }, [selectedTableIds, maxSelections, onSelectionChange])
 
-  const clearSelection = () => {
+  const clearSelection = useCallback(() => {
     onSelectionChange([])
-  }
+  }, [onSelectionChange])
 
-  const locationDisplayNames: Record<string, string> = {
-    'TERRACE_CAMPANARI': 'Terraza Campanari',
-    'SALA_VIP': 'Sala VIP',
-    'TERRACE_JUSTICIA': 'Terraza Justicia',
-    'SALA_PRINCIPAL': 'Sala Principal'
+  // Display location names from API data, fallback to location ID
+  const getLocationDisplayName = (location: string) => {
+    return location.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
 
   return (
@@ -152,14 +151,14 @@ export function MultiTableSelector({
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-lg">
               <MapPin className="h-5 w-5 text-primary" />
-              {locationDisplayNames[location] || location}
+              {getLocationDisplayName(location)}
               <Badge variant="secondary" className="ml-auto">
                 {locationTables.length} mesa{locationTables.length !== 1 ? 's' : ''}
               </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3">
               {locationTables.map(table => {
                 const selected = isTableSelected(table.id)
                 const canSelect = canSelectTable(table.id)
@@ -168,7 +167,7 @@ export function MultiTableSelector({
                   <div
                     key={table.id}
                     className={cn(
-                      'relative p-3 border rounded-lg cursor-pointer transition-all',
+                      'relative p-2 md:p-3 border rounded-lg cursor-pointer transition-all',
                       'hover:shadow-md',
                       selected
                         ? 'border-primary bg-primary/10 shadow-sm'
@@ -177,24 +176,31 @@ export function MultiTableSelector({
                     )}
                     onClick={() => canSelect && handleTableToggle(table.id)}
                   >
-                    {/* Checkbox */}
-                    <div className="absolute top-2 right-2">
-                      <Checkbox
-                        checked={selected}
-                        disabled={!canSelect && !selected}
-                        onChange={() => {}} // Handled by onClick above
-                        className="h-4 w-4"
-                      />
+                    {/* Visual indicator */}
+                    <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2">
+                      {selected && (
+                        <div className="h-4 w-4 md:h-5 md:w-5 rounded-sm bg-primary flex items-center justify-center">
+                          <Check className="h-2.5 w-2.5 md:h-3 md:w-3 text-primary-foreground" />
+                        </div>
+                      )}
                     </div>
 
                     {/* Table info */}
-                    <div className="pr-6">
-                      <div className="font-medium text-sm mb-1">
+                    <div className="pr-5 md:pr-6">
+                      {/* Desktop: Mesa 12 */}
+                      <div className="hidden md:block font-medium text-sm mb-1">
                         Mesa {table.number}
                       </div>
+                      {/* Mobile: M12 */}
+                      <div className="md:hidden font-medium text-xs mb-1">
+                        M{table.number}
+                      </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Users className="h-3 w-3" />
-                        <span>{table.capacity} personas</span>
+                        <Users className="h-2.5 w-2.5 md:h-3 md:w-3" />
+                        {/* Desktop: 4 personas */}
+                        <span className="hidden md:inline">{table.capacity} personas</span>
+                        {/* Mobile: 4 pax */}
+                        <span className="md:hidden text-[10px]">{table.capacity}</span>
                       </div>
                     </div>
                   </div>

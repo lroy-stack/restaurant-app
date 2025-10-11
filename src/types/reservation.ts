@@ -24,6 +24,7 @@ export interface Reservation {
   customerEmail: string
   customerPhone: string
   partySize: number
+  childrenCount?: number | null // NEW: Niños hasta 8 años (opcional)
   date: string | Date
   time: string | Date
   status: ReservationStatus

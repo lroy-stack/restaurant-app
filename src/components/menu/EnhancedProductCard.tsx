@@ -82,7 +82,7 @@ export function EnhancedProductCard({
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
               >
-                <Badge className="bg-accent/90 backdrop-blur-sm text-xs px-2 py-0.5">
+                <Badge className="bg-orange-500 text-white backdrop-blur-sm text-xs px-2 py-0.5 shadow-md">
                   <Heart className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 fill-current" />
                   <span className="hidden sm:inline">Recomendado</span>
                 </Badge>

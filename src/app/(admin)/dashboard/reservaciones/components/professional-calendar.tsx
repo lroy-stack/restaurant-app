@@ -196,39 +196,44 @@ export function ProfessionalCalendar({
     )
   }, [onReservationClick])
 
-  // Toolbar personalizada
+  // Toolbar personalizada - RESPONSIVE
   const CustomToolbar = useCallback(({ label, onNavigate, onView }: any) => {
     return (
-      <div className="flex items-center justify-between mb-4 pb-4 border-b">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onNavigate('PREV')}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="outline" 
-            size="sm"
-            onClick={() => onNavigate('TODAY')}
-          >
-            Hoy
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onNavigate('NEXT')}
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
+      <div className="space-y-3 sm:space-y-0 mb-4 pb-4 border-b">
+        {/* Navegación y título */}
+        <div className="flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onNavigate('PREV')}
+              className="h-8 w-8 p-0 sm:w-auto sm:px-3"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onNavigate('TODAY')}
+              className="h-8 px-2 text-xs sm:px-3 sm:text-sm"
+            >
+              Hoy
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onNavigate('NEXT')}
+              className="h-8 w-8 p-0 sm:w-auto sm:px-3"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <h2 className="text-sm sm:text-lg font-semibold truncate min-w-0 flex-1 text-center">{label}</h2>
         </div>
-        
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold">{label}</h2>
-        </div>
-        
-        <div className="flex items-center gap-2">
+
+        {/* Botones de vista - Grid en móvil */}
+        <div className="grid grid-cols-4 gap-1 sm:flex sm:justify-end sm:gap-2">
           {(['month', 'week', 'day', 'agenda'] as View[]).map(viewName => (
             <Button
               key={viewName}
@@ -238,11 +243,20 @@ export function ProfessionalCalendar({
                 setView(viewName)
                 onView(viewName)
               }}
+              className="h-8 text-xs sm:text-sm px-2 sm:px-3"
             >
-              {viewName === 'month' && 'Mes'}
-              {viewName === 'week' && 'Semana'}
-              {viewName === 'day' && 'Día'}
-              {viewName === 'agenda' && 'Agenda'}
+              <span className="hidden sm:inline">
+                {viewName === 'month' && 'Mes'}
+                {viewName === 'week' && 'Semana'}
+                {viewName === 'day' && 'Día'}
+                {viewName === 'agenda' && 'Agenda'}
+              </span>
+              <span className="sm:hidden">
+                {viewName === 'month' && 'M'}
+                {viewName === 'week' && 'S'}
+                {viewName === 'day' && 'D'}
+                {viewName === 'agenda' && 'A'}
+              </span>
             </Button>
           ))}
         </div>
@@ -295,30 +309,33 @@ export function ProfessionalCalendar({
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5" />
+      <CardHeader className="pb-3 sm:pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5" />
             Calendario de Reservaciones
           </CardTitle>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-yellow-200 border border-yellow-400 rounded dark:bg-yellow-900/30 dark:border-yellow-600"></div>
-              <span>Pendiente</span>
+          <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground overflow-x-auto pb-1 sm:pb-0">
+            <div className="flex items-center gap-1.5 whitespace-nowrap">
+              <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-yellow-200 border border-yellow-400 rounded dark:bg-yellow-900/30 dark:border-yellow-600 flex-shrink-0"></div>
+              <span className="hidden sm:inline">Pendiente</span>
+              <span className="sm:hidden">Pend.</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-200 border border-green-400 rounded dark:bg-green-900/30 dark:border-green-600"></div>
-              <span>Confirmada</span>
+            <div className="flex items-center gap-1.5 whitespace-nowrap">
+              <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-200 border border-green-400 rounded dark:bg-green-900/30 dark:border-green-600 flex-shrink-0"></div>
+              <span className="hidden sm:inline">Confirmada</span>
+              <span className="sm:hidden">Conf.</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-blue-200 border border-blue-400 rounded dark:bg-blue-900/30 dark:border-blue-600"></div>
-              <span>En Mesa</span>
+            <div className="flex items-center gap-1.5 whitespace-nowrap">
+              <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-blue-200 border border-blue-400 rounded dark:bg-blue-900/30 dark:border-blue-600 flex-shrink-0"></div>
+              <span className="hidden sm:inline">En Mesa</span>
+              <span className="sm:hidden">Mesa</span>
             </div>
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="h-[600px]">
+      <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+        <div className="h-[450px] sm:h-[600px]">
           <DragAndDropCalendar
             localizer={localizer}
             events={events}
@@ -357,10 +374,16 @@ export function ProfessionalCalendar({
           font-family: inherit;
         }
         .professional-calendar .rbc-header {
-          padding: 8px 6px;
+          padding: 6px 4px;
           font-weight: 600;
-          font-size: 0.875rem;
+          font-size: 0.75rem;
           border-bottom: 1px solid rgb(229 231 235);
+        }
+        @media (min-width: 640px) {
+          .professional-calendar .rbc-header {
+            padding: 8px 6px;
+            font-size: 0.875rem;
+          }
         }
         .professional-calendar .rbc-time-slot {
           border-top: 1px solid rgb(243 244 246);
@@ -382,6 +405,21 @@ export function ProfessionalCalendar({
         }
         .professional-calendar .rbc-day-slot .rbc-time-slot {
           height: 30px;
+        }
+        /* Móvil: Hacer los labels de hora más compactos */
+        @media (max-width: 640px) {
+          .professional-calendar .rbc-time-header-gutter,
+          .professional-calendar .rbc-time-gutter {
+            width: 45px !important;
+            max-width: 45px !important;
+            min-width: 45px !important;
+          }
+          .professional-calendar .rbc-label {
+            font-size: 0.65rem;
+          }
+          .professional-calendar .rbc-time-content {
+            overflow-x: auto;
+          }
         }
 
         /* Dark theme support - Obsidian */

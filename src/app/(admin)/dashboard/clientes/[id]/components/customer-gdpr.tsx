@@ -190,7 +190,7 @@ export function CustomerGdpr({
         {/* Email Marketing */}
         <div className="flex items-center justify-between p-2 rounded-lg bg-muted/20">
           <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-blue-600" />
+            <Mail className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             <Label htmlFor="email-marketing" className="text-sm font-medium">
               Email Marketing
             </Label>
@@ -206,7 +206,7 @@ export function CustomerGdpr({
         {/* SMS Marketing */}
         <div className="flex items-center justify-between p-2 rounded-lg bg-muted/20">
           <div className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-green-600" />
+            <MessageSquare className="h-4 w-4 text-green-600 dark:text-green-400" />
             <Label htmlFor="sms-marketing" className="text-sm font-medium">
               SMS Marketing
             </Label>
@@ -222,7 +222,7 @@ export function CustomerGdpr({
         {/* Newsletter */}
         <div className="flex items-center justify-between p-2 rounded-lg bg-muted/20">
           <div className="flex items-center gap-2">
-            <Newspaper className="h-4 w-4 text-purple-600" />
+            <Newspaper className="h-4 w-4 text-purple-600 dark:text-purple-400" />
             <Label htmlFor="newsletter" className="text-sm font-medium">
               Newsletter
               {newsletterStatus.loading && (
@@ -239,9 +239,9 @@ export function CustomerGdpr({
         </div>
 
         {/* Data Processing - Required */}
-        <div className="flex items-center justify-between p-2 rounded-lg bg-green-50">
+        <div className="flex items-center justify-between p-2 rounded-lg bg-green-500/10">
           <div className="flex items-center gap-2">
-            <Database className="h-4 w-4 text-red-600" />
+            <Database className="h-4 w-4 text-red-600 dark:text-red-400" />
             <div>
               <Label htmlFor="data-processing" className="text-sm font-medium">
                 Procesamiento de Datos

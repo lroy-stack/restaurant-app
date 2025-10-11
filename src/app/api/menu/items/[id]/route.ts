@@ -70,7 +70,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Transform the data to match expected format
+    // Transform the data to match expected format (including wine fields)
     const transformedItem = {
       id: menuItem.id,
       name: menuItem.name,
@@ -82,11 +82,20 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       isVegetarian: menuItem.isVegetarian,
       isVegan: menuItem.isVegan,
       isGlutenFree: menuItem.isGlutenFree,
+      isRecommended: menuItem.isRecommended,
+      stock: menuItem.stock,
       imageUrl: menuItem.imageUrl,
       categoryId: menuItem.categoryId,
       category: menuItem.category,
       allergens: menuItem.allergens?.map((ia: any) => ia.allergen).filter(Boolean) || [],
       allergenIds: menuItem.allergens?.map((ia: any) => ia.allergen?.id).filter(Boolean) || [],
+      // Wine-specific fields - transform from lowercase to camelCase
+      glassPrice: menuItem.glassprice ? parseFloat(menuItem.glassprice) : null,
+      alcoholContent: menuItem.alcoholcontent ? parseFloat(menuItem.alcoholcontent) : null,
+      vintage: menuItem.vintage,
+      isOrganic: menuItem.isOrganic,
+      richDescription: menuItem.richDescription,
+      richDescriptionEn: menuItem.richDescriptionEn,
       createdAt: menuItem.createdAt,
       updatedAt: menuItem.updatedAt
     }
@@ -162,10 +171,22 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       Object.entries(updateData).filter(([, value]) => value !== undefined)
     )
 
+    // Transform camelCase to lowercase for wine-specific fields
+    const dbUpdateData: Record<string, any> = {}
+    for (const [key, value] of Object.entries(cleanUpdateData)) {
+      if (key === 'glassPrice') {
+        dbUpdateData['glassprice'] = value
+      } else if (key === 'alcoholContent') {
+        dbUpdateData['alcoholcontent'] = value
+      } else {
+        dbUpdateData[key] = value
+      }
+    }
+
     // Update the menu item
     const { data: updatedItem, error: updateError } = await supabase
       .from('menu_items')
-      .update(cleanUpdateData)
+      .update(dbUpdateData)
       .eq('id', id)
       .select()
       .single()

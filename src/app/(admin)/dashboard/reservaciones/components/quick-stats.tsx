@@ -82,21 +82,21 @@ function StatCard({
   
   return (
     <Card className={`${colorClasses[color]} transition-all duration-200 cursor-pointer hover:shadow-md`}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <div className="flex items-center gap-2">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+        <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate flex-1 min-w-0">{title}</CardTitle>
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-1">
           {badge && (
-            <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+            <Badge variant="secondary" className="text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5">
               {badge}
             </Badge>
           )}
-          <Icon className={`h-4 w-4 ${iconColors[color]}`} />
+          <Icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${iconColors[color]}`} />
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold text-foreground">{value}</div>
+      <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+        <div className="text-lg sm:text-2xl font-bold text-foreground leading-none">{value}</div>
         {trend && (
-          <div className={`flex items-center text-xs mt-1 ${
+          <div className={`flex items-center text-[10px] sm:text-xs mt-1 ${
             trend.isPositive !== undefined
               ? (trend.isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')
               : (trend.value > 0 ? 'text-green-600 dark:text-green-400' : trend.value < 0 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground')
@@ -104,13 +104,13 @@ function StatCard({
             {trend.value !== 0 && (
               <>
                 {(trend.isPositive !== undefined ? trend.isPositive : trend.value > 0) ? (
-                  <TrendingUp className="h-3 w-3 mr-1" />
+                  <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                 ) : (
-                  <TrendingDown className="h-3 w-3 mr-1" />
+                  <TrendingDown className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                 )}
               </>
             )}
-            <span className="font-medium">{trend.label}</span>
+            <span className="font-medium truncate">{trend.label}</span>
           </div>
         )}
       </CardContent>
@@ -178,7 +178,7 @@ export function QuickStats({ reservations, previousPeriodData }: QuickStatsProps
   const vipTrend = previousPeriodData ? calculateTrend(vipReservations, previousPeriodData.vip) : null
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
       <StatCard
         title="Total Reservas"
         value={totalReservations}
