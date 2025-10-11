@@ -10,11 +10,13 @@ import { FeaturedDishes } from "@/components/homepage/featured-dishes"
 import { FeaturedWines } from "@/components/homepage/featured-wines"
 import { OptimizedImage } from "@/components/ui/optimized-image"
 import { useMediaLibrary } from "@/hooks/use-media-library"
+import { useRestaurant } from "@/hooks/use-restaurant"
 import { ScrollReveal } from "@/components/animations/ScrollReveal"
 import { Suspense, memo } from "react"
 
 export default function HomePage() {
   const { getHeroImage, buildImageUrl, loading: mediaLoading } = useMediaLibrary({ type: 'hero' })
+  const { restaurant } = useRestaurant()
   const heroImage = getHeroImage('home')
 
   return (
@@ -200,19 +202,29 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  <a href="tel:+34672796006" className="text-sm sm:text-base hover:text-primary">
-                    +34 672 79 60 06
+                  <a href={`tel:${restaurant?.phone?.replace(/\s/g, '') || "+34672796006"}`} className="text-sm sm:text-base hover:text-primary">
+                    {restaurant?.phone || "+34 672 79 60 06"}
                   </a>
                 </div>
                 <div className="flex items-center gap-3">
                   <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  <a href="mailto:reservas@enigmaconalma.com" className="text-sm sm:text-base hover:text-primary">
-                    reservas@enigmaconalma.com
+                  <a href={`mailto:${restaurant?.email || "reservas@enigmaconalma.com"}`} className="text-sm sm:text-base hover:text-primary">
+                    {restaurant?.email || "reservas@enigmaconalma.com"}
                   </a>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  <span className="text-sm sm:text-base">Lun-Sáb: 18:30 - 23:00</span>
+                <div className="flex items-start gap-3">
+                  <div className="mt-1">
+                    <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                  </div>
+                  <div className="text-sm sm:text-base space-y-0.5">
+                    {restaurant?.hours_operation ? (
+                      restaurant.hours_operation.split('|').map((schedule, idx) => (
+                        <div key={idx}>{schedule.trim()}</div>
+                      ))
+                    ) : (
+                      <span>Lun-Sáb: 18:30 - 23:00</span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

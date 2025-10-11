@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useCart } from '@/hooks/useCart'
+import { useRestaurant } from '@/hooks/use-restaurant'
 import {
   Menu,
   X,
@@ -69,6 +70,9 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
   // Cart integration for Task 5 PRP
   const { getCartCount, toggleCart } = useCart()
   const cartCount = getCartCount()
+
+  // Restaurant data
+  const { restaurant } = useRestaurant()
 
   // Prevent hydration mismatch - wait for client mount
   useEffect(() => {
@@ -377,20 +381,33 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
 
               {/* Contact Info */}
               <div className="border-t border-border pt-4 mb-4">
-                <div className="space-y-2 text-sm text-foreground/70">
+                <div className="space-y-3 text-sm text-foreground/70">
                   <div className="flex items-center gap-3">
-                    <Phone className="h-4 w-4 text-primary" />
-                    <a href="tel:+34672796006" className="hover:text-primary transition-colors">
-                      +34 672 79 60 06
+                    <Phone className="h-4 w-4 text-primary flex-shrink-0" />
+                    <a
+                      href={`tel:${restaurant?.phone?.replace(/\s/g, '') || "+34672796006"}`}
+                      className="hover:text-primary transition-colors"
+                    >
+                      {restaurant?.phone || "+34 672 79 60 06"}
                     </a>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Clock className="h-4 w-4 text-primary" />
-                    <span>Mar-Dom: 18:00 - 24:00</span>
+                  <div className="flex items-start gap-3">
+                    <Clock className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      {restaurant?.hours_operation ? (
+                        restaurant.hours_operation.split('|').map((schedule, idx) => (
+                          <div key={idx} className="text-xs leading-relaxed">{schedule.trim()}</div>
+                        ))
+                      ) : (
+                        <span>Mar-Dom: 18:00 - 24:00</span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <MapPin className="h-4 w-4 text-primary" />
-                    <span>Carrer Justicia 6A, Calpe</span>
+                  <div className="flex items-start gap-3">
+                    <MapPin className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                    <span className="text-xs leading-relaxed">
+                      {restaurant?.address || "Carrer Justicia 6A, Calpe"}
+                    </span>
                   </div>
                 </div>
               </div>

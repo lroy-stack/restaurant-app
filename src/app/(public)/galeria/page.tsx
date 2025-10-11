@@ -314,7 +314,7 @@ export default function GaleriaPage() {
                 <span className="text-2xl flex-shrink-0">✉️</span>
                 <a
                   href={`mailto:${restaurant?.email || "reservas@enigmaconalma.com"}`}
-                  className="text-sm sm:text-base text-foreground hover:text-primary transition-colors break-words truncate"
+                  className="text-sm sm:text-base text-foreground hover:text-primary transition-colors break-words"
                 >
                   {restaurant?.email || "reservas@enigmaconalma.com"}
                 </a>
