@@ -429,7 +429,7 @@ export default function TimeSlotSelector({
               </div>
 
               {/* Grid de slots - primeros 4 siempre visibles en mobile */}
-              <div className="grid grid-cols-4 gap-2 md:gap-3 md:grid-cols-4">
+              <div className="grid grid-cols-3 gap-2 md:gap-3 md:grid-cols-4">
                 {slots.slice(0, MOBILE_PREVIEW_COUNT).map((slot) => {
                   const isSelected = selectedTime === slot.time
                   const isHovered = hoveredSlot === slot.time
@@ -537,7 +537,7 @@ export default function TimeSlotSelector({
               {/* Slots adicionales colapsables (solo mobile) */}
               {hasMore && (
                 <CollapsibleContent className="md:hidden">
-                  <div className="grid grid-cols-4 gap-2 mt-2">
+                  <div className="grid grid-cols-3 gap-2 mt-2">
                     {slots.slice(MOBILE_PREVIEW_COUNT).map((slot) => {
                       const isSelected = selectedTime === slot.time
                       const isHovered = hoveredSlot === slot.time
@@ -576,28 +576,20 @@ export default function TimeSlotSelector({
 
                           {/* Contenido del slot */}
                           <div className="space-y-1">
-                            <p className="text-lg font-semibold">
+                            <p className="text-base font-semibold">
                               {slot.time}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {slot.label}
                             </p>
                           </div>
 
-                          {/* Estado de disponibilidad */}
-                          <div className="mt-2 space-y-1">
+                          {/* Estado de disponibilidad - Solo iconos */}
+                          <div className="mt-2 flex items-center justify-center gap-1">
                             {slot.available ? (
-                              <div className="flex items-center gap-1 text-xs">
-                                <CheckCircle className="h-3 w-3 text-green-600" />
-                                <span className="text-green-600">
-                                  {slot.capacity > 4 ? t.available : t.lastTables}
-                                </span>
-                              </div>
+                              <CheckCircle className="h-3.5 w-3.5 text-green-600" title={slot.capacity > 4 ? t.available : t.lastTables} />
                             ) : (
-                              <div className="flex items-center gap-1 text-xs">
-                                <AlertCircle className="h-3 w-3 text-red-600" />
-                                <span className="text-red-600">{t.full}</span>
-                              </div>
+                              <AlertCircle className="h-3.5 w-3.5 text-red-600" title={t.full} />
+                            )}
+                            {slot.available && slot.demand === 'high' && (
+                              <TrendingUp className="h-3.5 w-3.5 text-orange-600" title={t.highDemand} />
                             )}
                           </div>
                         </button>
