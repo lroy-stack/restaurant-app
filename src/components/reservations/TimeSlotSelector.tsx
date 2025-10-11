@@ -563,8 +563,8 @@ export default function TimeSlotSelector({
                           {/* Badges */}
                           <div className="absolute -top-2 -right-2 flex gap-1">
                             {slot.recommended && (
-                              <Badge className="text-xs" variant="default">
-                                {t.recommended}
+                              <Badge className="h-6 w-6 p-0 flex items-center justify-center rounded-full" variant="default" title={t.recommended}>
+                                <span className="text-sm">★</span>
                               </Badge>
                             )}
                           </div>
