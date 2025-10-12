@@ -84,7 +84,10 @@ const content = {
     wines: 'Vinos',
     preOrderSummary: 'Resumen del Pre-pedido',
     total: 'Total:',
-    next: 'Siguiente'
+    next: 'Siguiente',
+    loadingTimeSlots: 'Cargando horarios...',
+    loadingZones: 'Cargando zonas disponibles...',
+    noZonesAvailable: 'No hay zonas disponibles en este momento.'
   },
   en: {
     title: 'Date, Time & Table',
@@ -106,7 +109,10 @@ const content = {
     wines: 'Wines',
     preOrderSummary: 'Pre-order Summary',
     total: 'Total:',
-    next: 'Next'
+    next: 'Next',
+    loadingTimeSlots: 'Loading time slots...',
+    loadingZones: 'Loading available areas...',
+    noZonesAvailable: 'No areas available at this moment.'
   },
   de: {
     title: 'Datum, Zeit & Tisch',
@@ -128,7 +134,10 @@ const content = {
     wines: 'Weine',
     preOrderSummary: 'Vorbestellungsübersicht',
     total: 'Gesamt:',
-    next: 'Weiter'
+    next: 'Weiter',
+    loadingTimeSlots: 'Zeiten werden geladen...',
+    loadingZones: 'Verfügbare Bereiche werden geladen...',
+    noZonesAvailable: 'Derzeit keine Bereiche verfügbar.'
   }
 }
 
@@ -548,7 +557,7 @@ export default function DateTimeAndTableStep({
             {loadingTimeSlots ? (
               <div className="flex items-center justify-center py-4">
                 <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                <span className="text-sm text-muted-foreground">Cargando horarios...</span>
+                <span className="text-sm text-muted-foreground">{t.loadingTimeSlots}</span>
               </div>
             ) : (
               <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2 mt-4">
@@ -609,11 +618,11 @@ export default function DateTimeAndTableStep({
                 {loadingZones ? (
                   <div className="flex items-center justify-center py-4">
                     <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                    <span className="text-sm text-muted-foreground">Cargando zonas disponibles...</span>
+                    <span className="text-sm text-muted-foreground">{t.loadingZones}</span>
                   </div>
                 ) : activeZones.length === 0 ? (
                   <div className="text-center py-4">
-                    <p className="text-sm text-muted-foreground">No hay zonas disponibles en este momento.</p>
+                    <p className="text-sm text-muted-foreground">{t.noZonesAvailable}</p>
                   </div>
                 ) : (
                   <div className="flex gap-3 overflow-x-auto">
