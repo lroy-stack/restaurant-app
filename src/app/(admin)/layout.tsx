@@ -3,6 +3,7 @@ import { Metadata } from 'next'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { RealtimeNotificationsProvider } from '@/components/providers/realtime-notifications-provider'
 
 export const metadata: Metadata = {
   title: {
@@ -22,15 +23,18 @@ interface AdminRouteLayoutProps {
 
 /**
  * Admin Route Group Layout
- * 
+ *
  * Este layout se aplica a todas las páginas administrativas dentro del Route Group (admin)
  * Incluye protección Supabase y estructura básica de administración
- * 
+ *
  * Protección: Solo usuarios autenticados en Supabase pueden acceder
- * 
+ *
  * Páginas afectadas:
  * - /dashboard/*
  * - Cualquier nueva ruta admin que se añada
+ *
+ * Features:
+ * - RealtimeNotificationsProvider: Notificaciones globales en todas las páginas admin
  */
 export default async function AdminRouteLayout({ children }: AdminRouteLayoutProps) {
   // Server-side Supabase auth protection at layout level
@@ -59,17 +63,19 @@ export default async function AdminRouteLayout({ children }: AdminRouteLayoutPro
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     redirect('/almaenigma')
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Admin-specific header/navigation can be added here */}
-      <main>
-        {children}
-      </main>
-    </div>
+    <RealtimeNotificationsProvider>
+      <div className="min-h-screen bg-gray-50">
+        {/* Admin-specific header/navigation can be added here */}
+        <main>
+          {children}
+        </main>
+      </div>
+    </RealtimeNotificationsProvider>
   )
 }
