@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils'
 import { useReservationNotifications } from '@/hooks/useReservationNotifications'
 
 export function NotificationSettings() {
-  const { config, updateConfig, requestBrowserPermission } = useReservationNotifications()
+  const { config, updateConfig, requestBrowserPermission, unlockAudio, audioUnlocked } = useReservationNotifications()
   const [browserPermission, setBrowserPermission] = useState<NotificationPermission>('default')
 
   useEffect(() => {
@@ -117,6 +117,40 @@ export function NotificationSettings() {
             />
           </div>
 
+          {/* Audio Unlock Button */}
+          {config.enabled && config.soundEnabled && !audioUnlocked && (
+            <div className="space-y-3 rounded-lg border-2 border-orange-500 bg-orange-50 p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 text-2xl">🔇</div>
+                <div className="flex-1 space-y-2">
+                  <Label className="text-base font-semibold text-orange-900">
+                    Sonido bloqueado por el navegador
+                  </Label>
+                  <p className="text-sm text-orange-700">
+                    Los navegadores requieren que actives el sonido manualmente.
+                    Haz click en el botón para habilitar notificaciones con audio.
+                  </p>
+                  <Button
+                    onClick={unlockAudio}
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                    size="sm"
+                  >
+                    <Volume2 className="h-4 w-4 mr-2" />
+                    Activar Sonido Ahora
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Status indicator cuando desbloqueado */}
+          {audioUnlocked && config.soundEnabled && (
+            <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 rounded-lg p-3">
+              <Volume2 className="h-4 w-4" />
+              <span className="font-medium">Sonido activo y listo</span>
+            </div>
+          )}
+
           {/* Control volumen */}
           <div className="space-y-3">
             <Label className="flex items-center gap-2 text-base font-medium">
@@ -185,11 +219,16 @@ export function NotificationSettings() {
             variant="outline"
             className="w-full"
             onClick={handleTestSound}
-            disabled={!config.enabled || !config.soundEnabled}
+            disabled={!config.enabled || !config.soundEnabled || !audioUnlocked}
           >
             <Volume2 className="h-4 w-4 mr-2" />
             Probar Sonido
           </Button>
+          {!audioUnlocked && config.soundEnabled && (
+            <p className="text-xs text-muted-foreground text-center">
+              Activa el sonido primero para probarlo
+            </p>
+          )}
         </div>
       </DialogContent>
     </Dialog>
