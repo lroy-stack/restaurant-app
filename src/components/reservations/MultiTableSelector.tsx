@@ -158,7 +158,7 @@ export function MultiTableSelector({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {locationTables.map(table => {
                 const selected = isTableSelected(table.id)
                 const canSelect = canSelectTable(table.id)
@@ -167,7 +167,7 @@ export function MultiTableSelector({
                   <div
                     key={table.id}
                     className={cn(
-                      'relative p-2 md:p-3 border rounded-lg cursor-pointer transition-all',
+                      'relative p-3 border rounded-lg cursor-pointer transition-all',
                       'hover:shadow-md',
                       selected
                         ? 'border-primary bg-primary/10 shadow-sm'
@@ -192,7 +192,7 @@ export function MultiTableSelector({
                         Mesa {table.number}
                       </div>
                       {/* Mobile: M12 */}
-                      <div className="md:hidden font-medium text-xs mb-1">
+                      <div className="md:hidden font-medium text-sm mb-1">
                         M{table.number}
                       </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -200,7 +200,7 @@ export function MultiTableSelector({
                         {/* Desktop: 4 personas */}
                         <span className="hidden md:inline">{table.capacity} personas</span>
                         {/* Mobile: 4 pax */}
-                        <span className="md:hidden text-[10px]">{table.capacity}</span>
+                        <span className="md:hidden text-xs">{table.capacity}</span>
                       </div>
                     </div>
                   </div>
