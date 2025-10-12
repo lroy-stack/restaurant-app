@@ -1,6 +1,5 @@
-// Reservation Review Email Template (2h after completed reservation)
-// CRITICAL: ALL content DYNAMIC - post-visit feedback and review request
-// Focus: Customer satisfaction, reviews, loyalty program
+// Reservation Review Email Template - MODERN & CLEAN
+// Sent after completing reservation - request for reviews
 
 import {
   Section,
@@ -9,10 +8,12 @@ import {
   Button,
   Row,
   Column,
+  Container
 } from '@react-email/components'
 import * as React from 'react'
 import { EmailBase } from './email-base'
 import { EmailTemplateData } from '../types/emailTypes'
+import { emailColors, emailTextStyles, emailLayoutStyles } from '../styles/emailColors'
 
 export interface ReservationReviewEmailProps extends EmailTemplateData {}
 
@@ -24,9 +25,7 @@ export const ReservationReviewEmail = ({
   restaurantName,
   restaurantEmail,
   restaurantPhone,
-  tokenUrl,
-  urls,
-  branding
+  urls
 }: ReservationReviewEmailProps) => {
   const preview = `¡Gracias por visitarnos! ¿Cómo fue tu experiencia en ${restaurantName}?`
 
@@ -36,376 +35,200 @@ export const ReservationReviewEmail = ({
       restaurantName={restaurantName}
       restaurantEmail={restaurantEmail}
       restaurantPhone={restaurantPhone}
-      branding={branding}
     >
-      {/* Thank you header */}
-      <Section style={thankYouBanner}>
-        <Text style={bannerText}>✨ ¡GRACIAS POR VISITARNOS! ✨</Text>
-      </Section>
+      {/* Modern Thank You Banner */}
+      <Container style={thankYouBanner}>
+        <Text style={bannerText}>¡GRACIAS POR VISITARNOS!</Text>
+        <Text style={bannerSubtext}>Tu opinión nos importa</Text>
+      </Container>
 
-      <Heading style={h1}>
-        ¡Hola {customerName}!
-      </Heading>
+      <Section style={greetingSection}>
+        <Heading style={emailTextStyles.h1}>
+          ¡Hola {customerName}!
+        </Heading>
 
-      <Text style={paragraph}>
-        Esperamos que hayas disfrutado de tu visita a <strong>{restaurantName}</strong> el pasado
-        <strong> {reservationDate} a las {reservationTime}</strong>.
-      </Text>
-
-      <Text style={emphasizedText}>
-        Para nosotros es muy importante conocer tu opinión y asegurarnos de que cada experiencia
-        sea única y memorable. 🍽️💫
-      </Text>
-
-      {/* Experience feedback section */}
-      <Section style={feedbackBox}>
-        <Heading as="h2" style={h2}>🌟 ¿Cómo fue tu experiencia?</Heading>
-
-        <Text style={paragraph}>
-          Tu opinión nos ayuda a mejorar cada día y ofrecer el mejor servicio a todos nuestros clientes.
-          ¡Solo te llevará 2 minutos!
+        <Text style={emailTextStyles.paragraph}>
+          Esperamos que hayas disfrutado de tu visita a <strong>{restaurantName}</strong> el{' '}
+          <strong>{reservationDate} a las {reservationTime}</strong>.
         </Text>
 
-        <Section style={ratingContainer}>
-          <Text style={ratingText}>
-            Califica tu experiencia general:
-          </Text>
-
-          <Row style={starsRow}>
-            <Column style={starColumn}>⭐</Column>
-            <Column style={starColumn}>⭐⭐</Column>
-            <Column style={starColumn}>⭐⭐⭐</Column>
-            <Column style={starColumn}>⭐⭐⭐⭐</Column>
-            <Column style={starColumn}>⭐⭐⭐⭐⭐</Column>
-          </Row>
-
-          <Text style={ratingSubtext}>
-            (Haz clic en las estrellas para evaluar)
-          </Text>
-        </Section>
-
-        {tokenUrl && (
-          <Section style={buttonContainer}>
-            <Button style={feedbackButton} href={tokenUrl}>
-              Calificar mi Experiencia
-            </Button>
-          </Section>
-        )}
-      </Section>
-
-      {/* Online reviews section */}
-      <Section style={reviewsBox}>
-        <Heading as="h2" style={h2}>📝 Comparte tu Experiencia Online</Heading>
-
-        <Text style={paragraph}>
-          Si te ha gustado tu visita, nos haría mucha ilusión que compartieras tu experiencia
-          en nuestras plataformas. ¡Tu reseña ayuda a otros comensales a descubrirnos!
-        </Text>
-
-        <Row style={reviewPlatformsRow}>
-          <Column style={reviewColumn}>
-            <Button style={googleButton} href="https://g.page/r/enigmacocinacanalma/review">
-              ⭐ Google Reviews
-            </Button>
-          </Column>
-          <Column style={reviewColumn}>
-            <Button style={tripadvisorButton} href="https://tripadvisor.es/enigmacocinacanalma">
-              🌍 TripAdvisor
-            </Button>
-          </Column>
-        </Row>
-
-        <Text style={reviewBenefit}>
-          🎁 <strong>Como agradecimiento:</strong> Los clientes que dejen una reseña online
-          recibirán un <strong>10% de descuento</strong> en su próxima visita.
+        <Text style={emphasizedText}>
+          Tu opinión es muy importante para nosotros y nos ayuda a mejorar cada día.
         </Text>
       </Section>
 
-      {/* Special moments section */}
-      <Section style={momentsBox}>
-        <Heading as="h3" style={h3}>📸 ¿Capturaste algún momento especial?</Heading>
+      {/* Primary CTA: Nueva Reserva */}
+      <Section style={primaryCtaSection}>
+        <Heading as="h2" style={h2}>¿Te gustaría volver?</Heading>
 
-        <Text style={paragraph}>
-          Si tienes fotos de tu experiencia, nos encantaría verlas.
-          ¡Etiquétanos en redes sociales y las compartiremos!
-        </Text>
-
-        <Text style={socialTags}>
-          📱 Instagram: <strong>@enigmacocinacanalma</strong><br/>
-          📘 Facebook: <strong>/enigmacocinacanalma</strong><br/>
-          🐦 Twitter: <strong>@enigmacocina</strong>
-        </Text>
-      </Section>
-
-      {/* Improvement suggestions */}
-      <Section style={improvementBox}>
-        <Heading as="h3" style={h3}>💡 ¿Algo que podríamos mejorar?</Heading>
-
-        <Text style={paragraph}>
-          Valoramos mucho la crítica constructiva. Si algo no estuvo a la altura de tus expectativas
-          o tienes alguna sugerencia, por favor compártela con nosotros.
-        </Text>
-
-        <Text style={contactInfo}>
-          ✉️ Escríbenos directamente: {restaurantEmail}<br/>
-          📱 WhatsApp: {restaurantPhone}<br/>
-          🌐 Formulario web: enigmaconalma.com/contacto
-        </Text>
-      </Section>
-
-      {/* Loyalty program */}
-      <Section style={loyaltyBox}>
-        <Heading as="h3" style={h3}>🎖️ Programa de Fidelidad Enigma</Heading>
-
-        <Text style={paragraph}>
-          Como cliente valorado, te invitamos a unirte a nuestro programa de fidelidad:
-        </Text>
-
-        <Text style={loyaltyBenefits}>
-          ⭐ <strong>Puntos por cada visita</strong> - Acumula y canjea<br/>
-          🎂 <strong>Descuento especial</strong> en tu cumpleaños<br/>
-          📧 <strong>Ofertas exclusivas</strong> solo para miembros<br/>
-          🎫 <strong>Acceso prioritario</strong> a eventos especiales<br/>
-          👨‍🍳 <strong>Experiencias gastronómicas</strong> únicas
+        <Text style={ctaText}>
+          Nos encantaría recibirte de nuevo. Reserva tu próxima experiencia con nosotros:
         </Text>
 
         <Section style={buttonContainer}>
-          <Button style={loyaltyButton} href={urls?.programaFidelidad || 'https://almaenigma.vercel.app/programa-fidelidad'}>
-            Unirme al Programa
-          </Button>
-        </Section>
-      </Section>
-
-      {/* Next visit incentive */}
-      <Section style={nextVisitBox}>
-        <Heading as="h3" style={h3}>🎉 Tu Próxima Visita</Heading>
-
-        <Text style={paragraph}>
-          ¡Tenemos muchas novedades preparadas! Nuestro chef está trabajando en nuevas
-          creaciones que seguro te van a encantar.
-        </Text>
-
-        <Text style={nextVisitOffer}>
-          <strong>Oferta especial:</strong> Reserva en los próximos 30 días y obtén un
-          <strong> aperitivo de cortesía</strong> 🥂
-        </Text>
-
-        <Section style={buttonContainer}>
-          <Button style={reserveButton} href={urls?.reservas || 'https://almaenigma.vercel.app/reservas'}>
+          <Button style={emailLayoutStyles.buttonPrimary} href="https://enigmaconalma.com/reservas">
             Hacer Nueva Reserva
           </Button>
         </Section>
       </Section>
 
-      {/* Personal thank you */}
-      <Text style={personalThankYou}>
-        {customerName}, gracias por elegir <strong>{restaurantName}</strong> para tu experiencia gastronómica.
-        Cada cliente como tú hace que nuestro trabajo tenga sentido.<br/><br/>
+      {/* Reviews Section */}
+      <Section style={reviewsSection}>
+        <Heading as="h2" style={h2}>Comparte tu Experiencia</Heading>
 
-        <em>Esperamos verte muy pronto de nuevo,<br/>
-        Con cariño y gratitud,<br/>
-        Todo el Equipo de Enigma Cocina Con Alma 👨‍🍳✨</em>
-      </Text>
+        <Text style={emailTextStyles.paragraph}>
+          Si disfrutaste tu visita, nos haría mucha ilusión que compartieras tu experiencia online:
+        </Text>
+
+        <Section style={reviewButtonsContainer}>
+          <Row>
+            <Column style={reviewColumn}>
+              <Button
+                style={googleButton}
+                href="https://www.google.com/search?sca_esv=c872d79fb2a9e0a7&sxsrf=AE3TifOLK5yfsFPYpEobMxrJMxqvBcNAkw:1760280018696&q=opiniones+de+enigma+cocina+con+alma&uds=AOm0WdE2fekQnsyfYEw8JPYozOKzY1bxVhkUoZf9RVw_4yjZN0_wIGnEki--C32DP8TPfAVnY_a3N6oSRXI4P-aKAAPLf7bQ-Cw1FRYpOXxF054OsH5-ZXS18NVRLYs3oHLMINjmOE2WRX28jOP_2YVvXxoTbuLwkDEWm9_PbqZ8yu7DmCsDMKSc2xe8lKo63mJt30mibTU7&si=AMgyJEtREmoPL4P1I5IDCfuA8gybfVI2d5Uj7QMwYCZHKDZ-E7bPKH7ZY1OjzdH1-TzTAhYqRJm0aTMk05avWMLFUa83jbWPXWADGCwRBoqcsqjv9Burp1G3NntTvz6AN_L5vSfWg0wk6YZ1PcgDtHJUenOL93tg0w%3D%3D&sa=X&ved=2ahUKEwiOxOCJ8p6QAxWL8LsIHUzsKa0QxKsJKAF6BAgREAE&ictx=1&stq=1&cs=0&lei=0r3raI6TKovh7_UPzNin6Qo"
+              >
+                ⭐ Google Reviews
+              </Button>
+            </Column>
+          </Row>
+
+          <Row style={{marginTop: '12px'}}>
+            <Column style={reviewColumn}>
+              <Button
+                style={tripadvisorButton}
+                href="https://www.tripadvisor.es/UserReviewEdit-g187526-d23958723-Enigma_Cocina_Con_Alma-Calpe_Costa_Blanca_Province_of_Alicante_Valencian_Community.html"
+              >
+                🌍 TripAdvisor
+              </Button>
+            </Column>
+          </Row>
+        </Section>
+      </Section>
+
+      {/* Social Media Section */}
+      <Section style={socialSection}>
+        <Heading as="h3" style={h3}>Síguenos en Instagram</Heading>
+
+        <Text style={emailTextStyles.paragraph}>
+          Descubre nuestros platos especiales y novedades:
+        </Text>
+
+        <Section style={buttonContainer}>
+          <Button
+            style={instagramButton}
+            href="https://www.instagram.com/enigmaconalma"
+          >
+            📱 @enigmaconalma
+          </Button>
+        </Section>
+      </Section>
+
+      {/* Feedback Section */}
+      <Section style={feedbackSection}>
+        <Heading as="h3" style={h3}>¿Algo que podríamos mejorar?</Heading>
+
+        <Text style={emailTextStyles.paragraph}>
+          Tu feedback constructivo nos ayuda a mejorar. Escríbenos:
+        </Text>
+
+        <Section style={contactBox}>
+          <Text style={contactText}>
+            ✉️ {restaurantEmail}<br/>
+            📱 {restaurantPhone}
+          </Text>
+        </Section>
+      </Section>
+
+      {/* Final Thank You */}
+      <Section style={finalThankYou}>
+        <Text style={thankYouText}>
+          {customerName}, gracias por elegir <strong>{restaurantName}</strong>.<br/><br/>
+          <em>Esperamos verte pronto de nuevo,<br/>
+          El Equipo de Enigma Cocina Con Alma 👨‍🍳</em>
+        </Text>
+      </Section>
 
     </EmailBase>
   )
 }
 
-// Review-focused styles
+// Modern Styles Following Project Patterns
 const thankYouBanner = {
-  backgroundColor: 'oklch(0.58 0.12 125)', // Success green
-  borderRadius: '8px',
-  padding: '20px',
+  backgroundColor: emailColors.secondary,
+  borderRadius: '12px',
+  padding: '24px',
   textAlign: 'center' as const,
-  margin: '0 0 24px'
+  margin: '0 0 32px',
+  border: `2px solid ${emailColors.secondaryBorder}`
 }
 
 const bannerText = {
-  color: 'oklch(0.975 0.008 125)', // Light text
-  fontSize: '18px',
+  color: emailColors.primary,
+  fontSize: '24px',
   fontWeight: '700',
+  margin: '0 0 8px',
+  letterSpacing: '0.05em',
+  fontFamily: 'Inter, system-ui, sans-serif'
+}
+
+const bannerSubtext = {
+  color: emailColors.mutedForeground,
+  fontSize: '14px',
+  fontWeight: '500',
   margin: '0',
-  letterSpacing: '0.05em'
+  fontFamily: 'Inter, system-ui, sans-serif'
 }
 
-const h1 = {
-  color: 'oklch(0.45 0.15 200)', // --primary
-  fontSize: '28px',
-  fontWeight: '700',
-  lineHeight: '32px',
-  margin: '0 0 20px',
-  textAlign: 'center' as const
-}
-
-const h2 = {
-  color: 'oklch(0.15 0.035 130)',
-  fontSize: '22px',
-  fontWeight: '600',
-  lineHeight: '28px',
-  margin: '0 0 16px',
-  textAlign: 'center' as const
-}
-
-const h3 = {
-  color: 'oklch(0.15 0.035 130)',
-  fontSize: '18px',
-  fontWeight: '600',
-  lineHeight: '22px',
-  margin: '0 0 12px'
-}
-
-const paragraph = {
-  color: 'oklch(0.15 0.035 130)',
-  fontSize: '16px',
-  lineHeight: '24px',
-  margin: '0 0 16px'
+const greetingSection = {
+  margin: '0 0 32px'
 }
 
 const emphasizedText = {
-  color: 'oklch(0.55 0.16 42)', // --accent
-  fontSize: '18px',
+  color: emailColors.accent,
+  fontSize: '17px',
   fontWeight: '500',
   lineHeight: '26px',
-  margin: '0 0 24px',
+  margin: '16px 0 0',
   textAlign: 'center' as const,
   fontStyle: 'italic'
 }
 
-const feedbackBox = {
-  backgroundColor: 'oklch(0.96 0.005 210)', // --muted
-  border: '2px solid oklch(0.45 0.15 200)', // --primary
+const primaryCtaSection = {
+  backgroundColor: emailColors.card,
+  border: `3px solid ${emailColors.primary}`,
   borderRadius: '12px',
-  padding: '24px',
-  margin: '24px 0',
+  padding: '32px 24px',
+  margin: '32px 0',
   textAlign: 'center' as const
 }
 
-const ratingContainer = {
-  margin: '20px 0'
-}
-
-const ratingText = {
-  fontSize: '16px',
+const h2 = {
+  color: emailColors.foreground,
+  fontSize: '22px',
   fontWeight: '600',
-  margin: '0 0 12px'
-}
-
-const starsRow = {
-  margin: '12px 0'
-}
-
-const starColumn = {
-  width: '20%',
+  lineHeight: '28px',
+  margin: '0 0 16px',
   textAlign: 'center' as const,
-  fontSize: '20px',
-  padding: '8px 0'
+  fontFamily: 'Inter, system-ui, sans-serif'
 }
 
-const ratingSubtext = {
-  fontSize: '12px',
-  color: 'oklch(0.45 0.025 200)',
-  margin: '8px 0 0'
-}
-
-const reviewsBox = {
-  backgroundColor: 'oklch(0.92 0.02 120)', // --secondary
-  border: '1px solid oklch(0.52 0.12 125)',
-  borderRadius: '8px',
-  padding: '20px',
-  margin: '24px 0'
-}
-
-const reviewPlatformsRow = {
-  margin: '16px 0'
-}
-
-const reviewColumn = {
-  width: '50%',
-  textAlign: 'center' as const,
-  padding: '0 8px'
-}
-
-const reviewBenefit = {
-  backgroundColor: 'oklch(0.95 0.012 42)', // Light amber
-  border: '1px solid oklch(0.55 0.16 42)',
-  borderRadius: '6px',
-  padding: '12px',
-  margin: '16px 0 0',
-  textAlign: 'center' as const,
-  fontSize: '15px'
-}
-
-const momentsBox = {
-  backgroundColor: 'oklch(0.955 0.01 125)',
-  border: '1px solid oklch(0.52 0.12 125)',
-  borderRadius: '8px',
-  padding: '20px',
-  margin: '24px 0'
-}
-
-const socialTags = {
-  fontSize: '15px',
+const h3 = {
+  color: emailColors.foreground,
+  fontSize: '18px',
+  fontWeight: '600',
   lineHeight: '24px',
-  margin: '12px 0 0'
+  margin: '0 0 12px',
+  textAlign: 'center' as const,
+  fontFamily: 'Inter, system-ui, sans-serif'
 }
 
-const improvementBox = {
-  backgroundColor: 'oklch(0.98 0.01 42)', // Very light amber
-  border: '1px solid oklch(0.55 0.16 42)',
-  borderRadius: '8px',
-  padding: '20px',
-  margin: '24px 0'
-}
-
-const contactInfo = {
+const ctaText = {
+  color: emailColors.mutedForeground,
   fontSize: '15px',
   lineHeight: '22px',
-  margin: '12px 0 0'
-}
-
-const loyaltyBox = {
-  backgroundColor: 'oklch(0.945 0.015 200)', // Light blue
-  border: '2px solid oklch(0.45 0.15 200)',
-  borderRadius: '8px',
-  padding: '20px',
-  margin: '24px 0'
-}
-
-const loyaltyBenefits = {
-  fontSize: '15px',
-  lineHeight: '24px',
-  margin: '12px 0 16px'
-}
-
-const nextVisitBox = {
-  backgroundColor: 'oklch(0.945 0.015 25)', // Light success
-  border: '1px solid oklch(0.58 0.12 125)',
-  borderRadius: '8px',
-  padding: '20px',
-  margin: '24px 0'
-}
-
-const nextVisitOffer = {
-  backgroundColor: 'oklch(0.58 0.12 125)',
-  color: 'oklch(0.975 0.008 125)',
-  borderRadius: '6px',
-  padding: '12px',
+  margin: '0 0 24px',
   textAlign: 'center' as const,
-  fontSize: '15px',
-  fontWeight: '600',
-  margin: '12px 0 16px'
-}
-
-const personalThankYou = {
-  color: 'oklch(0.15 0.035 130)',
-  fontSize: '16px',
-  lineHeight: '26px',
-  textAlign: 'center' as const,
-  margin: '32px 0 0',
-  padding: '24px',
-  backgroundColor: 'oklch(0.96 0.005 210)',
-  borderRadius: '8px',
-  borderLeft: '4px solid oklch(0.55 0.16 42)'
+  fontFamily: 'Inter, system-ui, sans-serif'
 }
 
 const buttonContainer = {
@@ -413,67 +236,118 @@ const buttonContainer = {
   margin: '20px 0'
 }
 
-const feedbackButton = {
-  backgroundColor: 'oklch(0.45 0.15 200)',
-  borderRadius: '8px',
-  color: 'oklch(0.985 0.002 210)',
-  fontSize: '16px',
-  fontWeight: '600',
-  textDecoration: 'none',
+const reviewsSection = {
+  backgroundColor: emailColors.muted,
+  border: `1px solid ${emailColors.border}`,
+  borderRadius: '12px',
+  padding: '24px',
+  margin: '24px 0',
+  textAlign: 'center' as const
+}
+
+const reviewButtonsContainer = {
+  margin: '20px 0 0'
+}
+
+const reviewColumn = {
+  width: '100%',
   textAlign: 'center' as const,
-  display: 'inline-block',
-  padding: '16px 32px',
-  margin: '0 8px'
+  padding: '0'
 }
 
 const googleButton = {
   backgroundColor: '#4285f4',
-  borderRadius: '6px',
+  borderRadius: '8px',
   color: '#ffffff',
-  fontSize: '14px',
+  fontSize: '16px',
   fontWeight: '600',
   textDecoration: 'none',
   textAlign: 'center' as const,
   display: 'inline-block',
-  padding: '12px 20px',
-  width: '90%'
+  padding: '14px 32px',
+  width: '280px',
+  maxWidth: '100%',
+  fontFamily: 'Inter, system-ui, sans-serif'
 }
 
 const tripadvisorButton = {
   backgroundColor: '#00af87',
-  borderRadius: '6px',
+  borderRadius: '8px',
   color: '#ffffff',
-  fontSize: '14px',
-  fontWeight: '600',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'inline-block',
-  padding: '12px 20px',
-  width: '90%'
-}
-
-const loyaltyButton = {
-  backgroundColor: 'oklch(0.52 0.12 125)',
-  borderRadius: '8px',
-  color: 'oklch(0.975 0.008 125)',
   fontSize: '16px',
   fontWeight: '600',
   textDecoration: 'none',
   textAlign: 'center' as const,
   display: 'inline-block',
-  padding: '14px 28px'
+  padding: '14px 32px',
+  width: '280px',
+  maxWidth: '100%',
+  fontFamily: 'Inter, system-ui, sans-serif'
 }
 
-const reserveButton = {
-  backgroundColor: 'oklch(0.55 0.16 42)',
+const socialSection = {
+  backgroundColor: '#FFF5F7',
+  border: '1px solid #FFE1E9',
+  borderRadius: '12px',
+  padding: '24px',
+  margin: '24px 0',
+  textAlign: 'center' as const
+}
+
+const instagramButton = {
+  backgroundColor: '#E4405F',
   borderRadius: '8px',
-  color: 'oklch(0.98 0.01 42)',
+  color: '#ffffff',
   fontSize: '16px',
   fontWeight: '600',
   textDecoration: 'none',
   textAlign: 'center' as const,
   display: 'inline-block',
-  padding: '14px 28px'
+  padding: '14px 32px',
+  fontFamily: 'Inter, system-ui, sans-serif'
+}
+
+const feedbackSection = {
+  backgroundColor: emailColors.muted,
+  border: `1px solid ${emailColors.border}`,
+  borderRadius: '12px',
+  padding: '24px',
+  margin: '24px 0',
+  textAlign: 'center' as const
+}
+
+const contactBox = {
+  backgroundColor: emailColors.card,
+  borderRadius: '8px',
+  padding: '16px',
+  margin: '16px auto 0',
+  maxWidth: '300px'
+}
+
+const contactText = {
+  fontSize: '15px',
+  lineHeight: '24px',
+  margin: '0',
+  textAlign: 'center' as const,
+  fontFamily: 'Inter, system-ui, sans-serif',
+  color: emailColors.foreground
+}
+
+const finalThankYou = {
+  backgroundColor: emailColors.muted,
+  borderLeft: `4px solid ${emailColors.accent}`,
+  borderRadius: '8px',
+  padding: '24px',
+  margin: '32px 0 0'
+}
+
+const thankYouText = {
+  color: emailColors.foreground,
+  fontSize: '16px',
+  lineHeight: '26px',
+  textAlign: 'center' as const,
+  margin: '0',
+  fontFamily: 'Inter, system-ui, sans-serif'
 }
 
 export default ReservationReviewEmail

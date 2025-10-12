@@ -45,7 +45,6 @@ export const ReservationCancelledEmail = ({
       restaurantName={restaurantName}
       restaurantEmail={restaurantEmail}
       restaurantPhone={restaurantPhone}
-      branding={branding}
     >
       {/* Header simple */}
       <Section style={cancellationBanner}>

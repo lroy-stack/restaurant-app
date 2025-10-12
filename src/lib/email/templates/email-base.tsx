@@ -162,7 +162,7 @@ export const EmailBase = ({
               <a href={finalInstagramUrl} style={footerLink}>Instagram</a> |
               <a href={finalFacebookUrl} style={footerLink}> Facebook</a>
               {finalWhatsappNumber && (
-                <span> | <a href={`https://wa.me/${finalWhatsappNumber.replace(/[^\\d]/g, '')}`} style={footerLink}> WhatsApp</a></span>
+                <span> | <a href={`https://wa.me/${finalWhatsappNumber.replace(/[^\d]/g, '')}`} style={footerLink}> WhatsApp</a></span>
               )}
             </Text>
 

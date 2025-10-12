@@ -21,6 +21,7 @@ import { QuickStats } from './components/quick-stats'
 import { ViewToggle, useViewMode } from './components/view-toggle'
 import { ReservationCalendar } from './components/reservation-calendar'
 import { ExportModal } from '@/components/reservations/export-modal'
+import { NotificationSettings } from '@/components/dashboard/notification-settings'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -115,6 +116,7 @@ export default function ReservacionesPage() {
           </p>
         </div>
         <div className="flex gap-2 sm:gap-3 w-full sm:w-auto shrink-0">
+          <NotificationSettings />
           <Button onClick={handleRefresh} variant="outline" size="sm" disabled={loading} className="flex-1 sm:flex-initial">
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Actualizar</span>

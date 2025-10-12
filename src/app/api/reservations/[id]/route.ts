@@ -179,6 +179,30 @@ export async function PATCH(
       }
     }
 
+    // 📧 CRITICAL: Send review request email if completing
+    if (status === 'COMPLETED') {
+      try {
+        console.log('📧 Enviando solicitud de reseña para reserva:', reservationId)
+
+        const emailData = await emailService.buildEmailDataFromReservation(reservationId)
+        if (!emailData) {
+          console.error('❌ Reservation not found for review email')
+        } else {
+          const emailResult = await emailService.sendReviewRequest(emailData)
+
+          if (emailResult === 'ok') {
+            console.log('✅ Email de solicitud de reseña enviado exitosamente a:', emailData.customerEmail)
+          } else {
+            console.error('❌ Error enviando email de reseña:', emailResult)
+            // Continue execution - don't block reservation completion
+          }
+        }
+      } catch (emailError) {
+        console.error('❌ Error crítico enviando email de reseña:', emailError)
+        // Continue execution - don't block reservation completion
+      }
+    }
+
     // 📧 NOTE: Modification email will be sent after token generation (below) to include new token URL
 
     // 🚨 CRITICAL SAFEGUARD: Ensure tableIds is never sent to database

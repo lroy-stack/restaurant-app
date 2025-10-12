@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import type { RealtimeChannel } from '@supabase/supabase-js'
+import { useReservationNotifications } from './useReservationNotifications'
 
 interface MenuItem {
   id: string
@@ -82,10 +83,17 @@ export function useRealtimeReservations(filters: RealtimeFilters = {}): UseRealt
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   // supabase client imported from lib
   const channelRef = useRef<RealtimeChannel | null>(null)
   const lastFetchRef = useRef<number>(0)
+
+  // ✅ NUEVO: Hook de notificaciones con audio
+  const {
+    notifyNewReservation,
+    notifyUpdateReservation,
+    notifyCancelReservation
+  } = useReservationNotifications()
 
   // Throttle API calls to prevent excessive requests
   const throttledFetch = async () => {
@@ -248,7 +256,7 @@ export function useRealtimeReservations(filters: RealtimeFilters = {}): UseRealt
     })
   }
 
-  // Set up real-time subscription
+  // Set up real-time subscription using BROADCAST (scalable pattern)
   useEffect(() => {
     const setupRealtimeSubscription = () => {
       // Clean up existing subscription
@@ -257,56 +265,84 @@ export function useRealtimeReservations(filters: RealtimeFilters = {}): UseRealt
       }
 
       const channel = supabase
-        .channel('reservations')
+        .channel('reservation_changes', {
+          config: {
+            broadcast: { self: false },
+            presence: { key: '' }
+          }
+        })
         .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'restaurante',
-            table: 'reservations'
-          },
+          'broadcast',
+          { event: 'reservation_changes' },
           (payload) => {
-            console.log('Realtime reservation change:', payload)
-            
-            switch (payload.eventType) {
+            console.log('🔔 Realtime broadcast received:', payload)
+
+            const data = payload.payload
+            const eventType = data.type // INSERT, UPDATE, DELETE
+
+            switch (eventType) {
               case 'INSERT':
-                setReservations(prev => [payload.new as Reservation, ...prev])
+                const newReservation = data.new as Reservation
+                setReservations(prev => [newReservation, ...prev])
                 setSummary(prev => ({
-                  ...prev,
-                  total: prev.total + 1,
-                  pending: prev.pending + (payload.new.status === 'PENDING' ? 1 : 0),
-                  confirmed: prev.confirmed + (payload.new.status === 'CONFIRMED' ? 1 : 0),
-                  totalGuests: prev.totalGuests + (payload.new.partySize || 0)
+                  total: (prev?.total || 0) + 1,
+                  pending: (prev?.pending || 0) + (newReservation.status === 'PENDING' ? 1 : 0),
+                  confirmed: (prev?.confirmed || 0) + (newReservation.status === 'CONFIRMED' ? 1 : 0),
+                  completed: prev?.completed || 0,
+                  cancelled: prev?.cancelled || 0,
+                  totalGuests: (prev?.totalGuests || 0) + (newReservation.partySize || 0)
                 }))
+
+                // ✅ Notificar nueva reserva con audio
+                notifyNewReservation(newReservation as any)
                 break
-                
+
               case 'UPDATE':
-                setReservations(prev => 
-                  prev.map(reservation => 
-                    reservation.id === payload.new.id 
-                      ? { ...reservation, ...payload.new } as Reservation
+                const updatedReservation = data.new as Reservation
+                const oldReservation = data.old as Reservation
+
+                setReservations(prev =>
+                  prev.map(reservation =>
+                    reservation.id === updatedReservation.id
+                      ? { ...reservation, ...updatedReservation }
                       : reservation
                   )
                 )
+
+                // ✅ Notificar cambios importantes
+                if (oldReservation && oldReservation.status !== updatedReservation.status) {
+                  if (updatedReservation.status === 'CANCELLED') {
+                    notifyCancelReservation(updatedReservation as any)
+                  } else {
+                    notifyUpdateReservation(updatedReservation as any)
+                  }
+                }
                 break
-                
+
               case 'DELETE':
-                setReservations(prev => 
-                  prev.filter(reservation => reservation.id !== payload.old.id)
+                const deletedReservation = data.old as Reservation
+                setReservations(prev =>
+                  prev.filter(reservation => reservation.id !== deletedReservation.id)
                 )
                 setSummary(prev => ({
-                  ...prev,
-                  total: prev.total - 1,
-                  totalGuests: prev.totalGuests - (payload.old.partySize || 0)
+                  total: Math.max(0, (prev?.total || 0) - 1),
+                  pending: prev?.pending || 0,
+                  confirmed: prev?.confirmed || 0,
+                  completed: prev?.completed || 0,
+                  cancelled: prev?.cancelled || 0,
+                  totalGuests: Math.max(0, (prev?.totalGuests || 0) - (deletedReservation.partySize || 0))
                 }))
+
+                // ✅ Notificar eliminación
+                notifyCancelReservation(deletedReservation as any)
                 break
             }
           }
         )
         .subscribe((status) => {
-          console.log('Realtime subscription status:', status)
+          console.log('🔔 Broadcast subscription status:', status)
           if (status === 'SUBSCRIBED') {
-            console.log('✅ Successfully subscribed to reservations')
+            console.log('✅ Successfully subscribed to reservation broadcasts')
           }
         })
 
@@ -321,7 +357,7 @@ export function useRealtimeReservations(filters: RealtimeFilters = {}): UseRealt
         supabase.removeChannel(channelRef.current)
       }
     }
-  }, []) // Empty dependency array - we don't want to re-subscribe on filter changes
+  }, [notifyNewReservation, notifyUpdateReservation, notifyCancelReservation]) // Include notification functions in deps
 
   // 🚨 EMERGENCY FIX: Consolidate dual effects to prevent infinite database calls
   // Fetch data when filters change OR on initial load
