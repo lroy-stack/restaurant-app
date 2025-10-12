@@ -67,7 +67,7 @@ export function EnhancedProductCard({
             <Button
               size="sm"
               variant="secondary"
-              className="backdrop-blur-md bg-white/95 hover:bg-white h-9 px-4 rounded-xl shadow-lg"
+              className="backdrop-blur-md bg-card/95 hover:bg-card text-foreground border-border h-9 px-4 rounded-xl shadow-lg"
               onClick={onQuickView}
             >
               <Eye className="h-4 w-4 mr-1.5" />
