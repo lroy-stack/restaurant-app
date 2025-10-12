@@ -41,7 +41,9 @@ const content = {
     checkAvailability: 'Verificar Disponibilidad',
     checking: 'Verificando...',
     person: 'persona',
-    people: 'personas'
+    people: 'personas',
+    loadingZones: 'Cargando zonas disponibles...',
+    noZonesAvailable: 'No hay zonas disponibles en este momento.'
   },
   en: {
     title: 'Date, Time and Party Size',
@@ -53,7 +55,9 @@ const content = {
     checkAvailability: 'Check Availability',
     checking: 'Checking...',
     person: 'person',
-    people: 'people'
+    people: 'people',
+    loadingZones: 'Loading available areas...',
+    noZonesAvailable: 'No areas available at this moment.'
   },
   de: {
     title: 'Datum, Zeit und Personenanzahl',
@@ -62,10 +66,12 @@ const content = {
     timeLabel: 'Uhrzeit',
     partySizeLabel: 'Personenanzahl',
     locationLabel: 'Bevorzugter Bereich (optional)',
-    checkAvailability: 'Verfügbarkeit prüfen', 
+    checkAvailability: 'Verfügbarkeit prüfen',
     checking: 'Wird geprüft...',
     person: 'Person',
-    people: 'Personen'
+    people: 'Personen',
+    loadingZones: 'Verfügbare Bereiche werden geladen...',
+    noZonesAvailable: 'Derzeit keine Bereiche verfügbar.'
   }
 }
 
@@ -334,11 +340,11 @@ export default function ReservationStepOne({
               {loadingZones ? (
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                  <span className="text-sm text-muted-foreground">Cargando zonas disponibles...</span>
+                  <span className="text-sm text-muted-foreground">{t.loadingZones}</span>
                 </div>
               ) : activeZones.length === 0 ? (
                 <div className="text-center py-4">
-                  <p className="text-sm text-muted-foreground">No hay zonas disponibles en este momento.</p>
+                  <p className="text-sm text-muted-foreground">{t.noZonesAvailable}</p>
                 </div>
               ) : (
                 activeZones.map((zone) => (
