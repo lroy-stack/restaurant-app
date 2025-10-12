@@ -1,0 +1,23 @@
+# .htaccess para desindexación de páginas antiguas en Hostinger
+# BACKUP: Esto aplica si Hostinger todavía está activo
+
+# 410 Gone para páginas que NO existen más
+<FilesMatch "^(desserts|drinks|menu|wine|about|contact)\.html$">
+  Header set Status "410 Gone"
+  Header set X-Robots-Tag "noindex, nofollow"
+</FilesMatch>
+
+# Redirects permanentes 301 (si aplica)
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Redirect old HTML pages to new Next.js routes
+RewriteRule ^menu\.html$ /menu [R=301,L]
+RewriteRule ^contacto\.html$ /contacto [R=301,L]
+RewriteRule ^historia\.html$ /historia [R=301,L]
+RewriteRule ^galeria\.html$ /galeria [R=301,L]
+RewriteRule ^reservas\.html$ /reservas [R=301,L]
+
+# 410 Gone para /pages/* antiguas
+RewriteRule ^pages/.*\.html$ - [G,L]

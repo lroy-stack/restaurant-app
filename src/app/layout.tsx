@@ -14,8 +14,8 @@ export const metadata: Metadata = {
     default: "Enigma Cocina Con Alma - Restaurante en el Casco Antiguo de Calpe",
     template: "%s | Enigma Calpe"
   },
-  description: "Cocina de autor en el corazón histórico de Calpe. Fusionamos tradición atlántica y mediterránea en un ambiente auténtico. Carrer Justicia 6A. Reserva tu mesa.",
-  keywords: "restaurante Calpe, casco antiguo Calpe, cocina mediterránea, restaurante histórico, cocina de autor, fusión atlántica, restaurante tradicional Alicante",
+  description: "Cocina mediterránea de autor en el corazón del casco antiguo de Calpe desde 2023. Ingredientes de proximidad, producto de temporada, técnicas tradicionales. Carrer Justicia 6A. Reserva online con pre-pedidos.",
+  keywords: "restaurante Calpe, casco antiguo Calpe, cocina mediterránea de autor, restaurante 2023 Calpe, ingredientes de proximidad, producto temporada, pre-pedidos restaurante, reserva online Calpe, Carrer Justicia",
   authors: [{ name: "Enigma Cocina Con Alma" }],
   creator: "Enigma Cocina Con Alma",
   publisher: "Enigma Cocina Con Alma",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     url: 'https://www.enigmaconalma.com',
     siteName: 'Enigma Cocina Con Alma',
     title: 'Enigma Cocina Con Alma - Restaurante en el Casco Antiguo de Calpe',
-    description: 'Cocina de autor en el corazón histórico de Calpe. Fusionamos tradición atlántica y mediterránea en un ambiente auténtico.',
+    description: 'Cocina mediterránea de autor en el corazón del casco antiguo de Calpe desde 2023. Ingredientes de proximidad y producto de temporada.',
     images: [
       {
         url: 'https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1754141731421',
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Enigma Cocina Con Alma - Restaurante en Calpe',
-    description: 'Cocina de autor en el casco antiguo de Calpe. Tradición atlántica y mediterránea.',
+    description: 'Cocina mediterránea de autor en el casco antiguo de Calpe. Ingredientes de proximidad, producto de temporada.',
     images: ['https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1754141731421'],
   },
   robots: {
