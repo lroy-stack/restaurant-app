@@ -74,11 +74,11 @@ export async function GET(request: NextRequest) {
             return true
           }
 
-          // CONFIRMED = RESERVADA (solo para HOY y dentro de 2.5h)
+          // CONFIRMED = RESERVADA (desde 30min antes hasta 2.5h después)
           if (res.status === 'CONFIRMED' && isToday) {
             const timeDiff = resDateTime.getTime() - nowMadrid.getTime()
-            // Solo si es en las próximas 2.5 horas
-            return timeDiff > 0 && timeDiff <= (150 * 60000)
+            // Mostrar desde 30min antes hasta 2.5h después de la hora reservada
+            return timeDiff >= (-30 * 60000) && timeDiff <= (150 * 60000)
           }
 
           // PENDING no se incluye en el plano
