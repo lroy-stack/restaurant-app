@@ -305,15 +305,17 @@ export default function TimeSlotSelector({
     fetchTimeSlots()
   }, [selectedDate, partySize])
 
-  // Agrupar slots por periodo
+  // Agrupar slots por periodo - SOLO mostrar disponibles
   const slotsByPeriod = useMemo(() => {
     const grouped: Record<string, TimeSlot[]> = {}
-    timeSlots.forEach(slot => {
-      if (!grouped[slot.period]) {
-        grouped[slot.period] = []
-      }
-      grouped[slot.period].push(slot)
-    })
+    timeSlots
+      .filter(slot => slot.available) // Filtrar solo horarios disponibles
+      .forEach(slot => {
+        if (!grouped[slot.period]) {
+          grouped[slot.period] = []
+        }
+        grouped[slot.period].push(slot)
+      })
     return grouped
   }, [timeSlots])
 
