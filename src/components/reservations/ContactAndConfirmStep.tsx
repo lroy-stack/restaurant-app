@@ -82,6 +82,7 @@ const content = {
     reservationSummary: 'Resumen de la Reserva',
     contactInfo: 'Información de Contacto',
     additionalInfo: 'Información Adicional',
+    additionalInfoOptional: 'Información adicional (opcional)',
     preOrderSummary: 'Resumen del Pre-pedido',
     date: 'Fecha:',
     time: 'Hora:',
@@ -126,6 +127,7 @@ const content = {
     reservationSummary: 'Reservation Summary',
     contactInfo: 'Contact Information',
     additionalInfo: 'Additional Information',
+    additionalInfoOptional: 'Additional information (optional)',
     preOrderSummary: 'Pre-order Summary',
     date: 'Date:',
     time: 'Time:',
@@ -170,6 +172,7 @@ const content = {
     reservationSummary: 'Reservierungsübersicht',
     contactInfo: 'Kontaktinformationen',
     additionalInfo: 'Zusätzliche Informationen',
+    additionalInfoOptional: 'Zusätzliche Informationen (optional)',
     preOrderSummary: 'Vorbestellungsübersicht',
     date: 'Datum:',
     time: 'Uhrzeit:',
@@ -364,7 +367,7 @@ export default function ContactAndConfirmStep({
 
                 {/* Special Information - Modern Checkboxes */}
                 <div className="space-y-3 md:space-y-4 border-t pt-3 md:pt-4 mt-3 md:mt-4">
-                  <h3 className="text-xs md:text-sm font-medium text-muted-foreground">Información adicional (opcional)</h3>
+                  <h3 className="text-xs md:text-sm font-medium text-muted-foreground">{t.additionalInfoOptional}</h3>
 
                   {/* Ocasión especial */}
                   <div className="space-y-3">
