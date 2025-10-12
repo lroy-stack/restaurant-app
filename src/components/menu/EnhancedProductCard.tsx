@@ -29,31 +29,31 @@ export function EnhancedProductCard({
   return (
     <motion.div
       whileHover={{ y: -8 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+      transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
     >
-      <Card className="group h-full flex flex-col overflow-hidden border-border/50 hover:border-primary/30 hover:shadow-xl transition-all duration-300">
-        {/* Image Container with Overlay - aspect ratio optimizado para móvil */}
-        <div className="relative aspect-[4/3] sm:aspect-square overflow-hidden bg-muted">
+      <Card className="group h-full flex flex-col overflow-hidden rounded-2xl border-border/50 hover:border-primary/20 hover:shadow-2xl transition-all duration-300">
+        {/* Image Container - SIN padding extra, aspect-ratio puro */}
+        <div className="relative w-full overflow-hidden bg-muted" style={{ aspectRatio: '4/3' }}>
           <motion.img
             src={item.imageUrl || '/placeholder-dish.jpg'}
             alt={item.name}
             className="w-full h-full object-cover"
-            animate={{ scale: isHovered ? 1.1 : 1 }}
+            animate={{ scale: isHovered ? 1.08 : 1 }}
             transition={{ duration: 0.4 }}
             loading="lazy"
           />
 
           {/* Gradient Overlay */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"
+            className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
             initial={{ opacity: 0 }}
             animate={{ opacity: isHovered ? 1 : 0 }}
             transition={{ duration: 0.2 }}
           />
 
-          {/* Quick Actions Overlay - solo icono en móvil */}
+          {/* Quick Actions Overlay */}
           <motion.div
             className="absolute inset-0 flex items-center justify-center gap-2"
             initial={{ opacity: 0, y: 20 }}
@@ -66,41 +66,45 @@ export function EnhancedProductCard({
             <Button
               size="sm"
               variant="secondary"
-              className="backdrop-blur-sm bg-white/90 hover:bg-white h-8 sm:h-9"
+              className="backdrop-blur-md bg-white/95 hover:bg-white h-9 px-4 rounded-xl shadow-lg"
               onClick={onQuickView}
             >
-              <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1" />
+              <Eye className="h-4 w-4 mr-1.5" />
               <span className="hidden sm:inline">Vista Rápida</span>
             </Button>
           </motion.div>
 
-          {/* Badges - más compactos en móvil */}
-          <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-1 sm:gap-2">
-            {item.isRecommended && (
+          {/* Badge Recomendado - Flotante sobre imagen */}
+          {item.isRecommended && (
+            <div className="absolute top-3 left-3 z-10">
               <motion.div
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
               >
-                <Badge className="bg-orange-500 text-white backdrop-blur-sm text-xs px-2 py-0.5 shadow-md">
-                  <Heart className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 fill-current" />
-                  <span className="hidden sm:inline">Recomendado</span>
+                <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white backdrop-blur-sm text-xs px-2.5 py-1 rounded-full shadow-lg border-0">
+                  <Heart className="h-3 w-3 mr-1 fill-current" />
+                  Recomendado
                 </Badge>
               </motion.div>
-            )}
-            {item.isOrganic && (
-              <Badge variant="secondary" className="bg-secondary/90 backdrop-blur-sm text-xs px-2 py-0.5">
-                <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
-                <span className="hidden sm:inline">Ecológico</span>
-              </Badge>
-            )}
-          </div>
+            </div>
+          )}
 
-          {/* Price Tag - responsive sizing */}
-          <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
+          {/* Badge Ecológico */}
+          {item.isOrganic && (
+            <div className="absolute top-3 left-3 z-10" style={{ marginTop: item.isRecommended ? '2.5rem' : '0' }}>
+              <Badge className="bg-emerald-500/90 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full shadow-md border-0">
+                <Sparkles className="h-3 w-3 mr-1" />
+                Eco
+              </Badge>
+            </div>
+          )}
+
+          {/* Price Badge - Flotante sobre imagen */}
+          <div className="absolute top-3 right-3 z-10">
             <motion.div
-              className="bg-primary text-primary-foreground px-2 py-1 sm:px-3 sm:py-1.5 rounded-full font-bold text-sm sm:text-base md:text-lg shadow-lg"
-              whileHover={{ scale: 1.1 }}
+              className="bg-primary/95 backdrop-blur-sm text-primary-foreground px-3 py-1.5 rounded-xl font-bold text-base shadow-lg"
+              whileHover={{ scale: 1.05 }}
               transition={{ type: 'spring', stiffness: 400 }}
             >
               €{item.price}
@@ -108,60 +112,65 @@ export function EnhancedProductCard({
           </div>
         </div>
 
-        {/* Card Content - padding y tamaños responsive */}
-        <CardContent className="flex-1 flex flex-col p-2 sm:p-3 md:p-4">
-          <h3 className="text-sm sm:text-base md:text-lg font-semibold mb-1 sm:mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-            {item.name}
-          </h3>
-          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1 sm:line-clamp-2 mb-2 sm:mb-3">
-            {item.description}
-          </p>
-
-          {/* Allergens & Dietary Info - compacto en móvil */}
-          <div className="mb-2 sm:mb-3">
-            <AllergenInfo
-              allergens={item.allergens || []}
-              isVegetarian={item.isVegetarian}
-              isVegan={item.isVegan}
-              isGlutenFree={item.isGlutenFree}
-              variant="default"
-              size="sm"
-              layout="inline"
-              showNames={false}
-              maxVisible={99}
-              className="justify-start"
-              language="es"
-            />
+        {/* Card Content - Padding optimizado sin hueco excesivo */}
+        <CardContent className="flex-1 flex flex-col gap-3 p-4">
+          {/* Título y descripción */}
+          <div>
+            <h3 className="text-base font-bold mb-1.5 line-clamp-2 group-hover:text-primary transition-colors leading-tight">
+              {item.name}
+            </h3>
+            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+              {item.description}
+            </p>
           </div>
 
-          {/* Actions - botón más compacto en móvil */}
-          <div className="mt-auto pt-2 sm:pt-3 md:pt-4 border-t">
-            <motion.div whileTap={{ scale: 0.95 }}>
-              <Button
-                onClick={onAddToCart}
+          {/* Allergens & Dietary Info */}
+          {(item.allergens?.length > 0 || item.isVegetarian || item.isVegan || item.isGlutenFree) && (
+            <div className="mt-auto">
+              <AllergenInfo
+                allergens={item.allergens || []}
+                isVegetarian={item.isVegetarian}
+                isVegan={item.isVegan}
+                isGlutenFree={item.isGlutenFree}
+                variant="default"
                 size="sm"
-                className={cn(
-                  "w-full relative h-8 sm:h-9 md:h-10 text-xs sm:text-sm",
-                  isInCart && "bg-green-600 hover:bg-green-700"
-                )}
-              >
-                <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">{isInCart ? `En carrito (${cartQuantity})` : 'Añadir'}</span>
-                <span className="sm:hidden">{isInCart ? cartQuantity : '+'}</span>
+                layout="inline"
+                showNames={false}
+                maxVisible={99}
+                className="justify-start"
+                language="es"
+              />
+            </div>
+          )}
 
-                {isInCart && (
-                  <motion.div
-                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 500 }}
-                  >
-                    {cartQuantity}
-                  </motion.div>
-                )}
-              </Button>
-            </motion.div>
-          </div>
+          {/* Actions Button */}
+          <motion.div whileTap={{ scale: 0.97 }} className="mt-auto">
+            <Button
+              onClick={onAddToCart}
+              size="sm"
+              className={cn(
+                "w-full h-10 text-sm font-semibold rounded-xl shadow-md transition-all duration-200",
+                isInCart
+                  ? "bg-green-600 hover:bg-green-700 hover:shadow-lg"
+                  : "bg-primary hover:bg-primary/90 hover:shadow-lg"
+              )}
+            >
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              {isInCart ? `En carrito (${cartQuantity})` : 'Añadir al carrito'}
+
+              {/* Quantity badge - solo visible si está en carrito */}
+              {isInCart && cartQuantity > 0 && (
+                <motion.span
+                  className="ml-auto bg-white/20 px-2 py-0.5 rounded-full text-xs font-bold"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 500 }}
+                >
+                  {cartQuantity}
+                </motion.span>
+              )}
+            </Button>
+          </motion.div>
         </CardContent>
       </Card>
     </motion.div>
