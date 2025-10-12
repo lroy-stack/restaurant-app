@@ -7,6 +7,7 @@ import { PerformanceProvider, PerformanceDebugger } from "@/components/performan
 import { CartProvider } from "@/contexts/CartContext";
 import { ScrollProvider } from "@/contexts/ScrollContext";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
+import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { benaya, playfairDisplay, crimsonText, sourceSerif4, inter } from "./fonts";
 import "./globals.css";
 
@@ -87,6 +88,7 @@ export default function RootLayout({
               <SupabaseProvider>
                 <ScrollProvider>
                   <CartProvider>
+                    <ScrollToTop />
                     {children}
                     <PerformanceDebugger />
                   </CartProvider>
