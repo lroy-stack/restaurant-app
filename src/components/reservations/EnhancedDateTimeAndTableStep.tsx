@@ -176,7 +176,6 @@ export default function EnhancedDateTimeAndTableStep({
 }: EnhancedDateTimeAndTableStepProps) {
   const t = content[language]
   const form = useFormContext()
-  const { clearCart } = useCart()
 
   // Refs
   const tableSelectorRef = useRef<HTMLDivElement>(null)
@@ -353,11 +352,6 @@ export default function EnhancedDateTimeAndTableStep({
     form.setValue('partySize', partySize)
     form.setValue('childrenCount', childrenCount > 0 ? childrenCount : undefined)
     form.setValue('location', selectedZone || '')
-
-    // Limpiar carrito si no hay pre-orden
-    if (!form.getValues('hasPreOrder')) {
-      clearCart()
-    }
 
     onNext()
   }
