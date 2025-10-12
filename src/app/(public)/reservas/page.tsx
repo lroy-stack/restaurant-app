@@ -20,6 +20,7 @@ import ContactAndConfirmStep from '@/components/reservations/ContactAndConfirmSt
 // Hooks
 import { useReservations } from '@/hooks/useReservations'
 import { useCart } from '@/hooks/useCart'
+import { isValidPhoneNumber } from 'libphonenumber-js'
 
 // Validation schema
 const reservationSchema = z.object({
@@ -32,7 +33,12 @@ const reservationSchema = z.object({
     firstName: z.string().min(2),
     lastName: z.string().min(2),
     email: z.string().email(),
-    phone: z.string().regex(/^[+][1-9]\d{1,14}$/),
+    phone: z.string().refine((value) => {
+      // Validación con libphonenumber-js - acepta formato internacional completo
+      return isValidPhoneNumber(value)
+    }, {
+      message: 'Número de teléfono inválido. Incluye código de país (+34, +33, etc.)'
+    }),
     occasion: z.string().default(''),
     dietaryNotes: z.string().default(''),
     specialRequests: z.string().default('')

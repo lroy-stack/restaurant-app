@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
 import { SupabaseProvider } from "@/components/providers/supabase-provider";
 import { QueryClientProvider } from "@/components/providers/query-client-provider";
@@ -60,6 +60,12 @@ export const metadata: Metadata = {
     google: 'verification_token',
   },
 };
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5, // Permite zoom accesible pero previene auto-zoom en inputs
+}
 
 export default function RootLayout({
   children,

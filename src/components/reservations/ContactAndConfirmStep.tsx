@@ -2,9 +2,10 @@
 
 import { useMemo } from 'react'
 import Link from 'next/link'
-import { useFormContext } from 'react-hook-form'
+import { useFormContext, Controller } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { InternationalPhoneInput } from '@/components/ui/phone-input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -214,6 +215,7 @@ export default function ContactAndConfirmStep({
     watch,
     setValue,
     trigger,
+    control,
     formState: { errors }
   } = useFormContext()
 
@@ -290,7 +292,7 @@ export default function ContactAndConfirmStep({
                   <Input
                     id="firstName"
                     {...register('stepThree.firstName')}
-                    className="h-9 md:h-10 text-sm"
+                    className="h-9 md:h-10 text-base md:text-sm"
                   />
                   {errors.stepThree?.firstName && (
                     <p className="text-xs md:text-sm text-destructive">
@@ -306,7 +308,7 @@ export default function ContactAndConfirmStep({
                   <Input
                     id="lastName"
                     {...register('stepThree.lastName')}
-                    className="h-9 md:h-10 text-sm"
+                    className="h-9 md:h-10 text-base md:text-sm"
                   />
                   {errors.stepThree?.lastName && (
                     <p className="text-xs md:text-sm text-destructive">
@@ -325,7 +327,7 @@ export default function ContactAndConfirmStep({
                     id="email"
                     type="email"
                     {...register('stepThree.email')}
-                    className="h-9 md:h-10 text-sm"
+                    className="h-9 md:h-10 text-base md:text-sm"
                   />
                   {errors.stepThree?.email && (
                     <p className="text-xs md:text-sm text-red-600">
@@ -338,16 +340,24 @@ export default function ContactAndConfirmStep({
                   <Label htmlFor="phone" className="text-xs md:text-sm">
                     {t.phone} <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="+34 600 123 456"
-                    {...register('stepThree.phone')}
-                    className="h-9 md:h-10 text-sm"
+                  <Controller
+                    name="stepThree.phone"
+                    control={control}
+                    render={({ field }) => (
+                      <InternationalPhoneInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        defaultCountry="ES"
+                        placeholder={language === 'es' ? '+34 600 123 456' :
+                                   language === 'en' ? '+34 600 123 456' :
+                                   '+34 600 123 456'}
+                        error={!!errors.stepThree?.phone}
+                      />
+                    )}
                   />
                   {errors.stepThree?.phone && (
                     <p className="text-xs md:text-sm text-red-600">
-                      {errors.stepThree.phone.message}
+                      {errors.stepThree.phone.message?.toString()}
                     </p>
                   )}
                 </div>
@@ -381,7 +391,7 @@ export default function ContactAndConfirmStep({
                           id="occasion"
                           placeholder={t.occasionPlaceholder}
                           {...register('stepThree.occasion')}
-                          className="border-primary/20 focus:border-primary"
+                          className="border-primary/20 focus:border-primary text-base md:text-sm"
                         />
                         {errors.stepThree?.occasion && (
                           <p className="text-sm text-red-600">
@@ -418,7 +428,7 @@ export default function ContactAndConfirmStep({
                           placeholder={t.dietaryPlaceholder}
                           rows={3}
                           {...register('stepThree.dietaryNotes')}
-                          className="border-secondary/20 focus:border-secondary resize-none"
+                          className="border-secondary/20 focus:border-secondary resize-none text-base md:text-sm"
                         />
                         {errors.stepThree?.dietaryNotes && (
                           <p className="text-sm text-red-600">
@@ -455,7 +465,7 @@ export default function ContactAndConfirmStep({
                           placeholder={t.specialPlaceholder}
                           rows={3}
                           {...register('stepThree.specialRequests')}
-                          className="border-accent/20 focus:border-accent resize-none"
+                          className="border-accent/20 focus:border-accent resize-none text-base md:text-sm"
                         />
                         {errors.stepThree?.specialRequests && (
                           <p className="text-sm text-red-600">
