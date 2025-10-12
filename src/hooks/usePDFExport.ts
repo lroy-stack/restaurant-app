@@ -345,7 +345,7 @@ function addDetailedReservations(
     }
 
     // Draw card
-    drawReservationCard(doc, reservation, margin, currentY, cardWidth, options)
+    drawReservationCard(doc, reservation, margin, currentY, cardWidth, cardHeight, options)
 
     currentY += cardHeight + 5 // Card + spacing
   })
@@ -360,12 +360,13 @@ function drawReservationCard(
   x: number,
   y: number,
   width: number,
+  height: number,
   options: PDFExportOptions
 ) {
   // Card border
   doc.setDrawColor(...ENIGMA_COLORS.border)
   doc.setLineWidth(0.3)
-  doc.rect(x, y, width, 'auto', 'S')
+  doc.rect(x, y, width, height, 'S')
 
   // Status badge
   const statusColor = STATUS_COLORS[reservation.status as keyof typeof STATUS_COLORS] || ENIGMA_COLORS.muted
