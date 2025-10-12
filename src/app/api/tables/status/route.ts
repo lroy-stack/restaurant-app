@@ -55,14 +55,14 @@ export async function GET(request: NextRequest) {
         
         // CRITICAL: Find active reservation using ONLY table_ids[] (NOT legacy tableId)
         const activeReservation = table.reservations.find((res: any) => {
-          // 🚀 CRITICAL FIX: Use Spain timezone helper for accurate comparison
-          const nowMadrid = getSpainDate()
-          const resDateTime = new Date(res.time) // res.time already stored in Spain local time
+          // Simple date comparison - server timezone is correct
+          const now = new Date()
+          const resDateTime = new Date(res.time)
 
-          // Compare dates in Madrid timezone
-          const todayMadrid = nowMadrid.toDateString()
-          const resDateMadrid = resDateTime.toDateString()
-          const isToday = resDateMadrid === todayMadrid
+          // Compare dates
+          const today = now.toDateString()
+          const resDate = resDateTime.toDateString()
+          const isToday = resDate === today
 
           // ✅ CRITICAL: Check ONLY table_ids[] array - NO FALLBACK to tableId
           const isTableAssigned = res.table_ids?.includes(table.id)
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
 
           // CONFIRMED = RESERVADA (desde 30min antes hasta 2.5h después)
           if (res.status === 'CONFIRMED' && isToday) {
-            const timeDiff = resDateTime.getTime() - nowMadrid.getTime()
+            const timeDiff = resDateTime.getTime() - now.getTime()
             // Mostrar desde 30min antes hasta 2.5h después de la hora reservada
             return timeDiff >= (-30 * 60000) && timeDiff <= (150 * 60000)
           }
