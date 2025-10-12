@@ -258,8 +258,8 @@ export default function TimeSlotSelector({
   const [isFetchingSlots, setIsFetchingSlots] = useState(false)
   const [expandedPeriods, setExpandedPeriods] = useState<Record<string, boolean>>({
     afternoon: true,
-    evening: false,
-    night: false
+    evening: true,    // ✅ Auto-expandir cena temprana
+    night: false      // Solo colapsar noche tardía
   })
 
   // Fetch time slots from API when date changes
@@ -394,8 +394,9 @@ export default function TimeSlotSelector({
 
           const periodLabel = t[period as keyof typeof t] as string
           const isExpanded = expandedPeriods[period]
-          const MOBILE_PREVIEW_COUNT = 4
+          const MOBILE_PREVIEW_COUNT = 6 // Aumentado de 4 a 6 para mejor UX móvil
           const hasMore = slots.length > MOBILE_PREVIEW_COUNT
+          const hiddenCount = slots.length - MOBILE_PREVIEW_COUNT
 
           return (
             <Collapsible
@@ -413,15 +414,6 @@ export default function TimeSlotSelector({
                     <Badge variant="secondary" className="ml-1">
                       {slots.length}
                     </Badge>
-                    {hasMore && (
-                      <span className="md:hidden">
-                        {isExpanded ? (
-                          <ChevronUp className="h-4 w-4 transition-transform" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4 transition-transform" />
-                        )}
-                      </span>
-                    )}
                   </button>
                 </CollapsibleTrigger>
                 <div className={cn(
@@ -531,9 +523,35 @@ export default function TimeSlotSelector({
                 })}
               </div>
 
-              {/* Slots adicionales colapsables (solo mobile) */}
-              {hasMore && (
-                <CollapsibleContent className="md:hidden">
+              {/* Botón explícito "Ver más" (solo mobile cuando hay más slots) */}
+              {hasMore && !isExpanded && (
+                <div className="md:hidden space-y-2">
+                  {/* Badge animado indicador visual */}
+                  <div className="flex justify-center">
+                    <Badge variant="default" className="animate-pulse text-sm px-4 py-2 bg-primary">
+                      ⚡ +{hiddenCount} {language === 'es' ? 'disponibles' : language === 'en' ? 'available' : 'verfügbar'} ⚡
+                    </Badge>
+                  </div>
+
+                  {/* Botón grande y claro */}
+                  <Button
+                    onClick={() => togglePeriod(period)}
+                    variant="outline"
+                    size="lg"
+                    className="w-full border-2 border-primary/30 hover:border-primary hover:bg-primary/5"
+                  >
+                    <ChevronDown className="mr-2 h-5 w-5 animate-bounce" />
+                    {language === 'es' ? `Ver ${hiddenCount} horarios más disponibles` :
+                     language === 'en' ? `See ${hiddenCount} more times available` :
+                     `${hiddenCount} weitere Zeiten anzeigen`}
+                    <ChevronDown className="ml-2 h-5 w-5 animate-bounce" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Slots adicionales expandidos (solo mobile) */}
+              {hasMore && isExpanded && (
+                <div className="md:hidden">
                   <div className="grid grid-cols-3 gap-2 mt-2">
                     {slots.slice(MOBILE_PREVIEW_COUNT).map((slot) => {
                       const isSelected = selectedTime === slot.time
@@ -593,7 +611,21 @@ export default function TimeSlotSelector({
                       )
                     })}
                   </div>
-                </CollapsibleContent>
+
+                  {/* Botón para colapsar de nuevo */}
+                  <Button
+                    onClick={() => togglePeriod(period)}
+                    variant="ghost"
+                    size="sm"
+                    className="w-full mt-3 text-muted-foreground"
+                  >
+                    <ChevronUp className="mr-2 h-4 w-4" />
+                    {language === 'es' ? 'Mostrar menos' :
+                     language === 'en' ? 'Show less' :
+                     'Weniger anzeigen'}
+                    <ChevronUp className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
               )}
 
               {/* En desktop mostrar todos sin colapsar */}
