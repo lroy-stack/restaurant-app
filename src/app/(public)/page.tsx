@@ -22,16 +22,15 @@ export default function HomePage() {
   return (
     <>
       {/* Hero Section - 100% Responsive */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden -mt-16 pt-16">
+      <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-black/20 z-10" />
           {/* Optimized hero image with proper loading */}
-          <div
-            className="w-full h-full bg-cover bg-no-repeat"
-            style={{
-              backgroundImage: 'url(https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1754141731421)',
-              backgroundPosition: 'center center'
-            }}
+          <img
+            src="https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1754141731421"
+            alt="Enigma Cocina Con Alma"
+            className="w-full h-full object-cover"
+            style={{ objectPosition: 'center 55%' }}
           />
         </div>
         
