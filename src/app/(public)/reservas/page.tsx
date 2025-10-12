@@ -77,7 +77,9 @@ export default function ReservasPage() {
   const router = useRouter()
 
   const { createReservation, isLoading: isSubmitting } = useReservations()
-  const { items: cartItems, total: cartTotal, clearCart } = useCart()
+  const { state, getCartTotal, clearCart } = useCart()
+  const cartItems = state.items
+  const cartTotal = getCartTotal()
 
   const form = useForm<ReservationFormData>({
     resolver: zodResolver(reservationSchema),
