@@ -117,7 +117,7 @@
 
   /* Muted Elements - Enhanced text hierarchy */
   --muted: oklch(0.9850 0.0020 210);
-  --muted-foreground: oklch(0.6800 0.0200 200);
+  --muted-foreground: oklch(0.55 0.015 220);
 
   /* Accent Colors - Subtle Enigma Orange */
   --accent: oklch(0.95 0.08 40);
