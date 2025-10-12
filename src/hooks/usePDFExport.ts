@@ -192,7 +192,7 @@ function addHeader(doc: any, pageWidth: number, dateRange: ExportDateRange) {
 
   doc.setFontSize(12)
   doc.setFont('helvetica', 'normal')
-  doc.text('Lista de Reservaciones', pageWidth / 2, 35, { align: 'center' })
+  doc.text('Lista de Reservas', pageWidth / 2, 35, { align: 'center' })
 
   // Date range
   const today = new Date()

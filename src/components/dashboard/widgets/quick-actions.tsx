@@ -20,7 +20,7 @@ interface QuickActionsWidgetProps {
 
 const primaryActions: QuickAction[] = [
   {
-    title: 'Reservaciones',
+    title: 'Reservas',
     description: 'Gestionar reservas y disponibilidad',
     icon: <CalendarDays className="h-8 w-8 text-primary" />,
     href: '/dashboard/reservaciones',

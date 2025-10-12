@@ -144,10 +144,10 @@ export function ReservationList({
         <CardContent className="p-12 text-center">
           <CalendarDays className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-foreground mb-2">
-            No hay reservaciones
+            No hay reservas
           </h3>
           <p className="text-gray-500">
-            No se encontraron reservaciones con los filtros aplicados.
+            No se encontraron reservas con los filtros aplicados.
           </p>
         </CardContent>
       </Card>

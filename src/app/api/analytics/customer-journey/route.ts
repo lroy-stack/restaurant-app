@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
         FROM qr_metrics qm
         UNION ALL
         SELECT
-          2 as step_order, 'Reservaciones' as step, rm.total_reservations as count,
+          2 as step_order, 'Reservas' as step, rm.total_reservations as count,
           ROUND(rm.total_reservations::decimal / NULLIF(qm.total_qr_scans, 0) * 100, 2) as conversion_rate
         FROM qr_metrics qm, reservation_metrics rm
         UNION ALL
@@ -172,7 +172,7 @@ export async function GET(request: NextRequest) {
           conversionRate: 100
         },
         {
-          step: 'Reservaciones',
+          step: 'Reservas',
           count: totalReservations || 0,
           conversionRate: totalQRScans > 0 ? (totalReservations / totalQRScans) * 100 : 0
         },

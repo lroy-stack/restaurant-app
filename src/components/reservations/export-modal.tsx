@@ -112,10 +112,10 @@ export function ExportModal({ isOpen, onClose, reservations, totalCount }: Expor
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Download className="w-5 h-5 text-primary" />
-            Exportar Reservaciones
+            Exportar Reservas
           </DialogTitle>
           <DialogDescription>
-            Genera un PDF con la lista de reservaciones para imprimir o compartir.
+            Genera un PDF con la lista de reservas para imprimir o compartir.
             <span className="block mt-1 text-xs text-muted-foreground">
               Total disponible: {totalCount} reservas
             </span>

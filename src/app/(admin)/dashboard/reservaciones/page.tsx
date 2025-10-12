@@ -69,7 +69,7 @@ export default function ReservacionesPage() {
 
   const handleRefresh = async () => {
     await refetch()
-    toast.success('Lista de reservaciones actualizada')
+    toast.success('Lista de reservas actualizada')
   }
 
   if (error) {
@@ -78,7 +78,7 @@ export default function ReservacionesPage() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground truncate">
-              Gestión de Reservaciones
+              Gestión de Reservas
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground line-clamp-1">
               Administrar reservas y disponibilidad del restaurante
@@ -90,7 +90,7 @@ export default function ReservacionesPage() {
           <CardContent className="p-12 text-center">
             <XCircle className="w-12 h-12 text-red-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-red-900 mb-2">
-              Error al cargar reservaciones
+              Error al cargar reservas
             </h3>
             <p className="text-red-600 mb-4">{error}</p>
             <Button onClick={handleRefresh} variant="outline">
@@ -109,7 +109,7 @@ export default function ReservacionesPage() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground truncate">
-            Gestión de Reservaciones
+            Gestión de Reservas
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground line-clamp-1">
             Administrar reservas y disponibilidad del restaurante

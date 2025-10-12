@@ -297,7 +297,7 @@ export function ProfessionalCalendar({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarIcon className="w-5 h-5" />
-            Calendario de Reservaciones
+            Calendario de Reservas
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -313,7 +313,7 @@ export function ProfessionalCalendar({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-            Calendario de Reservaciones
+            Calendario de Reservas
           </CardTitle>
           <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground overflow-x-auto pb-1 sm:pb-0">
             <div className="flex items-center gap-1.5 whitespace-nowrap">

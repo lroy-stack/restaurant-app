@@ -38,7 +38,7 @@ const navigationItems = [
     roles: ['ADMIN', 'MANAGER', 'STAFF']
   },
   {
-    name: 'Reservaciones',
+    name: 'Reservas',
     href: '/dashboard/reservaciones',
     icon: Calendar,
     roles: ['ADMIN', 'MANAGER', 'STAFF']
