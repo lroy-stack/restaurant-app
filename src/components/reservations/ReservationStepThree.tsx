@@ -34,6 +34,7 @@ const content = {
     specialRequests: 'Peticiones especiales',
     specialLabel: 'Tengo peticiones especiales para la mesa',
     specialPlaceholder: '¿Tienes alguna petición especial? Haremos todo lo posible por cumplirla.',
+    additionalInfoOptional: 'Información adicional (opcional)',
     previous: 'Anterior',
     next: 'Siguiente',
     required: 'requerido'
@@ -54,6 +55,7 @@ const content = {
     specialRequests: 'Special requests',
     specialLabel: 'I have special requests for the table',
     specialPlaceholder: 'Do you have any special requests? We will do our best to accommodate them.',
+    additionalInfoOptional: 'Additional information (optional)',
     previous: 'Previous',
     next: 'Next',
     required: 'required'
@@ -74,6 +76,7 @@ const content = {
     specialRequests: 'Besondere Wünsche',
     specialLabel: 'Ich habe besondere Wünsche für den Tisch',
     specialPlaceholder: 'Haben Sie besondere Wünsche? Wir versuchen gerne, diese zu erfüllen.',
+    additionalInfoOptional: 'Zusätzliche Informationen (optional)',
     previous: 'Zurück',
     next: 'Weiter',
     required: 'erforderlich'
@@ -190,7 +193,7 @@ export default function ReservationStepThree({
 
           {/* Special Information - Modern Checkboxes */}
           <div className="space-y-6 border-t pt-6">
-            <h3 className="text-sm font-medium text-muted-foreground">Información adicional (opcional)</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">{t.additionalInfoOptional}</h3>
 
             {/* Ocasión especial */}
             <div className="space-y-3">
