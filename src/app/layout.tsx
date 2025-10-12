@@ -6,6 +6,7 @@ import { EnigmaThemeProvider } from "@/components/theme/theme-provider";
 import { PerformanceProvider, PerformanceDebugger } from "@/components/performance/performance-provider";
 import { CartProvider } from "@/contexts/CartContext";
 import { ScrollProvider } from "@/contexts/ScrollContext";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { benaya, playfairDisplay, crimsonText, sourceSerif4, inter } from "./fonts";
 import "./globals.css";
 
@@ -70,6 +71,11 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${benaya.variable} ${playfairDisplay.variable} ${crimsonText.variable} ${sourceSerif4.variable} ${inter.variable}`}
     >
+      <head>
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <GoogleAnalytics measurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+        )}
+      </head>
       <body className="font-sans antialiased min-h-screen bg-background">
         <PerformanceProvider>
           <EnigmaThemeProvider>
