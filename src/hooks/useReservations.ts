@@ -28,6 +28,7 @@ export interface ReservationData {
   emailConsent: boolean // Confirmation emails consent
   marketingConsent: boolean // Newsletter and promotional emails
   preferredLanguage?: 'ES' | 'EN' | 'DE'
+  source?: 'admin' | 'web' // Source of reservation
 }
 
 export interface AvailabilityData {
@@ -158,17 +159,20 @@ export const useReservations = () => {
         dataProcessingConsent: data.dataProcessingConsent, // Always true at this point
         emailConsent: data.emailConsent,
         marketingConsent: data.marketingConsent,
-        preferredLanguage: data.preferredLanguage || 'ES' // FIXED: Use form language preference
+        preferredLanguage: data.preferredLanguage || 'ES', // FIXED: Use form language preference
+        source: data.source || 'web' // Source of reservation
       }
 
       // 🔧 DEBUG: Log exact payload being sent
       console.log('🚀 FRONTEND->API PAYLOAD:', JSON.stringify(apiData, null, 2))
       console.log('🔍 tableIds type:', typeof apiData.tableIds, 'value:', apiData.tableIds)
       console.log('🔍 Original data.tableIds:', data.tableIds, 'data.tableId:', data.tableId)
-      
+
       const response = await fetch('/api/reservations', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(apiData),
       })
 

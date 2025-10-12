@@ -297,7 +297,8 @@ export function ReservationForm({
         dataProcessingConsent: true, // Admin assumes consent
         emailConsent: true,
         marketingConsent: false,
-        preferredLanguage: 'ES'
+        preferredLanguage: 'ES',
+        source: 'admin'
       }
 
       await createReservation(reservationData)

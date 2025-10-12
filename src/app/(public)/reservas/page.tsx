@@ -164,7 +164,8 @@ export default function ReservasPage() {
         dataProcessingConsent: data.stepFour.dataProcessingConsent,
         emailConsent: data.stepFour.emailConsent,
         marketingConsent: data.stepFour.marketingConsent,
-        preferredLanguage: language.toUpperCase() as 'ES' | 'EN' | 'DE'
+        preferredLanguage: language.toUpperCase() as 'ES' | 'EN' | 'DE',
+        source: 'web'
       }
 
       await createReservation(reservationData)

@@ -418,6 +418,10 @@ export async function POST(request: NextRequest) {
     // Create reservation with table_ids array
     console.log('🆕 Creating reservation...')
 
+    // 🎯 AUTO-CONFIRM if source is admin
+    const reservationStatus = body.source === 'admin' ? 'CONFIRMED' : 'PENDING'
+    console.log(`📝 Reservation status: ${reservationStatus} (source: ${body.source})`)
+
     const reservationData = {
       id: `res_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`, // ✅ Generate ID
       customerName: `${data.firstName} ${data.lastName}`,
@@ -427,7 +431,7 @@ export async function POST(request: NextRequest) {
       children_count: data.childrenCount || null, // ✅ FIX: Include children_count (snake_case for DB)
       date: reservationDateTime,
       time: reservationDateTime,
-      status: 'PENDING',
+      status: reservationStatus, // 🎯 AUTO-CONFIRM for admin requests
       specialRequests: data.specialRequests || null,
       hasPreOrder: (data.preOrderItems?.length || 0) > 0,
       table_ids: data.tableIds, // ✅ NEW: Use array
@@ -449,6 +453,8 @@ export async function POST(request: NextRequest) {
       consentMethod: 'web_form',
       customerId: customer.id,
       updatedAt: new Date() // ✅ Add missing updatedAt
+      // 🎯 AUDIT FIELDS REMOVED: Not in DB yet (migration optional)
+      // Will be tracked via email logs and status changes instead
     }
 
     const { data: reservation, error: reservationError } = await supabase
@@ -519,9 +525,18 @@ export async function POST(request: NextRequest) {
     }
 
     // ✅ FIXED: Send confirmation email using implemented email service
+    // 🎯 Send different email based on reservation status
     try {
       const { emailService } = await import('@/lib/email/emailService')
-      const emailResult = await emailService.sendReservationConfirmation({
+
+      // Choose email method based on status
+      const emailMethod = body.source === 'admin'
+        ? emailService.sendReservationConfirmed.bind(emailService)  // Admin: "Reserva confirmada"
+        : emailService.sendReservationConfirmation.bind(emailService) // Public: "Nueva reserva recibida"
+
+      console.log(`📧 Sending ${body.source === 'admin' ? 'CONFIRMED' : 'CONFIRMATION'} email to ${data.email}`)
+
+      const emailResult = await emailMethod({
         reservationId: reservation.id,
         customerEmail: data.email,
         customerName: `${data.firstName} ${data.lastName}`,
