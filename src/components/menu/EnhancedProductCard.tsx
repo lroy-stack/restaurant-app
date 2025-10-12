@@ -34,7 +34,7 @@ export function EnhancedProductCard({
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
     >
-      <Card className="group h-full flex flex-col overflow-hidden rounded-2xl border-border/50 hover:border-primary/20 hover:shadow-2xl transition-all duration-300">
+      <Card className="group h-full flex flex-col overflow-hidden rounded-2xl border-border/50 hover:border-primary/20 hover:shadow-2xl transition-all duration-300 p-0 gap-0">
         {/* Image Container - aspect-ratio dinámico: 4:5 vinos, 4:3 comida */}
         <div className="relative w-full overflow-hidden bg-muted" style={{ aspectRatio: isWine ? '4/5' : '4/3' }}>
           <motion.img
