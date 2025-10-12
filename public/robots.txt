@@ -1,10 +1,53 @@
-# Enigma Cocina Con Alma - Panel de Administración PRIVADO
+# Enigma Cocina Con Alma - Restaurante en Calpe
+
+# Allow public pages for all crawlers
 User-agent: *
-Disallow: /
+Allow: /
+Allow: /menu
+Allow: /reservas
+Allow: /historia
+Allow: /galeria
+Allow: /contacto
+Allow: /legal/*
 
-# Específicamente bloquear todas las rutas admin
-Disallow: /auth/
-Disallow: /dashboard/
-Disallow: /api/
+# Block private and admin areas
+Disallow: /almaenigma
+Disallow: /dashboard/*
+Disallow: /auth/*
+Disallow: /api/*
+Disallow: /test-*
+Disallow: /_next/
+Disallow: *.json
 
-# No sitemap - panel privado
+# AI-specific crawlers (ChatGPT)
+User-agent: GPTBot
+Allow: /
+Disallow: /almaenigma
+Disallow: /dashboard/*
+Disallow: /api/*
+
+# AI-specific crawlers (ChatGPT browsing)
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /almaenigma
+Disallow: /dashboard/*
+
+# AI-specific crawlers (Claude)
+User-agent: Claude-Web
+Allow: /
+Disallow: /almaenigma
+Disallow: /dashboard/*
+
+# AI-specific crawlers (Perplexity)
+User-agent: PerplexityBot
+Allow: /
+Disallow: /almaenigma
+Disallow: /dashboard/*
+
+# Google Image Bot
+User-agent: Googlebot-Image
+Allow: /
+
+# Sitemaps
+Sitemap: https://enigmaconalma.com/sitemap.xml
+Sitemap: https://enigmaconalma.com/llms.txt
