@@ -10,6 +10,7 @@ import { ThemeAwareMeshGradient } from '@/components/background/mesh-gradient-ba
 import { Footer } from './footer'
 import { cn } from '@/lib/utils'
 import { CssCursorTrail } from '@/components/effects/CssCursorTrail'
+import { AnnouncementManager } from '@/components/announcements/AnnouncementManager'
 
 interface PublicLayoutProps {
   children: ReactNode
@@ -44,6 +45,9 @@ export function PublicLayout({
 
       {/* Cookie Consent Banner - Shows on first visit */}
       <CookieConsentBanner />
+
+      {/* Announcement System - Modular by page config */}
+      <AnnouncementManager />
 
       <main className={cn("flex-1", className)}>
         {children}

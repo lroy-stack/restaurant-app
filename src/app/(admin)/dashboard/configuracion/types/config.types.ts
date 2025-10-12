@@ -146,6 +146,7 @@ export type ConfigSection =
   | 'social'
   | 'qr'
   | 'legal'
+  | 'publicidad'
 
 // Form states
 export interface FormState {

@@ -82,7 +82,7 @@ export function CookieConsentBanner({
     mode: 'opt-in' as const, // AEPD requires opt-in
     manageScriptTags: true,
     hideFromBots: true,
-    disablePageInteraction: true,
+    disablePageInteraction: false,
 
     // UI Configuration (AEPD 2025 Equal Prominence)
     guiOptions: {
@@ -101,8 +101,20 @@ export function CookieConsentBanner({
     },
 
     // Event Handlers
-    onFirstConsent: handleFirstConsent,
-    onConsent: handleConsentChange,
+    onFirstConsent: () => {
+      handleFirstConsent()
+      // Dispatch event for announcement system
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cookieConsentResolved'))
+      }
+    },
+    onConsent: () => {
+      handleConsentChange()
+      // Dispatch event for announcement system
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cookieConsentResolved'))
+      }
+    },
     onChange: handleConsentChange,
 
     // Categories (AEPD 2025 Standard Categories)

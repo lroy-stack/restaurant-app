@@ -71,12 +71,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${benaya.variable} ${playfairDisplay.variable} ${crimsonText.variable} ${sourceSerif4.variable} ${inter.variable}`}
     >
-      <head>
+      <body className="font-sans antialiased min-h-screen bg-background">
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <GoogleAnalytics measurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
         )}
-      </head>
-      <body className="font-sans antialiased min-h-screen bg-background">
         <PerformanceProvider>
           <EnigmaThemeProvider>
             <QueryClientProvider>

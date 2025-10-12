@@ -41,7 +41,7 @@ const nextConfig = {
     // CRITICAL FIX: Enable image optimization
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 31536000, // 1 year cache
-    domains: ['ik.imagekit.io'], // Add your image domains
+    domains: ['ik.imagekit.io', 'images.unsplash.com'], // Add your image domains
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     dangerouslyAllowSVG: true,

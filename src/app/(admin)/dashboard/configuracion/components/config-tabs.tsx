@@ -14,7 +14,8 @@ import {
   Mail,
   Share2,
   QrCode,
-  FileText
+  FileText,
+  Megaphone
 } from 'lucide-react'
 import type { ConfigSection } from '../types/config.types'
 
@@ -26,7 +27,7 @@ interface ConfigTabsProps {
 export function ConfigTabs({ defaultSection = 'info', children }: ConfigTabsProps) {
   return (
     <Tabs defaultValue={defaultSection} className="space-y-6">
-      <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-2 h-auto p-2">
+      <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 xl:grid-cols-9 gap-2 h-auto p-2">
         <TabsTrigger value="info" className="flex items-center gap-2 h-9">
           <Building2 className="h-4 w-4" />
           <span className="hidden sm:inline">Info General</span>
@@ -67,6 +68,12 @@ export function ConfigTabs({ defaultSection = 'info', children }: ConfigTabsProp
         <TabsTrigger value="legal" className="flex items-center gap-2 h-9">
           <FileText className="h-4 w-4" />
           <span className="hidden sm:inline">Legal</span>
+        </TabsTrigger>
+
+        <TabsTrigger value="publicidad" className="flex items-center gap-2 h-9">
+          <Megaphone className="h-4 w-4" />
+          <span className="hidden sm:inline">Publicidad</span>
+          <span className="sm:hidden">Anuncios</span>
         </TabsTrigger>
       </TabsList>
 

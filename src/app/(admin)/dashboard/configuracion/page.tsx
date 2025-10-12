@@ -7,6 +7,7 @@ import { ConfigHeader } from './components/config-header'
 import { ConfigTabs, ConfigTabContent } from './components/config-tabs'
 import { RestaurantInfoSection } from './components/sections/restaurant-info-section'
 import { BusinessHoursSection } from './components/sections/business-hours-section'
+import { AnnouncementsSection } from './components/sections/announcements-section'
 
 export default function ConfiguracionPage() {
   return (
@@ -64,6 +65,11 @@ export default function ConfiguracionPage() {
           <div className="text-center py-12 text-muted-foreground">
             Contenido legal en desarrollo
           </div>
+        </ConfigTabContent>
+
+        {/* TAB: Publicidad */}
+        <ConfigTabContent value="publicidad">
+          <AnnouncementsSection />
         </ConfigTabContent>
       </ConfigTabs>
     </div>
