@@ -156,10 +156,10 @@ export function EnhancedProductCard({
                   : "bg-primary hover:bg-primary/90 hover:shadow-lg"
               )}
             >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              {isInCart ? `En carrito (${cartQuantity})` : 'Añadir al carrito'}
+              <ShoppingCart className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">{isInCart ? `En carrito (${cartQuantity})` : 'Añadir al carrito'}</span>
 
-              {/* Quantity badge - solo visible si está en carrito */}
+              {/* Quantity badge - visible en móvil y desktop */}
               {isInCart && cartQuantity > 0 && (
                 <motion.span
                   className="ml-auto bg-white/20 px-2 py-0.5 rounded-full text-xs font-bold"
