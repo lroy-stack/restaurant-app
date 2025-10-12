@@ -120,8 +120,7 @@ export function ProfessionalCalendar({
   // Convertir reservas a eventos del calendario
   const events = useMemo((): CalendarEvent[] => {
     return reservations.map(reservation => {
-      // Parse as UTC then convert to local timezone (fixes 2h offset)
-      const startTime = moment.utc(reservation.time).local()
+      const startTime = moment(reservation.time)
       const endTime = startTime.clone().add(2, 'hours') // Duración por defecto 2 horas
       
       const isVip = reservation.customerEmail.includes('vip') || 
