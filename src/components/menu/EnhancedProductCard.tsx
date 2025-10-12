@@ -83,9 +83,9 @@ export function EnhancedProductCard({
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
               >
-                <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white backdrop-blur-sm text-xs px-2.5 py-1 rounded-full shadow-lg border-0">
-                  <Heart className="h-3 w-3 mr-1 fill-current" />
-                  Recomendado
+                <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white backdrop-blur-sm text-xs px-2 sm:px-2.5 py-1 rounded-full shadow-lg border-0">
+                  <Heart className="h-3 w-3 sm:mr-1 fill-current" />
+                  <span className="hidden sm:inline">Recomendado</span>
                 </Badge>
               </motion.div>
             </div>
