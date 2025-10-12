@@ -231,11 +231,14 @@ function generateTimeSlots(config: {
 
     // Check if slot is in the past (for today only)
     if (isToday && available) {
-      // 🔧 PRODUCTION FIX: Force Europe/Madrid timezone for both dates
-      const slotDateTime = new Date(config.date + `T${timeString}:00+02:00`)
-
-      // Ensure currentDateTime is also in Madrid timezone for comparison
+      // 🔧 PRODUCTION FIX: Use Europe/Madrid timezone dynamically (handles DST automatically)
       const madridCurrentTime = new Date(config.currentDateTime.toLocaleString("en-US", {timeZone: "Europe/Madrid"}))
+
+      // Create slot datetime in Madrid timezone
+      const [year, month, day] = config.date.split('-').map(Number)
+      const [hour, minute] = timeString.split(':').map(Number)
+      const slotDateTime = new Date(year, month - 1, day, hour, minute)
+
       const minimumBookingTime = new Date(madridCurrentTime.getTime() + (config.advanceMinutes * 60 * 1000))
 
       if (slotDateTime <= minimumBookingTime) {
