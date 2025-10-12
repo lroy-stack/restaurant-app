@@ -132,7 +132,17 @@ export async function POST(request: NextRequest) {
 
     // 4. Transform and filter available tables
     const availableTables = activeTables
-      .filter((table: any) => !reservedTableIds.has(table.id))
+      .filter((table: any) => {
+        // Filter by reservation conflicts
+        if (reservedTableIds.has(table.id)) return false
+
+        // 🚀 CRITICAL: Filter by manual status (occupied, maintenance)
+        if (table.currentstatus === 'occupied' || table.currentstatus === 'maintenance') {
+          return false
+        }
+
+        return true
+      })
       .map((table: any) => ({
         tableId: table.id,
         tableNumber: table.number,

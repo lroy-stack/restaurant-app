@@ -12,6 +12,7 @@ export interface VisualMesa {
   currentStatus: 'available' | 'reserved' | 'occupied' | 'maintenance' | 'temporally_closed'
   isActive: boolean
   currentReservation?: {
+    id: string
     customerName: string
     time: string
     partySize: number

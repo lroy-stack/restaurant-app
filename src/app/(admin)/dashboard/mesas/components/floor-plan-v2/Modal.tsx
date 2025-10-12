@@ -265,6 +265,168 @@ export function Modal({ isOpen, onClose, table }: ModalProps) {
             </Card>
           )}
 
+          {/* Quick Status Change - Direct Buttons */}
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="font-medium mb-3">Gestión Rápida de Mesa</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  variant={table.currentStatus === 'available' ? 'default' : 'outline'}
+                  className="justify-start"
+                  onClick={async () => {
+                    setIsUpdating(true)
+                    try {
+                      await updateTableStatus(table.id, 'available')
+                      toast.success('Mesa liberada')
+                    } catch (error) {
+                      toast.error('Error al liberar mesa')
+                    } finally {
+                      setIsUpdating(false)
+                    }
+                  }}
+                  disabled={!table.isActive || isUpdating}
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Liberar
+                </Button>
+                <Button
+                  variant={table.currentStatus === 'occupied' ? 'default' : 'outline'}
+                  className="justify-start"
+                  onClick={async () => {
+                    setIsUpdating(true)
+                    try {
+                      await updateTableStatus(table.id, 'occupied')
+                      toast.success('Mesa ocupada')
+                    } catch (error) {
+                      toast.error('Error al ocupar mesa')
+                    } finally {
+                      setIsUpdating(false)
+                    }
+                  }}
+                  disabled={!table.isActive || isUpdating}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Ocupar
+                </Button>
+                <Button
+                  variant={table.currentStatus === 'maintenance' ? 'default' : 'outline'}
+                  className="justify-start col-span-2"
+                  onClick={async () => {
+                    setIsUpdating(true)
+                    try {
+                      await updateTableStatus(table.id, 'maintenance')
+                      toast.success('Mesa en mantenimiento')
+                    } catch (error) {
+                      toast.error('Error al cambiar estado')
+                    } finally {
+                      setIsUpdating(false)
+                    }
+                  }}
+                  disabled={!table.isActive || isUpdating}
+                >
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  Mantenimiento
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Reservation Management - If reservation exists */}
+          {table.currentReservation && (
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-medium mb-3">Gestión de Reserva</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    variant="default"
+                    className="justify-start bg-green-600 hover:bg-green-700"
+                    onClick={async () => {
+                      setIsUpdating(true)
+                      try {
+                        const response = await fetch(`/api/reservations/${table.currentReservation.id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ status: 'SEATED' })
+                        })
+                        if (response.ok) {
+                          toast.success('Cliente sentado')
+                          // Refresh tables to update UI
+                          window.location.reload()
+                        } else {
+                          toast.error('Error al sentar cliente')
+                        }
+                      } catch (error) {
+                        toast.error('Error de conexión')
+                      } finally {
+                        setIsUpdating(false)
+                      }
+                    }}
+                    disabled={isUpdating}
+                  >
+                    <UserCheck className="h-4 w-4 mr-2" />
+                    Sentar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="justify-start border-orange-500 text-orange-600"
+                    onClick={async () => {
+                      setIsUpdating(true)
+                      try {
+                        const response = await fetch(`/api/reservations/${table.currentReservation.id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ status: 'NO_SHOW' })
+                        })
+                        if (response.ok) {
+                          toast.success('Marcado como No Show')
+                          window.location.reload()
+                        } else {
+                          toast.error('Error al marcar No Show')
+                        }
+                      } catch (error) {
+                        toast.error('Error de conexión')
+                      } finally {
+                        setIsUpdating(false)
+                      }
+                    }}
+                    disabled={isUpdating}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    No Show
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="justify-start col-span-2"
+                    onClick={async () => {
+                      setIsUpdating(true)
+                      try {
+                        const response = await fetch(`/api/reservations/${table.currentReservation.id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ status: 'COMPLETED' })
+                        })
+                        if (response.ok) {
+                          toast.success('Reserva completada')
+                          window.location.reload()
+                        } else {
+                          toast.error('Error al completar')
+                        }
+                      } catch (error) {
+                        toast.error('Error de conexión')
+                      } finally {
+                        setIsUpdating(false)
+                      }
+                    }}
+                    disabled={isUpdating}
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Completar
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Comandero Actions */}
           <Card>
             <CardContent className="p-4">
@@ -276,7 +438,7 @@ export function Modal({ isOpen, onClose, table }: ModalProps) {
                   onClick={() => setShowOrderPanel(true)}
                   disabled={!hasActiveOrders}
                 >
-                  <Users className="h-4 w-4 mr-2" />
+                  <Utensils className="h-4 w-4 mr-2" />
                   Ver Comanda
                   {hasActiveOrders && (
                     <Badge className="ml-2 bg-red-500 text-white">{orderCount}</Badge>
@@ -285,19 +447,6 @@ export function Modal({ isOpen, onClose, table }: ModalProps) {
                 <Button variant="outline" className="justify-start" disabled>
                   <Phone className="h-4 w-4 mr-2" />
                   Llamar Cliente
-                </Button>
-                <Button
-                  variant="outline"
-                  className="justify-start"
-                  onClick={() => setIsEditingStatus(true)}
-                  disabled={!table.isActive}
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Cambiar Estado
-                </Button>
-                <Button variant="outline" className="justify-start" disabled>
-                  <AlertCircle className="h-4 w-4 mr-2" />
-                  Reportar Incidencia
                 </Button>
               </div>
               {!hasActiveOrders && (
@@ -390,115 +539,6 @@ export function Modal({ isOpen, onClose, table }: ModalProps) {
       isOpen={showOrderPanel}
       onClose={() => setShowOrderPanel(false)}
     />
-
-    {/* Status Change Dialog */}
-    <Dialog open={isEditingStatus} onOpenChange={setIsEditingStatus}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Cambiar Estado - Mesa {table.number}</DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          {/* Status Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="status">Estado de la Mesa</Label>
-            <Select
-              value={selectedStatus}
-              onValueChange={(value) => setSelectedStatus(value as typeof selectedStatus)}
-            >
-              <SelectTrigger id="status">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="available">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    Disponible
-                  </div>
-                </SelectItem>
-                <SelectItem value="occupied">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-red-500" />
-                    Ocupada
-                  </div>
-                </SelectItem>
-                <SelectItem value="reserved">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-blue-500" />
-                    Reservada
-                  </div>
-                </SelectItem>
-                <SelectItem value="maintenance">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-yellow-500" />
-                    Mantenimiento
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notas (opcional)</Label>
-            <Textarea
-              id="notes"
-              placeholder="Agregar notas sobre el cambio de estado..."
-              value={statusNotes}
-              onChange={(e) => setStatusNotes(e.target.value)}
-              rows={3}
-            />
-          </div>
-
-          {/* Estimated Time (only for occupied) */}
-          {selectedStatus === 'occupied' && (
-            <div className="space-y-2">
-              <Label htmlFor="estimatedTime">Tiempo estimado disponible (opcional)</Label>
-              <Select value={estimatedTime} onValueChange={setEstimatedTime}>
-                <SelectTrigger id="estimatedTime">
-                  <SelectValue placeholder="Seleccionar hora estimada" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Sin estimación</SelectItem>
-                  <SelectItem value="14:00">14:00</SelectItem>
-                  <SelectItem value="14:30">14:30</SelectItem>
-                  <SelectItem value="15:00">15:00</SelectItem>
-                  <SelectItem value="15:30">15:30</SelectItem>
-                  <SelectItem value="16:00">16:00</SelectItem>
-                  <SelectItem value="16:30">16:30</SelectItem>
-                  <SelectItem value="21:00">21:00</SelectItem>
-                  <SelectItem value="21:30">21:30</SelectItem>
-                  <SelectItem value="22:00">22:00</SelectItem>
-                  <SelectItem value="22:30">22:30</SelectItem>
-                  <SelectItem value="23:00">23:00</SelectItem>
-                  <SelectItem value="23:30">23:30</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </div>
-
-        <div className="flex gap-2 justify-end">
-          <Button
-            variant="outline"
-            onClick={() => {
-              setIsEditingStatus(false)
-              setStatusNotes('')
-              setEstimatedTime('')
-            }}
-            disabled={isUpdating}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleStatusUpdate}
-            disabled={isUpdating}
-          >
-            {isUpdating ? 'Actualizando...' : 'Guardar Cambios'}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
   </>
   )
 }

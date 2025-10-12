@@ -94,6 +94,7 @@ export async function GET(request: NextRequest) {
           }
 
           currentReservation = {
+            id: activeReservation.id,
             customerName: activeReservation.customerName,
             partySize: activeReservation.partySize,
             time: `${activeReservation.date} ${activeReservation.time}`,
