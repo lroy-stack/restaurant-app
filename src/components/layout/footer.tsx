@@ -85,48 +85,48 @@ export function Footer() {
 
   return (
     <footer className="bg-card border-t">
-      {/* Main Footer Content - Móvil optimizado */}
+      {/* Main Footer Content - Mejor jerarquía */}
       <div className="container mx-auto px-4 py-6 md:py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 md:gap-6 lg:gap-8">
-          {/* Restaurant Info - Columna principal más ancha */}
-          <div className="lg:col-span-5 space-y-2 md:space-y-3">
-            <div className="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-2">
-              <EnigmaLogo className="h-4 md:h-5 w-4 md:w-5" variant="primary" />
-              <span className="enigma-brand-main text-sm md:text-base font-semibold">
+        <div className="space-y-6">
+          {/* Restaurant Info - Full width compacto */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <EnigmaLogo className="h-5 w-5" variant="primary" />
+              <span className="enigma-brand-main text-base font-semibold">
                 {restaurant?.name || 'Enigma Cocina Con Alma'}
               </span>
             </div>
-            <p className="text-[11px] md:text-xs text-muted-foreground leading-snug md:leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">
               {restaurant?.description || 'Cocina mediterránea de autor en el corazón del casco antiguo de Calpe desde 2023. Ingredientes de proximidad, producto de temporada, técnicas tradicionales. Carrer Justicia 6A. Reserva online con pre-pedidos.'}
             </p>
 
-            {/* Contact Info Compacto - 2 columnas en desktop */}
+            {/* Contact Info - Grid 4 columnas responsive */}
             {!loading && restaurant && (
-              <div className="grid sm:grid-cols-2 gap-x-3 md:gap-x-4 gap-y-1.5 md:gap-y-2 text-[11px] md:text-xs">
-                <div className="flex items-start gap-1 md:gap-1.5 text-muted-foreground">
-                  <MapPin className="h-3 md:h-3.5 w-3 md:w-3.5 mt-0.5 flex-shrink-0" />
-                  <span className="leading-tight md:leading-snug">{restaurant.address}</span>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3 text-sm">
+                <div className="flex items-start gap-2 text-muted-foreground">
+                  <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <span className="leading-snug">{restaurant.address}</span>
                 </div>
-                <div className="flex items-center gap-1 md:gap-1.5 text-muted-foreground">
-                  <Phone className="h-3 md:h-3.5 w-3 md:w-3.5 flex-shrink-0" />
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Phone className="h-4 w-4 flex-shrink-0" />
                   <a href={`tel:${restaurant.phone.replace(/\s+/g, '')}`} className="hover:text-primary transition-colors">
                     {restaurant.phone}
                   </a>
                 </div>
-                <div className="flex items-center gap-1 md:gap-1.5 text-muted-foreground">
-                  <Mail className="h-3 md:h-3.5 w-3 md:w-3.5 flex-shrink-0" />
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Mail className="h-4 w-4 flex-shrink-0" />
                   <a href={`mailto:${restaurant.email}`} className="hover:text-primary transition-colors break-all">
                     {restaurant.email}
                   </a>
                 </div>
-                <div className="space-y-0.5 md:space-y-1">
-                  <div className="flex items-center gap-1 md:gap-1.5 text-muted-foreground font-medium">
-                    <Clock className="h-3 md:h-3.5 w-3 md:w-3.5 flex-shrink-0" />
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-muted-foreground font-medium">
+                    <Clock className="h-4 w-4 flex-shrink-0" />
                     <span>Horarios</span>
                   </div>
-                  <div className="pl-4 md:pl-5 text-[11px] md:text-xs space-y-0.5">
+                  <div className="pl-6 text-sm space-y-0.5">
                     {restaurant.hours_operation.split('|').map((schedule, idx) => (
-                      <div key={idx} className="text-muted-foreground/80 leading-tight md:leading-snug">
+                      <div key={idx} className="text-muted-foreground/80 leading-snug">
                         {schedule.trim()}
                       </div>
                     ))}
@@ -135,31 +135,31 @@ export function Footer() {
               </div>
             )}
 
-            {/* Loading fallback compacto */}
+            {/* Loading fallback */}
             {loading && (
-              <div className="grid sm:grid-cols-2 gap-x-3 md:gap-x-4 gap-y-1.5 md:gap-y-2 text-[11px] md:text-xs">
-                <div className="flex items-center gap-1 md:gap-1.5 text-muted-foreground">
-                  <MapPin className="h-3 md:h-3.5 w-3 md:w-3.5 flex-shrink-0" />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="h-4 w-4 flex-shrink-0" />
                   <span>Carrer Justicia 6A, 03710 Calpe, Alicante</span>
                 </div>
-                <div className="flex items-center gap-1 md:gap-1.5 text-muted-foreground">
-                  <Phone className="h-3 md:h-3.5 w-3 md:w-3.5 flex-shrink-0" />
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Phone className="h-4 w-4 flex-shrink-0" />
                   <a href="tel:+34672796006" className="hover:text-primary transition-colors">
                     +34 672 79 60 06
                   </a>
                 </div>
-                <div className="flex items-center gap-1 md:gap-1.5 text-muted-foreground">
-                  <Mail className="h-3 md:h-3.5 w-3 md:w-3.5 flex-shrink-0" />
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Mail className="h-4 w-4 flex-shrink-0" />
                   <a href="mailto:reservas@enigmaconalma.com" className="hover:text-primary transition-colors">
                     reservas@enigmaconalma.com
                   </a>
                 </div>
-                <div className="space-y-0.5 md:space-y-1">
-                  <div className="flex items-center gap-1 md:gap-1.5 text-muted-foreground font-medium">
-                    <Clock className="h-3 md:h-3.5 w-3 md:w-3.5 flex-shrink-0" />
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-muted-foreground font-medium">
+                    <Clock className="h-4 w-4 flex-shrink-0" />
                     <span>Horarios</span>
                   </div>
-                  <div className="pl-4 md:pl-5 text-[11px] md:text-xs space-y-0.5 text-muted-foreground/80">
+                  <div className="pl-6 text-sm space-y-0.5 text-muted-foreground/80">
                     <div>Lun: Cerrado</div>
                     <div>Mar: 18:30-23:00</div>
                     <div>Mié-Sáb: 13:00-16:00 y 18:30-23:00</div>
@@ -168,19 +168,19 @@ export function Footer() {
               </div>
             )}
 
-            {/* Social Media compacto */}
-            <div className="flex gap-1.5 md:gap-2 pt-0.5 md:pt-1">
+            {/* Social Media */}
+            <div className="flex gap-2">
               {restaurant?.instagram_url && (
-                <Button size="icon" variant="outline" className="h-6 md:h-7 w-6 md:w-7" asChild>
+                <Button size="icon" variant="outline" className="h-8 w-8" asChild>
                   <a href={restaurant.instagram_url} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                    <Instagram className="h-3 md:h-3.5 w-3 md:w-3.5" />
+                    <Instagram className="h-4 w-4" />
                   </a>
                 </Button>
               )}
               {restaurant?.facebook_url && (
-                <Button size="icon" variant="outline" className="h-6 md:h-7 w-6 md:w-7" asChild>
+                <Button size="icon" variant="outline" className="h-8 w-8" asChild>
                   <a href={restaurant.facebook_url} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-                    <Facebook className="h-3 md:h-3.5 w-3 md:w-3.5" />
+                    <Facebook className="h-4 w-4" />
                   </a>
                 </Button>
               )}
@@ -188,7 +188,7 @@ export function Footer() {
                 <Button
                   size="icon"
                   variant="outline"
-                  className="h-6 md:h-7 w-6 md:w-7 hover:bg-[#25D366]/10 hover:border-[#25D366]/50 hover:text-[#25D366] transition-all"
+                  className="h-8 w-8 hover:bg-[#25D366]/10 hover:border-[#25D366]/50 hover:text-[#25D366] transition-all"
                   asChild
                 >
                   <a
@@ -197,19 +197,19 @@ export function Footer() {
                     rel="noopener noreferrer"
                     aria-label="WhatsApp"
                   >
-                    <WhatsAppIcon className="h-3 md:h-3.5 w-3 md:w-3.5" />
+                    <WhatsAppIcon className="h-4 w-4" />
                   </a>
                 </Button>
               )}
             </div>
           </div>
 
-          {/* Footer Links - Grid 2 columnas en móvil, columnas individuales en desktop */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 lg:gap-0 lg:contents">
+          {/* Footer Links - Horizontal en una fila para mejor jerarquía */}
+          <div className="grid grid-cols-3 gap-6 md:gap-8 pt-2 border-t">
             {Object.values(footerLinks).map((section) => (
-              <div key={section.title} className="lg:col-span-2 space-y-1.5 md:space-y-2">
-                <h4 className="enigma-brand-body font-semibold text-foreground text-xs md:text-sm">{section.title}</h4>
-                <ul className="space-y-1 md:space-y-1.5">
+              <div key={section.title} className="space-y-2">
+                <h4 className="enigma-brand-body font-semibold text-foreground text-sm">{section.title}</h4>
+                <ul className="space-y-1.5">
                   {section.links.map((link) => (
                     <li key={link.href}>
                       {link.href.startsWith('http') ? (
@@ -217,14 +217,14 @@ export function Footer() {
                           href={link.href}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[11px] md:text-xs text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+                          className="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
                         >
                           {link.name}
                         </a>
                       ) : (
                         <Link
                           href={link.href}
-                          className="text-[11px] md:text-xs text-muted-foreground hover:text-primary transition-colors inline-block"
+                          className="text-sm text-muted-foreground hover:text-primary transition-colors inline-block"
                         >
                           {link.name}
                         </Link>
@@ -238,12 +238,12 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Bottom Footer - Super compacto móvil */}
+      {/* Bottom Footer */}
       <div className="border-t bg-muted/30">
-        <div className="container mx-auto px-4 py-2 md:py-3">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-muted-foreground">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-muted-foreground">
             <p className="text-center sm:text-left">© {currentYear} {restaurant?.footer_copyright_text || 'Enigma Cocina Con Alma. Todos los derechos reservados.'}</p>
-            <div className="flex gap-2 md:gap-3">
+            <div className="flex gap-3">
               <Link href="/legal/aviso-legal" className="hover:text-primary transition-colors">
                 Aviso Legal
               </Link>
