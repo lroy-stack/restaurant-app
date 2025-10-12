@@ -341,6 +341,7 @@ export function Modal({ isOpen, onClose, table }: ModalProps) {
                     variant="default"
                     className="justify-start bg-green-600 hover:bg-green-700"
                     onClick={async () => {
+                      if (!table.currentReservation?.id) return
                       setIsUpdating(true)
                       try {
                         const response = await fetch(`/api/reservations/${table.currentReservation.id}`, {
@@ -370,6 +371,7 @@ export function Modal({ isOpen, onClose, table }: ModalProps) {
                     variant="outline"
                     className="justify-start border-orange-500 text-orange-600"
                     onClick={async () => {
+                      if (!table.currentReservation?.id) return
                       setIsUpdating(true)
                       try {
                         const response = await fetch(`/api/reservations/${table.currentReservation.id}`, {
@@ -398,6 +400,7 @@ export function Modal({ isOpen, onClose, table }: ModalProps) {
                     variant="outline"
                     className="justify-start col-span-2"
                     onClick={async () => {
+                      if (!table.currentReservation?.id) return
                       setIsUpdating(true)
                       try {
                         const response = await fetch(`/api/reservations/${table.currentReservation.id}`, {
