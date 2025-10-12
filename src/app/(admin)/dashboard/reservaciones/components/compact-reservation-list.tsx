@@ -353,22 +353,68 @@ function ReservationActions({
   return (
     <>
       <div className="flex items-center gap-1">
-        {/* ✅ Botón Confirmar directo (desktop only) */}
+        {/* 🎯 ACCESO RÁPIDO: PENDING → Confirmar + Cancelar */}
         {reservation.status === 'PENDING' && (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hidden md:flex h-8 w-8 p-0 text-white bg-green-600 hover:bg-green-700"
+              onClick={() => handleStatusChange('CONFIRMED')}
+              title="Confirmar reserva"
+            >
+              <CheckCircle className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hidden md:flex h-8 w-8 p-0 text-white bg-red-600 hover:bg-red-700"
+              onClick={() => setShowCancellationModal(true)}
+              title="Cancelar reserva"
+            >
+              <XCircle className="h-4 w-4" />
+            </Button>
+          </>
+        )}
+
+        {/* 🎯 ACCESO RÁPIDO: CONFIRMED → Sentar + No Show */}
+        {reservation.status === 'CONFIRMED' && (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hidden md:flex h-8 w-8 p-0 text-white bg-blue-600 hover:bg-blue-700"
+              onClick={() => handleStatusChange('SEATED')}
+              title="Sentar en mesa"
+            >
+              <Users className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hidden md:flex h-8 w-8 p-0 text-white bg-orange-600 hover:bg-orange-700"
+              onClick={() => handleStatusChange('NO_SHOW')}
+              title="Marcar No Show"
+            >
+              <AlertCircle className="h-4 w-4" />
+            </Button>
+          </>
+        )}
+
+        {/* 🎯 ACCESO RÁPIDO: SEATED → Completar */}
+        {reservation.status === 'SEATED' && (
           <Button
             variant="ghost"
             size="sm"
-            className="hidden md:flex h-8 w-8 p-0 text-white bg-blue-600 hover:bg-blue-700"
-            onClick={() => handleStatusChange('CONFIRMED')}
-            title="Confirmar reserva"
+            className="hidden md:flex h-8 w-8 p-0 text-white bg-gray-600 hover:bg-gray-700"
+            onClick={() => handleStatusChange('COMPLETED')}
+            title="Completar servicio"
           >
-            <svg className="h-4 w-4 fill-white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-            </svg>
+            <CheckCircle className="h-4 w-4" />
           </Button>
         )}
 
-        {/* ✅ Botón WhatsApp directo (desktop only) */}
+        {/* ✅ WhatsApp siempre visible (si tiene teléfono) */}
         {reservation.customerPhone && (
           <Button
             variant="ghost"
@@ -402,70 +448,64 @@ function ReservationActions({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
 
-            {/* Status Actions - Mobile: mantener Confirmar en dropdown */}
+            {/* Status Actions - Mobile: incluir acciones rápidas */}
             {reservation.status === 'PENDING' && (
-              <DropdownMenuItem onClick={() => handleStatusChange('CONFIRMED')} className="md:hidden">
-                <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
-                Confirmar
+              <>
+                <DropdownMenuItem onClick={() => handleStatusChange('CONFIRMED')} className="md:hidden">
+                  <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
+                  Confirmar
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowCancellationModal(true)} className="text-red-600 md:hidden">
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Cancelar
+                </DropdownMenuItem>
+              </>
+            )}
+            {reservation.status === 'CONFIRMED' && (
+              <>
+                <DropdownMenuItem onClick={() => handleStatusChange('SEATED')} className="md:hidden">
+                  <Users className="w-4 h-4 mr-2 text-blue-600" />
+                  Sentar en Mesa
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleStatusChange('NO_SHOW')} className="text-orange-600 md:hidden">
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  No Show
+                </DropdownMenuItem>
+              </>
+            )}
+            {reservation.status === 'SEATED' && (
+              <DropdownMenuItem onClick={() => handleStatusChange('COMPLETED')}>
+                <CheckCircle className="w-4 h-4 mr-2 text-gray-600" />
+                Completar
               </DropdownMenuItem>
             )}
-          {reservation.status === 'CONFIRMED' && (
-            <DropdownMenuItem onClick={() => handleStatusChange('SEATED')}>
-              <Users className="w-4 h-4 mr-2 text-blue-600" />
-              Sentar en Mesa
-            </DropdownMenuItem>
-          )}
-          {reservation.status === 'SEATED' && (
-            <DropdownMenuItem onClick={() => handleStatusChange('COMPLETED')}>
-              <CheckCircle className="w-4 h-4 mr-2 text-gray-600" />
-              Completar
-            </DropdownMenuItem>
-          )}
 
-          <DropdownMenuSeparator />
+            <DropdownMenuSeparator />
 
-          {/* Contact Actions */}
-          {reservation.customerPhone && (
-            <DropdownMenuItem onClick={handleWhatsApp} className="md:hidden">
-              <MessageSquare className="w-4 h-4 mr-2 text-green-600" />
-              WhatsApp
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuItem>
-            <Phone className="w-4 h-4 mr-2" />
-            Llamar
-          </DropdownMenuItem>
-          <CustomEmailComposer
-            customerId={reservation.id} // Using reservation ID as fallback
-            customerName={reservation.customerName}
-            customerEmail={reservation.customerEmail}
-            hasEmailConsent={true} // Assume consent since they made a reservation
-            onGetPredefinedTemplates={getPredefinedTemplates}
-            trigger={
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <Mail className="w-4 h-4 mr-2" />
-                Enviar Email
+            {/* Contact Actions */}
+            {reservation.customerPhone && (
+              <DropdownMenuItem onClick={handleWhatsApp} className="md:hidden">
+                <MessageSquare className="w-4 h-4 mr-2 text-green-600" />
+                WhatsApp
               </DropdownMenuItem>
-            }
-          />
-
-          <DropdownMenuSeparator />
-
-          {/* Danger Actions */}
-          <DropdownMenuItem
-            onClick={() => setShowCancellationModal(true)}
-            className="text-red-600"
-          >
-            <XCircle className="w-4 h-4 mr-2" />
-            Cancelar
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => handleStatusChange('NO_SHOW')}
-            className="text-orange-600"
-          >
-            <AlertCircle className="w-4 h-4 mr-2" />
-            No Show
-          </DropdownMenuItem>
+            )}
+            <DropdownMenuItem>
+              <Phone className="w-4 h-4 mr-2" />
+              Llamar
+            </DropdownMenuItem>
+            <CustomEmailComposer
+              customerId={reservation.id}
+              customerName={reservation.customerName}
+              customerEmail={reservation.customerEmail}
+              hasEmailConsent={true}
+              onGetPredefinedTemplates={getPredefinedTemplates}
+              trigger={
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <Mail className="w-4 h-4 mr-2" />
+                  Enviar Email
+                </DropdownMenuItem>
+              }
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
