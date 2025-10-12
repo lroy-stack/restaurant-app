@@ -158,52 +158,45 @@ export function MultiTableSelector({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
               {locationTables.map(table => {
                 const selected = isTableSelected(table.id)
                 const canSelect = canSelectTable(table.id)
 
                 return (
-                  <div
+                  <button
                     key={table.id}
+                    type="button"
                     className={cn(
-                      'relative p-3 border rounded-lg cursor-pointer transition-all',
-                      'hover:shadow-md',
+                      'relative aspect-square rounded-xl border-2 transition-all touch-manipulation',
+                      'flex flex-col items-center justify-center gap-1.5',
+                      'active:scale-95',
                       selected
-                        ? 'border-primary bg-primary/10 shadow-sm'
-                        : 'border-border hover:border-accent',
-                      !canSelect && !selected && 'opacity-50 cursor-not-allowed'
+                        ? 'border-primary bg-primary/10 shadow-md'
+                        : 'border-border hover:border-primary/50 hover:shadow-sm',
+                      !canSelect && !selected && 'opacity-40 cursor-not-allowed'
                     )}
                     onClick={() => canSelect && handleTableToggle(table.id)}
+                    disabled={!canSelect && !selected}
                   >
-                    {/* Visual indicator */}
-                    <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2">
-                      {selected && (
-                        <div className="h-4 w-4 md:h-5 md:w-5 rounded-sm bg-primary flex items-center justify-center">
-                          <Check className="h-2.5 w-2.5 md:h-3 md:w-3 text-primary-foreground" />
-                        </div>
-                      )}
+                    {/* Checkmark */}
+                    {selected && (
+                      <div className="absolute top-1 right-1 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                        <Check className="h-3 w-3 text-primary-foreground" />
+                      </div>
+                    )}
+
+                    {/* Table number - Large and centered */}
+                    <div className="text-2xl font-bold text-foreground">
+                      {table.number}
                     </div>
 
-                    {/* Table info */}
-                    <div className="pr-5 md:pr-6">
-                      {/* Desktop: Mesa 12 */}
-                      <div className="hidden md:block font-medium text-sm mb-1">
-                        Mesa {table.number}
-                      </div>
-                      {/* Mobile: M12 */}
-                      <div className="md:hidden font-medium text-sm mb-1">
-                        M{table.number}
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Users className="h-2.5 w-2.5 md:h-3 md:w-3" />
-                        {/* Desktop: 4 personas */}
-                        <span className="hidden md:inline">{table.capacity} personas</span>
-                        {/* Mobile: 4 pax */}
-                        <span className="md:hidden text-xs">{table.capacity}</span>
-                      </div>
+                    {/* Capacity */}
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Users className="h-3 w-3" />
+                      <span>{table.capacity}</span>
                     </div>
-                  </div>
+                  </button>
                 )
               })}
             </div>
