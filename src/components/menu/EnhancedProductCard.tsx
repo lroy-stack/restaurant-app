@@ -26,6 +26,9 @@ export function EnhancedProductCard({
 }: EnhancedProductCardProps) {
   const [isHovered, setIsHovered] = useState(false)
 
+  // Detectar si es vino para aplicar aspect ratio vertical
+  const isWine = item.category?.type === 'WINE' || item.wineType || item.vintage
+
   return (
     <motion.div
       whileHover={{ y: -8 }}
@@ -34,8 +37,8 @@ export function EnhancedProductCard({
       onHoverEnd={() => setIsHovered(false)}
     >
       <Card className="group h-full flex flex-col overflow-hidden rounded-2xl border-border/50 hover:border-primary/20 hover:shadow-2xl transition-all duration-300">
-        {/* Image Container - SIN padding extra, aspect-ratio puro */}
-        <div className="relative w-full overflow-hidden bg-muted" style={{ aspectRatio: '4/3' }}>
+        {/* Image Container - aspect-ratio dinámico: 4:5 vinos, 4:3 comida */}
+        <div className="relative w-full overflow-hidden bg-muted" style={{ aspectRatio: isWine ? '4/5' : '4/3' }}>
           <motion.img
             src={item.imageUrl || '/placeholder-dish.jpg'}
             alt={item.name}
