@@ -15,18 +15,37 @@ import { usePathname } from 'next/navigation'
 export function ScrollToTop() {
   const pathname = usePathname()
 
+  // Disable browser scroll restoration globally
   useEffect(() => {
-    // Scroll to top immediately on route change
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: 'instant' // Instant scroll, no smooth animation
-    })
-  }, [pathname]) // Triggers on every route change
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+  }, [])
 
-  // Also handle initial page load
+  // Force scroll to top on route change
   useEffect(() => {
     window.scrollTo(0, 0)
+  }, [pathname])
+
+  // Force scroll to top on initial load with multiple attempts
+  useEffect(() => {
+    // Immediate scroll
+    window.scrollTo(0, 0)
+
+    // Also try after a short delay to override any other scroll logic
+    const timeoutId = setTimeout(() => {
+      window.scrollTo(0, 0)
+    }, 0)
+
+    // And after DOM is fully loaded
+    const timeoutId2 = setTimeout(() => {
+      window.scrollTo(0, 0)
+    }, 100)
+
+    return () => {
+      clearTimeout(timeoutId)
+      clearTimeout(timeoutId2)
+    }
   }, [])
 
   return null

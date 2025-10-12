@@ -85,10 +85,9 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
         // Restore scroll and body style
         document.body.style.overflow = bodyStyleRef.current
 
-        // Restore scroll position (small delay to ensure DOM is ready)
-        setTimeout(() => {
-          window.scrollTo(0, scrollRestoreRef.current)
-        }, 0)
+        // DON'T restore scroll position - let the page stay where it is
+        // or let ScrollToTop component handle it
+        // This prevents unwanted scroll restoration
 
         return {
           isLocked: false,
