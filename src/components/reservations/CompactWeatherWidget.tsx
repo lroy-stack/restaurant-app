@@ -150,9 +150,9 @@ export default function CompactWeatherWidget({
               'flex flex-col items-center justify-center gap-1',
               isSelected
                 ? 'border-primary bg-primary text-primary-foreground shadow-md'
-                : 'border-border bg-card/95 backdrop-blur-sm hover:border-primary/50',
+                : 'border-border bg-white dark:bg-gray-800 hover:border-primary/50',
               isClosed && 'opacity-40 cursor-not-allowed',
-              goodWeather && !isSelected && 'border-green-500/30 bg-green-500/5 dark:border-green-500/20 dark:bg-green-500/10'
+              goodWeather && !isSelected && 'border-green-500/30 bg-green-50 dark:bg-green-900/20'
             )}
           >
             {/* Day label */}
