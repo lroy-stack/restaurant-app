@@ -97,10 +97,10 @@ export function Footer() {
           {restaurant?.description || 'Cocina mediterránea de autor en el corazón del casco antiguo de Calpe desde 2023.'}
         </p>
 
-        {/* Grid FLUIDO que se adapta automáticamente */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-6 border-b">
-          {/* Contacto */}
-          <div className="space-y-2">
+        {/* Grid: Móvil 3 cols horizontal, Desktop 4 cols */}
+        <div className="grid grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 pb-6 border-b">
+          {/* Contacto: full width en móvil, 1 col en desktop */}
+          <div className="col-span-3 lg:col-span-1 space-y-2">
             <h4 className="font-semibold text-sm mb-3">Contacto</h4>
             {!loading && restaurant && (
               <div className="space-y-2 text-sm text-muted-foreground">
@@ -160,9 +160,9 @@ export function Footer() {
             )}
           </div>
 
-          {/* Links navegación - 3 columnas */}
+          {/* Links navegación - 1 col cada uno en móvil y desktop */}
           {Object.values(footerLinks).map((section) => (
-            <div key={section.title} className="space-y-2">
+            <div key={section.title} className="col-span-1 space-y-2">
               <h4 className="font-semibold text-sm mb-3">{section.title}</h4>
               <ul className="space-y-2">
                 {section.links.map((link) => (
