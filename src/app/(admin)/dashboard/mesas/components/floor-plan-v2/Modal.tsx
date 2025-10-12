@@ -286,7 +286,12 @@ export function Modal({ isOpen, onClose, table }: ModalProps) {
                   <Phone className="h-4 w-4 mr-2" />
                   Llamar Cliente
                 </Button>
-                <Button variant="outline" className="justify-start" disabled>
+                <Button
+                  variant="outline"
+                  className="justify-start"
+                  onClick={() => setIsEditingStatus(true)}
+                  disabled={!table.isActive}
+                >
                   <Settings className="h-4 w-4 mr-2" />
                   Cambiar Estado
                 </Button>
@@ -385,6 +390,115 @@ export function Modal({ isOpen, onClose, table }: ModalProps) {
       isOpen={showOrderPanel}
       onClose={() => setShowOrderPanel(false)}
     />
+
+    {/* Status Change Dialog */}
+    <Dialog open={isEditingStatus} onOpenChange={setIsEditingStatus}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Cambiar Estado - Mesa {table.number}</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {/* Status Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="status">Estado de la Mesa</Label>
+            <Select
+              value={selectedStatus}
+              onValueChange={(value) => setSelectedStatus(value as typeof selectedStatus)}
+            >
+              <SelectTrigger id="status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="available">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Disponible
+                  </div>
+                </SelectItem>
+                <SelectItem value="occupied">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-red-500" />
+                    Ocupada
+                  </div>
+                </SelectItem>
+                <SelectItem value="reserved">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-blue-500" />
+                    Reservada
+                  </div>
+                </SelectItem>
+                <SelectItem value="maintenance">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-yellow-500" />
+                    Mantenimiento
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Notes */}
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notas (opcional)</Label>
+            <Textarea
+              id="notes"
+              placeholder="Agregar notas sobre el cambio de estado..."
+              value={statusNotes}
+              onChange={(e) => setStatusNotes(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          {/* Estimated Time (only for occupied) */}
+          {selectedStatus === 'occupied' && (
+            <div className="space-y-2">
+              <Label htmlFor="estimatedTime">Tiempo estimado disponible (opcional)</Label>
+              <Select value={estimatedTime} onValueChange={setEstimatedTime}>
+                <SelectTrigger id="estimatedTime">
+                  <SelectValue placeholder="Seleccionar hora estimada" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Sin estimación</SelectItem>
+                  <SelectItem value="14:00">14:00</SelectItem>
+                  <SelectItem value="14:30">14:30</SelectItem>
+                  <SelectItem value="15:00">15:00</SelectItem>
+                  <SelectItem value="15:30">15:30</SelectItem>
+                  <SelectItem value="16:00">16:00</SelectItem>
+                  <SelectItem value="16:30">16:30</SelectItem>
+                  <SelectItem value="21:00">21:00</SelectItem>
+                  <SelectItem value="21:30">21:30</SelectItem>
+                  <SelectItem value="22:00">22:00</SelectItem>
+                  <SelectItem value="22:30">22:30</SelectItem>
+                  <SelectItem value="23:00">23:00</SelectItem>
+                  <SelectItem value="23:30">23:30</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+
+        <div className="flex gap-2 justify-end">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setIsEditingStatus(false)
+              setStatusNotes('')
+              setEstimatedTime('')
+            }}
+            disabled={isUpdating}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleStatusUpdate}
+            disabled={isUpdating}
+          >
+            {isUpdating ? 'Actualizando...' : 'Guardar Cambios'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   </>
   )
 }
