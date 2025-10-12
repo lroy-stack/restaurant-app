@@ -85,24 +85,24 @@ export function Footer() {
 
   return (
     <footer className="bg-card border-t">
-      {/* Main Footer Content - Mejor jerarquía */}
       <div className="container mx-auto px-4 py-6 md:py-8">
-        <div className="space-y-6">
-          {/* Restaurant Info - Full width compacto */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <EnigmaLogo className="h-5 w-5" variant="primary" />
-              <span className="enigma-brand-main text-base font-semibold">
-                {restaurant?.name || 'Enigma Cocina Con Alma'}
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">
-              {restaurant?.description || 'Cocina mediterránea de autor en el corazón del casco antiguo de Calpe desde 2023. Ingredientes de proximidad, producto de temporada, técnicas tradicionales. Carrer Justicia 6A. Reserva online con pre-pedidos.'}
-            </p>
+        {/* Logo y descripción */}
+        <div className="flex items-center gap-2 mb-3">
+          <EnigmaLogo className="h-5 w-5" variant="primary" />
+          <span className="enigma-brand-main text-base font-semibold">
+            {restaurant?.name || 'Enigma Cocina Con Alma'}
+          </span>
+        </div>
+        <p className="text-sm text-muted-foreground leading-relaxed mb-5 max-w-3xl">
+          {restaurant?.description || 'Cocina mediterránea de autor en el corazón del casco antiguo de Calpe desde 2023. Ingredientes de proximidad, producto de temporada, técnicas tradicionales.'}
+        </p>
 
-            {/* Contact Info - Grid 4 columnas responsive */}
+        {/* Layout: Móvil stack vertical, Desktop grid 2 columnas */}
+        <div className="grid grid-cols-1 md:grid-cols-[1fr,auto] gap-6 md:gap-12 pb-5 border-b">
+          {/* Columna 1: Información de contacto */}
+          <div>
             {!loading && restaurant && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3 text-sm">
+              <div className="space-y-2.5 text-sm">
                 <div className="flex items-start gap-2 text-muted-foreground">
                   <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <span className="leading-snug">{restaurant.address}</span>
@@ -115,12 +115,12 @@ export function Footer() {
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Mail className="h-4 w-4 flex-shrink-0" />
-                  <a href={`mailto:${restaurant.email}`} className="hover:text-primary transition-colors break-all">
+                  <a href={`mailto:${restaurant.email}`} className="hover:text-primary transition-colors break-words">
                     {restaurant.email}
                   </a>
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-muted-foreground font-medium">
+                <div className="pt-1">
+                  <div className="flex items-center gap-2 text-muted-foreground font-medium mb-1.5">
                     <Clock className="h-4 w-4 flex-shrink-0" />
                     <span>Horarios</span>
                   </div>
@@ -132,12 +132,47 @@ export function Footer() {
                     ))}
                   </div>
                 </div>
+
+                {/* Redes sociales dentro de contacto */}
+                <div className="flex gap-2 pt-2">
+                  {restaurant?.instagram_url && (
+                    <Button size="icon" variant="outline" className="h-8 w-8" asChild>
+                      <a href={restaurant.instagram_url} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                        <Instagram className="h-4 w-4" />
+                      </a>
+                    </Button>
+                  )}
+                  {restaurant?.facebook_url && (
+                    <Button size="icon" variant="outline" className="h-8 w-8" asChild>
+                      <a href={restaurant.facebook_url} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                        <Facebook className="h-4 w-4" />
+                      </a>
+                    </Button>
+                  )}
+                  {restaurant?.whatsapp_number && (
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-8 w-8 hover:bg-[#25D366]/10 hover:border-[#25D366]/50 hover:text-[#25D366] transition-all"
+                      asChild
+                    >
+                      <a
+                        href={`https://wa.me/${restaurant.whatsapp_number.replace(/[^\d]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="WhatsApp"
+                      >
+                        <WhatsAppIcon className="h-4 w-4" />
+                      </a>
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
 
             {/* Loading fallback */}
             {loading && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3 text-sm">
+              <div className="space-y-2.5 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <MapPin className="h-4 w-4 flex-shrink-0" />
                   <span>Carrer Justicia 6A, 03710 Calpe, Alicante</span>
@@ -154,8 +189,8 @@ export function Footer() {
                     reservas@enigmaconalma.com
                   </a>
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-muted-foreground font-medium">
+                <div className="pt-1">
+                  <div className="flex items-center gap-2 text-muted-foreground font-medium mb-1.5">
                     <Clock className="h-4 w-4 flex-shrink-0" />
                     <span>Horarios</span>
                   </div>
@@ -167,45 +202,10 @@ export function Footer() {
                 </div>
               </div>
             )}
-
-            {/* Social Media */}
-            <div className="flex gap-2">
-              {restaurant?.instagram_url && (
-                <Button size="icon" variant="outline" className="h-8 w-8" asChild>
-                  <a href={restaurant.instagram_url} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                    <Instagram className="h-4 w-4" />
-                  </a>
-                </Button>
-              )}
-              {restaurant?.facebook_url && (
-                <Button size="icon" variant="outline" className="h-8 w-8" asChild>
-                  <a href={restaurant.facebook_url} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-                    <Facebook className="h-4 w-4" />
-                  </a>
-                </Button>
-              )}
-              {restaurant?.whatsapp_number && (
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="h-8 w-8 hover:bg-[#25D366]/10 hover:border-[#25D366]/50 hover:text-[#25D366] transition-all"
-                  asChild
-                >
-                  <a
-                    href={`https://wa.me/${restaurant.whatsapp_number.replace(/[^\d]/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="WhatsApp"
-                  >
-                    <WhatsAppIcon className="h-4 w-4" />
-                  </a>
-                </Button>
-              )}
-            </div>
           </div>
 
-          {/* Footer Links - Horizontal en una fila para mejor jerarquía */}
-          <div className="grid grid-cols-3 gap-6 md:gap-8 pt-2 border-t">
+          {/* Columna 2: Links navegación - 3 columnas siempre */}
+          <div className="grid grid-cols-3 gap-6 md:gap-8">
             {Object.values(footerLinks).map((section) => (
               <div key={section.title} className="space-y-2">
                 <h4 className="enigma-brand-body font-semibold text-foreground text-sm">{section.title}</h4>
