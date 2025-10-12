@@ -122,15 +122,19 @@ export function ProfessionalCalendar({
     return reservations.map(reservation => {
       const startTime = moment(reservation.time)
       const endTime = startTime.clone().add(2, 'hours') // Duración por defecto 2 horas
-      
-      const isVip = reservation.customerEmail.includes('vip') || 
+
+      // 🚀 FIX: Si la reserva cruza medianoche, limitar visualización a 23:59 del día de inicio
+      const dayEnd = startTime.clone().endOf('day')
+      const displayEndTime = endTime.isAfter(dayEnd) ? dayEnd : endTime
+
+      const isVip = reservation.customerEmail.includes('vip') ||
                    reservation.specialRequests?.toLowerCase().includes('vip')
-      
+
       return {
         id: reservation.id,
         title: `${reservation.customerName}${isVip ? ' ⭐' : ''} (${reservation.partySize}p)`,
         start: startTime.toDate(),
-        end: endTime.toDate(),
+        end: displayEndTime.toDate(),
         resource: reservation
       }
     })
