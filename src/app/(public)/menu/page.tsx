@@ -691,49 +691,54 @@ export default function MenuPage() {
                       const allergens = getAdvancedAllergenObjects(item)
 
                       return (
-                        <Card key={item.id} className="relative group h-full flex flex-col overflow-hidden hover:shadow-lg transition-all duration-200 border-border/50 hover:border-primary/20">
-                          {/* CARD HEADER - Status Badges & Price - Mobile Optimized */}
-                          <div className="flex items-start justify-between p-2 sm:p-3 md:p-4 pb-2 border-b border-border/50">
-                            <div className="flex gap-1 sm:gap-2 flex-wrap">
-                              {item.isRecommended && (
-                                <div className="w-6 h-6 sm:w-7 sm:h-7 bg-accent/20 rounded-full flex items-center justify-center">
-                                  <Heart className="w-3 h-3 sm:w-4 sm:h-4 text-accent fill-current" />
-                                </div>
-                              )}
-                              {item.isOrganic && (
-                                <Badge variant="secondary" className="text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 bg-secondary/30 text-secondary-foreground border border-secondary/40">
-                                  <Leaf className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
-                                  <span className="hidden sm:inline">{language === 'en' ? 'Organic' : 'Ecológico'}</span>
-                                </Badge>
-                              )}
-                              {category.type === 'WINE' && item.vintage && (
-                                <Badge variant="outline" className="text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 bg-muted text-foreground border-border">
-                                  {item.vintage}
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              <div className="flex items-baseline gap-1 sm:gap-2 justify-end">
-                                <div className="text-base sm:text-lg md:text-xl font-bold text-primary">€{item.price}</div>
+                        <Card key={item.id} className="relative group h-full flex flex-col overflow-hidden hover:shadow-lg transition-all duration-200 border-border/50 hover:border-primary/20 p-0 gap-0">
+                          {/* CARD CONTENT - Padding optimizado */}
+                          <CardContent className="flex-1 flex flex-col p-4 gap-3">
+                            {/* Header: Título y Precio juntos */}
+                            <div className="flex items-start justify-between gap-3">
+                              <h3 className="text-base font-bold leading-tight line-clamp-2 flex-1 group-hover:text-primary transition-colors">
+                                {getItemDisplayName(item)}
+                              </h3>
+                              <div className="text-right flex-shrink-0">
+                                <div className="text-xl font-bold text-primary">€{item.price}</div>
                                 {category.type === 'WINE' && item.glassPrice && (
-                                  <div className="text-[10px] sm:text-xs text-muted-foreground">
-                                    / €{item.glassPrice} <span className="hidden sm:inline">{language === 'en' ? 'glass' : 'copa'}</span>
+                                  <div className="text-xs text-muted-foreground">
+                                    €{item.glassPrice} <span className="hidden sm:inline">{language === 'en' ? 'glass' : 'copa'}</span>
                                   </div>
                                 )}
                               </div>
                             </div>
-                          </div>
 
-                          {/* CARD BODY - Content - Compact Mobile Padding */}
-                          <CardContent className="flex-1 flex flex-col p-2 sm:p-3 md:p-4 pt-2">
-                            {/* Item Name & Description - Mobile Optimized Typography */}
-                            <div className="mb-2 sm:mb-3">
-                              <h3 className="text-sm sm:text-base md:text-lg font-semibold mb-1 sm:mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-2">
-                                {getItemDisplayName(item)}
-                              </h3>
-                              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2 sm:line-clamp-3">
-                                {getItemDisplayDescription(item)}
-                              </p>
+                            {/* Descripción */}
+                            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                              {getItemDisplayDescription(item)}
+                            </p>
+
+                            {/* Badges en una sola línea */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {item.isRecommended && (
+                                <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-xs px-2 py-0.5 rounded-full border-0">
+                                  <Heart className="w-3 h-3 mr-1 fill-current" />
+                                  Recomendado
+                                </Badge>
+                              )}
+                              {item.isOrganic && (
+                                <Badge className="bg-emerald-500/90 text-white text-xs px-2 py-0.5 rounded-full border-0">
+                                  <Leaf className="w-3 h-3 mr-1" />
+                                  Eco
+                                </Badge>
+                              )}
+                              {category.type === 'WINE' && item.vintage && (
+                                <Badge variant="outline" className="text-xs px-2 py-0.5">
+                                  {item.vintage}
+                                </Badge>
+                              )}
+                              {category.type === 'WINE' && item.alcoholContent && (
+                                <Badge variant="outline" className="text-xs px-2 py-0.5">
+                                  <Wine className="w-3 h-3 mr-1 inline" />
+                                  {item.alcoholContent}%
+                                </Badge>
+                              )}
                             </div>
 
                             {/* Wine/Food Pairing Compact Display - Mobile Optimized */}
@@ -756,8 +761,8 @@ export default function MenuPage() {
                               </div>
                             )}
 
-                            {/* Allergen & Dietary Info - Mobile Optimized */}
-                            <div className="mb-2 sm:mb-3">
+                            {/* Allergen & Dietary Info */}
+                            <div>
                               <AllergenInfo
                                 allergens={allergens}
                                 isVegetarian={item.isVegetarian}
@@ -773,54 +778,45 @@ export default function MenuPage() {
                               />
                             </div>
 
-                            {/* CARD FOOTER - Mobile-First Responsive Buttons */}
-                            <div className="mt-auto pt-2 border-t border-border/30">
-                              {/* Cart Status - Ultra Compact Mobile */}
+                            {/* CARD FOOTER - Botones */}
+                            <div className="mt-auto pt-3 border-t border-border/30">
+                              {/* Cart Status */}
                               {(category.type === 'FOOD' || category.type === 'WINE') && isInCart(item.id) && getCartItem(item.id) && (
-                                <div className="mb-1.5 text-[10px] sm:text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
-                                  <ShoppingCart className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                                  <span className="truncate">
-                                    {language === 'en' ? `In cart (${getCartItem(item.id)?.quantity})` : `En carrito (${getCartItem(item.id)?.quantity})`}
-                                  </span>
+                                <div className="mb-2 text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
+                                  <ShoppingCart className="h-3 w-3" />
+                                  {language === 'en' ? `In cart (${getCartItem(item.id)?.quantity})` : `En carrito (${getCartItem(item.id)?.quantity})`}
                                 </div>
                               )}
 
-                              {/* Action Buttons - Optimized Touch Targets */}
-                              <div className="flex gap-2 justify-end">
-                                {/* View Details - Mobile Touch Optimized */}
+                              {/* Action Buttons */}
+                              <div className="flex gap-2">
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() => openDetailModal(item, category)}
-                                  className="h-8 w-8 sm:h-9 sm:w-9 p-0 hover:shadow-md transition-all duration-200"
-                                  title={language === 'en' ? 'View Details' : 'Ver Detalle'}
+                                  className="flex-1 h-9"
                                 >
-                                  <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  {language === 'en' ? 'View' : 'Ver'}
                                 </Button>
 
-                                {/* Add to Cart - Enhanced Mobile Experience */}
                                 {(category.type === 'FOOD' || category.type === 'WINE') && (
                                   <Button
                                     onClick={() => handleAddToCart(item, category)}
                                     size="sm"
                                     className={cn(
-                                      "relative h-8 w-8 sm:h-9 sm:w-9 p-0 transition-all duration-200 hover:shadow-md",
-                                      isInCart(item.id)
-                                        ? "bg-green-50 border-green-200 hover:bg-green-100 text-green-700 border"
-                                        : "bg-primary hover:bg-primary/90 text-primary-foreground"
+                                      "flex-1 h-9 relative",
+                                      isInCart(item.id) && "bg-green-600 hover:bg-green-700"
                                     )}
-                                    title={language === 'en'
-                                      ? (isInCart(item.id) ? 'Add More' : 'Add to Cart')
-                                      : (isInCart(item.id) ? 'Añadir Más' : 'Al Carrito')
-                                    }
                                   >
-                                    <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                    <ShoppingCart className="h-4 w-4 mr-2" />
+                                    {isInCart(item.id)
+                                      ? (language === 'en' ? 'Add' : 'Añadir')
+                                      : (language === 'en' ? 'Add' : 'Añadir')
+                                    }
 
-                                    {/* Compact quantity badge */}
                                     {isInCart(item.id) && getCartItem(item.id) && getCartItem(item.id)!.quantity > 0 && (
-                                      <Badge
-                                        className="absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 h-4 w-4 sm:h-5 sm:w-5 p-0 text-[10px] sm:text-xs flex items-center justify-center bg-red-500 hover:bg-red-500 text-white border-0 rounded-full shadow-sm"
-                                      >
+                                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center bg-red-500 hover:bg-red-500 text-white border-0 rounded-full">
                                         {getCartItem(item.id)?.quantity}
                                       </Badge>
                                     )}
@@ -829,16 +825,6 @@ export default function MenuPage() {
                               </div>
                             </div>
                           </CardContent>
-
-                          {/* Alcohol Badge - Mobile Optimized */}
-                          {category.type === 'WINE' && item.alcoholContent && (
-                            <div className="absolute bottom-2 left-2">
-                              <div className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-primary/10 rounded-md flex items-center gap-0.5 sm:gap-1">
-                                <Wine className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-primary" />
-                                <span className="text-[10px] sm:text-xs font-medium text-primary">{item.alcoholContent}% <span className="hidden sm:inline">Vol.</span></span>
-                              </div>
-                            </div>
-                          )}
                         </Card>
                       )
                     })}
