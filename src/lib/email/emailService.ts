@@ -161,6 +161,87 @@ export class EmailService {
   }
 
   /**
+   * NEW: Send notification to restaurant about new web booking
+   * ONLY for public web reservations (source: 'web')
+   * Uses simple template WITHOUT EmailBase (no header/footer)
+   */
+  async sendRestaurantNotification(emailData: {
+    reservationId: string
+    customerName: string
+    customerEmail: string
+    customerPhone: string
+    reservationDate: string
+    reservationTime: string
+    partySize: number
+    childrenCount?: number
+    tableNumbers: string
+    tableLocation: string
+    specialRequests?: string
+    preOrderItems?: any[]
+    restaurantEmail: string  // From DB mailing field
+  }): Promise<EmailResult> {
+    try {
+      console.log('📧 Enviando notificación al restaurante:', emailData.restaurantEmail)
+
+      const { render } = await import('@react-email/render')
+      const { RestaurantNotification } = await import('./templates/restaurant-notification')
+
+      const htmlContent = render(
+        RestaurantNotification({
+          reservationId: emailData.reservationId,
+          customerName: emailData.customerName,
+          customerEmail: emailData.customerEmail,
+          customerPhone: emailData.customerPhone,
+          reservationDate: emailData.reservationDate,
+          reservationTime: emailData.reservationTime,
+          partySize: emailData.partySize,
+          childrenCount: emailData.childrenCount || 0,
+          tableNumbers: emailData.tableNumbers,
+          tableLocation: emailData.tableLocation,
+          specialRequests: emailData.specialRequests || '',
+          preOrderItems: emailData.preOrderItems || []
+        })
+      )
+
+      const textContent = `
+Nueva Reserva Web - ${emailData.customerName}
+
+Cliente: ${emailData.customerName}
+Email: ${emailData.customerEmail}
+Teléfono: ${emailData.customerPhone}
+
+Fecha: ${emailData.reservationDate}
+Hora: ${emailData.reservationTime}
+Personas: ${emailData.partySize}${emailData.childrenCount ? ` + ${emailData.childrenCount} niños` : ''}
+Mesa(s): ${emailData.tableNumbers} - ${emailData.tableLocation}
+
+${emailData.specialRequests ? `Peticiones especiales: ${emailData.specialRequests}\n` : ''}
+${emailData.preOrderItems && emailData.preOrderItems.length > 0 ? `Pre-pedido: ${emailData.preOrderItems.map(item => `${item.quantity}x ${item.name}`).join(', ')}\n` : ''}
+
+Gestionar: https://www.enigmaconalma.com/dashboard/reservaciones
+Estado: PENDIENTE
+ID: ${emailData.reservationId}
+      `.trim()
+
+      const transporter = getTransporter()
+      const info = await transporter.sendMail({
+        from: senderConfig,
+        to: emailData.restaurantEmail,
+        subject: `🔔 Nueva Reserva Web - ${emailData.customerName}`,
+        html: htmlContent,
+        text: textContent
+      })
+
+      console.log('✅ Notificación restaurante enviada:', info.messageId, 'a', emailData.restaurantEmail)
+      return EmailResult.Success
+
+    } catch (error) {
+      console.error('❌ Error enviando notificación restaurante:', error)
+      return this.handleEmailError(error)
+    }
+  }
+
+  /**
    * CRITICAL: Query with exact database field names (VALIDATED schema)
    * Uses schema 'restaurante' and exact field names from SSH validation
    * 🔧 FIXED: Now supports multiple tables via table_ids array

@@ -564,6 +564,52 @@ export async function POST(request: NextRequest) {
       console.error('⚠️ Email sending failed (non-critical):', emailError)
     }
 
+    // 🆕 NEW: Send notification to restaurant ONLY for web reservations
+    if (body.source === 'web' || !body.source) {
+      try {
+        // Get restaurant mailing email from DB
+        const { data: restaurantData } = await supabase
+          .schema('restaurante')
+          .from('restaurants')
+          .select('mailing')
+          .eq('id', 'rest_enigma_001')
+          .single()
+
+        const restaurantEmail = restaurantData?.mailing || 'abraldes80@gmail.com'
+
+        console.log(`📧 Enviando notificación al restaurante: ${restaurantEmail}`)
+
+        const notificationResult = await emailService.sendRestaurantNotification({
+          reservationId: reservation.id,
+          customerName: `${data.firstName} ${data.lastName}`,
+          customerEmail: data.email,
+          customerPhone: data.phone,
+          reservationDate: new Date(reservationDateTime).toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          reservationTime: new Date(reservationDateTime).toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }),
+          partySize: data.partySize,
+          childrenCount: data.childrenCount,
+          tableNumbers: tables.map(t => t.number).join(', '),
+          tableLocation: tables[0]?.location || 'Por asignar',
+          specialRequests: data.specialRequests,
+          preOrderItems: data.preOrderItems,
+          restaurantEmail: restaurantEmail
+        })
+
+        console.log('📧 Notificación restaurante result:', notificationResult)
+      } catch (notificationError) {
+        console.error('⚠️ Restaurant notification failed (non-critical):', notificationError)
+      }
+    }
+
     return NextResponse.json({
       success: true,
       reservation: {
