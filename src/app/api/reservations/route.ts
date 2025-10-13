@@ -567,6 +567,9 @@ export async function POST(request: NextRequest) {
     // 🆕 NEW: Send notification to restaurant ONLY for web reservations
     if (body.source === 'web' || !body.source) {
       try {
+        // Import emailService for restaurant notification
+        const { emailService } = await import('@/lib/email/emailService')
+
         // Get restaurant mailing email from DB
         const { data: restaurantData } = await supabase
           .schema('restaurante')
