@@ -225,8 +225,9 @@ ID: ${emailData.reservationId}
 
       const transporter = getTransporter()
       const info = await transporter.sendMail({
-        from: senderConfig,
+        from: `${senderConfig.name} <${senderConfig.email}>`,
         to: emailData.restaurantEmail,
+        replyTo: senderConfig.replyTo,
         subject: `🔔 Nueva Reserva Web - ${emailData.customerName}`,
         html: htmlContent,
         text: textContent
