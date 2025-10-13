@@ -186,7 +186,7 @@ export class EmailService {
       const { render } = await import('@react-email/render')
       const { RestaurantNotification } = await import('./templates/restaurant-notification')
 
-      const htmlContent = render(
+      const htmlContent = await render(
         RestaurantNotification({
           reservationId: emailData.reservationId,
           customerName: emailData.customerName,
