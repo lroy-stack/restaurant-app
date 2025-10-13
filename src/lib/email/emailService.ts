@@ -233,7 +233,7 @@ ID: ${emailData.reservationId}
       })
 
       console.log('✅ Notificación restaurante enviada:', info.messageId, 'a', emailData.restaurantEmail)
-      return EmailResult.Success
+      return EmailResult.Ok
 
     } catch (error) {
       console.error('❌ Error enviando notificación restaurante:', error)
