@@ -67,10 +67,10 @@ export function EnhancedProductCard({
             <Button
               size="sm"
               variant="secondary"
-              className="backdrop-blur-md bg-card/95 hover:bg-card text-foreground border-border h-9 px-4 rounded-xl shadow-lg"
+              className="backdrop-blur-md bg-card/95 hover:bg-card text-foreground border-border h-8 md:h-9 px-2.5 md:px-4 rounded-xl shadow-lg"
               onClick={onQuickView}
             >
-              <Eye className="h-4 w-4 mr-1.5" />
+              <Eye className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-1.5" />
               <span className="hidden sm:inline">Vista Rápida</span>
             </Button>
           </motion.div>
@@ -150,13 +150,13 @@ export function EnhancedProductCard({
               onClick={onAddToCart}
               size="sm"
               className={cn(
-                "w-full h-10 text-sm font-semibold rounded-xl shadow-md transition-all duration-200",
+                "w-full h-9 md:h-10 text-sm font-semibold rounded-xl shadow-md transition-all duration-200",
                 isInCart
                   ? "bg-green-600 hover:bg-green-700 hover:shadow-lg"
                   : "bg-primary hover:bg-primary/90 hover:shadow-lg"
               )}
             >
-              <ShoppingCart className="h-4 w-4 md:mr-2" />
+              <ShoppingCart className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-2" />
               <span className="hidden md:inline">{isInCart ? `En carrito (${cartQuantity})` : 'Añadir al carrito'}</span>
 
               {/* Quantity badge - visible en móvil y desktop */}
