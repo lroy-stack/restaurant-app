@@ -119,9 +119,9 @@
   --muted: oklch(0.9850 0.0020 210);
   --muted-foreground: oklch(0.42 0.008 220);
 
-  /* Accent Colors - Subtle Enigma Orange */
-  --accent: oklch(0.95 0.08 40);
-  --accent-foreground: oklch(0.2 0.04 30);
+  /* Accent Colors - Vibrant Enigma Orange with better contrast */
+  --accent: oklch(0.68 0.15 40);
+  --accent-foreground: oklch(0.98 0.005 40);
 
   /* Destructive States - Professional error handling */
   --destructive: oklch(0.6368 0.2078 25.3313);

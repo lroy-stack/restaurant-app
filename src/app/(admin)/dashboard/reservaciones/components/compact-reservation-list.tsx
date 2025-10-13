@@ -757,6 +757,8 @@ export function CompactReservationList({
                       const urgencyBadge = getUrgencyBadge(reservation, bufferMinutes)
                       const statusStyle = statusStyles[reservation.status]
 
+                      const hasExpandedContent = reservation.hasPreOrder && reservation.reservation_items?.length > 0 || reservation.specialRequests || reservation.dietaryNotes
+
                       return (
                         <React.Fragment key={reservation.id}>
                           <TableRow className="group">
@@ -803,8 +805,8 @@ export function CompactReservationList({
                                   )}
                                 </div>
 
-                                {/* Badges - DESKTOP ONLY */}
-                                <div className="hidden md:flex items-center gap-1 flex-wrap">
+                                {/* Badges/Detalles - Todos los dispositivos */}
+                                <div className="flex flex-col gap-1 mt-2">
                                   {/* Pre-Order Badge */}
                                   {reservation.hasPreOrder && reservation.reservation_items?.length > 0 && (
                                     <Badge
@@ -820,16 +822,12 @@ export function CompactReservationList({
                                     </Badge>
                                   )}
 
-                                  {/* Special Requests Badge */}
+                                  {/* Special Requests - Texto completo */}
                                   {reservation.specialRequests && (
-                                    <Badge
-                                      variant="outline"
-                                      className="text-xs px-2 py-0.5 bg-accent/10 text-accent border-accent/20 hover:bg-accent/15"
-                                      title={reservation.specialRequests}
-                                    >
-                                      <MessageSquare className="h-3 w-3 mr-1" />
-                                      Petición
-                                    </Badge>
+                                    <div className="flex items-start gap-1 text-xs text-accent w-full">
+                                      <MessageSquare className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                                      <span className="font-medium">{reservation.specialRequests}</span>
+                                    </div>
                                   )}
 
                                   {/* Dietary Notes Badge */}
@@ -917,56 +915,6 @@ export function CompactReservationList({
                               />
                             </TableCell>
                           </TableRow>
-
-                          {/* Mobile Expanded Row - DEBAJO DE CADA RESERVA INDIVIDUAL */}
-                          {(reservation.hasPreOrder && reservation.reservation_items?.length > 0 || reservation.specialRequests || reservation.dietaryNotes) && (
-                            <TableRow className="md:hidden border-none">
-                              <TableCell colSpan={bulkMode ? 9 : 8} className="py-2 pl-8">
-                                <div className="flex flex-col gap-2 text-xs text-muted-foreground border-l-2 border-muted pl-3">
-                                  {/* Pre-order expanded info */}
-                                  {reservation.hasPreOrder && reservation.reservation_items?.length > 0 && (
-                                    <div className="flex flex-col gap-1">
-                                      <span className="flex items-center gap-1 text-secondary-foreground font-medium">
-                                        <Utensils className="h-3 w-3" />
-                                        Pre-pedido ({reservation.reservation_items.length} items)
-                                      </span>
-                                      <div className="flex flex-wrap gap-1">
-                                        {reservation.reservation_items.slice(0, 3).map((item) => (
-                                          <span key={item.id} className="flex items-center gap-0.5 bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs">
-                                            {item.menu_items?.menu_categories?.type === 'WINE' ? (
-                                              <Wine className="h-2.5 w-2.5" />
-                                            ) : (
-                                              <Utensils className="h-2.5 w-2.5" />
-                                            )}
-                                            {item.quantity}x {item.menu_items.name}
-                                          </span>
-                                        ))}
-                                        {reservation.reservation_items.length > 3 && (
-                                          <span className="text-secondary-foreground font-medium">+{reservation.reservation_items.length - 3} más</span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* Special requests expanded */}
-                                  {reservation.specialRequests && (
-                                    <div className="flex items-start gap-2 text-accent">
-                                      <MessageSquare className="h-3 w-3 mt-0.5" />
-                                      <span className="text-xs">{reservation.specialRequests}</span>
-                                    </div>
-                                  )}
-
-                                  {/* Dietary notes expanded */}
-                                  {reservation.dietaryNotes && (
-                                    <div className="flex items-start gap-2 text-red-600">
-                                      <AlertTriangle className="h-3 w-3 mt-0.5" />
-                                      <span className="text-xs">{reservation.dietaryNotes}</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          )}
                         </React.Fragment>
                       )
                     })}
