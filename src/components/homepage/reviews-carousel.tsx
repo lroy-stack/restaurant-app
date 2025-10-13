@@ -217,19 +217,6 @@ export function ReviewsCarousel({
             asChild
           >
             <a
-              href="https://g.page/r/CZ_KF7aOo6ZPEBM/review"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Dejar reseña en Google
-            </a>
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            asChild
-          >
-            <a
               href="https://www.google.com/search?sa=X&sca_esv=c872d79fb2a9e0a7&cs=0&tbm=lcl&sxsrf=AE3TifO34Er5kuUSK_p1yntyyKRs1awV3g:1760348707149&q=Enigma+Cocina+con+Alma+Rese%C3%B1as&rflfq=1&num=20&stick=H4sIAAAAAAAAAONgkxIxNLMwMjAzNzI0NTY0NbAwNTUyt9zAyPiKUd41LzM9N1HBOT85My9RITk_T8ExB8gPSi1OPbwxsXgRKyEVAFQUW61fAAAA&rldimm=16820672153150855279&hl=es-DE&ved=2ahUKEwjCh_v68aCQAxXVlP0HHRC6EYMQ9fQKegQIUBAF&biw=1452&bih=712&dpr=2#lkt=LocalPoiReviews"
               target="_blank"
               rel="noopener noreferrer"
