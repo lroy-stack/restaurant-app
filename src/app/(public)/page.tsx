@@ -4,19 +4,24 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Star, Award, Users, Utensils, MapPin, Phone, Mail, Clock } from "lucide-react"
+import { Star, Award, Users, Utensils, MapPin, Phone, Mail, Clock, Navigation } from "lucide-react"
 import { EnigmaLogo } from "@/components/ui/enigma-logo"
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon"
 import { FeaturedDishes } from "@/components/homepage/featured-dishes"
 import { FeaturedWines } from "@/components/homepage/featured-wines"
+import { InstagramFeed } from "@/components/homepage/instagram-feed"
+import { ReviewsCarousel } from "@/components/homepage/reviews-carousel"
 import { OptimizedImage } from "@/components/ui/optimized-image"
 import { useMediaLibrary } from "@/hooks/use-media-library"
 import { useRestaurant } from "@/hooks/use-restaurant"
 import { ScrollReveal } from "@/components/animations/ScrollReveal"
 import { Suspense, memo } from "react"
+import { cn } from "@/lib/utils"
+import CountUp from "react-countup"
 
 export default function HomePage() {
   const { getHeroImage, buildImageUrl, loading: mediaLoading } = useMediaLibrary({ type: 'hero' })
-  const { restaurant } = useRestaurant()
+  const { restaurant, isOpenNow } = useRestaurant()
   const heroImage = getHeroImage('home')
 
   return (
@@ -48,7 +53,9 @@ export default function HomePage() {
             </div>
             <div className="flex items-center gap-1">
               <Users className="h-4 w-4 text-white/90" />
-              <span className="enigma-brand-body text-white/90 font-medium">230+ clientes satisfechos/mes</span>
+              <span className="enigma-brand-body text-white/90 font-medium">
+                <CountUp end={230} duration={2.5} separator="," suffix="+" /> clientes satisfechos/mes
+              </span>
             </div>
           </div>
 
@@ -126,6 +133,16 @@ export default function HomePage() {
         }>
           <FeaturedWines maxItems={2} showViewMore={true} />
         </Suspense>
+      </ScrollReveal>
+
+      {/* Instagram Feed Section */}
+      <ScrollReveal direction="up" delay={0.1}>
+        <InstagramFeed />
+      </ScrollReveal>
+
+      {/* Reviews Carousel Section */}
+      <ScrollReveal direction="up" delay={0.2}>
+        <ReviewsCarousel />
       </ScrollReveal>
 
       {/* Features Section - 100% Responsive Grid */}
@@ -216,19 +233,63 @@ export default function HomePage() {
                   <div className="mt-1">
                     <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                   </div>
-                  <div className="text-sm sm:text-base space-y-0.5">
-                    {restaurant?.hours_operation ? (
-                      restaurant.hours_operation.split('|').map((schedule, idx) => (
-                        <div key={idx}>{schedule.trim()}</div>
-                      ))
-                    ) : (
-                      <span>Lun-Sáb: 18:30 - 23:00</span>
-                    )}
+                  <div className="text-sm sm:text-base space-y-2">
+                    <div className="space-y-0.5">
+                      {restaurant?.hours_operation ? (
+                        restaurant.hours_operation.split('|').map((schedule, idx) => (
+                          <div key={idx}>{schedule.trim()}</div>
+                        ))
+                      ) : (
+                        <span>Lun-Sáb: 18:30 - 23:00</span>
+                      )}
+                    </div>
+                    <Badge
+                      variant={isOpenNow() ? 'default' : 'secondary'}
+                      className={cn(
+                        "text-xs",
+                        isOpenNow() ? "bg-green-500 hover:bg-green-600 text-white" : "bg-red-500 hover:bg-red-600 text-white"
+                      )}
+                    >
+                      {isOpenNow() ? '🟢 Abierto ahora' : '🔴 Cerrado'}
+                    </Badge>
                   </div>
+                </div>
+
+                {/* Quick Contact Buttons */}
+                <div className="flex flex-wrap gap-2 mt-6">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => window.open(`tel:${restaurant?.phone?.replace(/\s/g, '') || "+34672796006"}`)}
+                    className="flex-1 sm:flex-initial"
+                  >
+                    <Phone className="mr-2 h-4 w-4" />
+                    Llamar
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => window.open(`https://wa.me/${restaurant?.whatsapp_number?.replace(/[^\d]/g, '') || "34672796006"}`)}
+                    className="flex-1 sm:flex-initial"
+                  >
+                    <WhatsAppIcon className="mr-2 h-4 w-4" />
+                    WhatsApp
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(restaurant?.address || "Carrer Justicia 6A, 03710 Calpe, Alicante")}`)}
+                    className="flex-1 sm:flex-initial"
+                  >
+                    <Navigation className="mr-2 h-4 w-4" />
+                    Cómo llegar
+                  </Button>
                 </div>
               </div>
             </div>
-            
+
             <Card className="p-4 sm:p-6 order-1 lg:order-2">
               <CardContent className="p-4 sm:p-6 pt-0">
                 <h4 className="enigma-card-title">Reserva tu Mesa</h4>
