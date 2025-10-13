@@ -16,15 +16,15 @@ interface InstagramFeedProps {
  * No requiere API token, solo URLs de posts públicos
  */
 export function InstagramFeed({ className }: InstagramFeedProps) {
-  // URLs de los últimos 6 posts de Instagram
-  // TODO: Actualizar estos URLs periódicamente o implementar scraper automático
+  // URLs REALES de los últimos posts de Instagram @enigmaconalma
+  // TODO: Agregar 4 URLs más para completar el grid de 6
   const recentPosts = [
-    'https://www.instagram.com/p/DCvfW8UNn4v/',
-    'https://www.instagram.com/p/DCq7pAAN_0D/',
-    'https://www.instagram.com/p/DCnjf6wtS0d/',
-    'https://www.instagram.com/p/DCi4WXfNj8x/',
-    'https://www.instagram.com/p/DCgRV1TtzZ9/',
-    'https://www.instagram.com/p/DCeLnBaNVmW/'
+    'https://www.instagram.com/reel/DOqLP0_CHbt/',      // ✅ REAL
+    'https://www.instagram.com/reel/DN2rX1Aogr-/',      // ✅ REAL
+    'https://www.instagram.com/reel/DOqLP0_CHbt/',      // 🔄 Duplicado temporal (reemplazar)
+    'https://www.instagram.com/reel/DN2rX1Aogr-/',      // 🔄 Duplicado temporal (reemplazar)
+    'https://www.instagram.com/reel/DOqLP0_CHbt/',      // 🔄 Duplicado temporal (reemplazar)
+    'https://www.instagram.com/reel/DN2rX1Aogr-/',      // 🔄 Duplicado temporal (reemplazar)
   ]
 
   return (
