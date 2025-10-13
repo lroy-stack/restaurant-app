@@ -26,12 +26,12 @@ export function InstagramFeed({ className }: InstagramFeedProps) {
   // URLs de los últimos 6 posts de Instagram
   // TODO: Actualizar estos URLs periódicamente o implementar scraper automático
   const recentPosts = [
-    'https://www.instagram.com/p/DKpgnjFIF4p/',
+    'https://www.instagram.com/reel/DMYPOovoXA5/',
+    'https://www.instagram.com/p/DNoG84kIUWm/',
+    'https://www.instagram.com/p/DOIyaaoiLlR/',
     'https://www.instagram.com/p/DLNh-Uaooir/',
     'https://www.instagram.com/reel/DHNwxWeIag9/',
-    'https://www.instagram.com/p/DOD5dGzCN2P/',
-    'https://www.instagram.com/reel/DMYPOovoXA5/',
-    'https://www.instagram.com/p/DNoG84kIUWm/'
+    'https://www.instagram.com/p/DOD5dGzCN2P/'
   ]
 
   return (
