@@ -794,10 +794,10 @@ export default function MenuPage() {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => openDetailModal(item, category)}
-                                  className="flex-1 h-9"
+                                  className="flex-1 h-8 sm:h-9 px-2 sm:px-3"
                                 >
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  {language === 'en' ? 'View' : 'Ver'}
+                                  <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
+                                  <span className="hidden sm:inline">{language === 'en' ? 'View' : 'Ver'}</span>
                                 </Button>
 
                                 {(category.type === 'FOOD' || category.type === 'WINE') && (
@@ -805,15 +805,17 @@ export default function MenuPage() {
                                     onClick={() => handleAddToCart(item, category)}
                                     size="sm"
                                     className={cn(
-                                      "flex-1 h-9 relative",
+                                      "flex-1 h-8 sm:h-9 px-2 sm:px-3 relative",
                                       isInCart(item.id) && "bg-green-600 hover:bg-green-700"
                                     )}
                                   >
-                                    <ShoppingCart className="h-4 w-4 mr-2" />
-                                    {isInCart(item.id)
-                                      ? (language === 'en' ? 'Add' : 'Añadir')
-                                      : (language === 'en' ? 'Add' : 'Añadir')
-                                    }
+                                    <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">
+                                      {isInCart(item.id)
+                                        ? (language === 'en' ? 'Add' : 'Añadir')
+                                        : (language === 'en' ? 'Add' : 'Añadir')
+                                      }
+                                    </span>
 
                                     {isInCart(item.id) && getCartItem(item.id) && getCartItem(item.id)!.quantity > 0 && (
                                       <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center bg-red-500 hover:bg-red-500 text-white border-0 rounded-full">
