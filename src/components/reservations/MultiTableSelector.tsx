@@ -5,7 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { Users, MapPin, Check } from 'lucide-react'
+import { Users, MapPin, Check, AlertCircle, Info } from 'lucide-react'
+import { useCapacityValidation } from '@/hooks/useCapacityValidation'
+import { toast } from 'sonner'
 
 interface Table {
   id: string
@@ -33,6 +35,9 @@ export function MultiTableSelector({
   maxSelections = 5,
   className
 }: MultiTableSelectorProps) {
+  // Hook de validación de capacidad
+  const { validateTableSelection, getCapacityInfo, config } = useCapacityValidation()
+
   // Group tables by location for better organization
   const tablesByLocation = useMemo(() => {
     const grouped = tables.reduce((acc, table) => {
@@ -55,32 +60,69 @@ export function MultiTableSelector({
     return grouped
   }, [tables])
 
+  // Get selected tables objects
+  const selectedTables = useMemo(() => {
+    return tables.filter(t => selectedTableIds.includes(t.id))
+  }, [tables, selectedTableIds])
+
   // Calculate total capacity of selected tables
   const totalSelectedCapacity = useMemo(() => {
-    return selectedTableIds.reduce((total, id) => {
-      const table = tables.find(t => t.id === id)
-      return total + (table?.capacity || 0)
-    }, 0)
-  }, [selectedTableIds, tables])
+    return selectedTables.reduce((total, table) => total + table.capacity, 0)
+  }, [selectedTables])
+
+  // Get capacity info for display
+  const capacityInfo = useMemo(() => getCapacityInfo(partySize), [partySize, getCapacityInfo])
 
   const isTableSelected = useCallback((tableId: string) => {
     return selectedTableIds.includes(tableId)
   }, [selectedTableIds])
 
-  const canSelectTable = useCallback((tableId: string) => {
-    if (isTableSelected(tableId)) return true // Can always deselect
-    return selectedTableIds.length < maxSelections
-  }, [selectedTableIds, maxSelections, isTableSelected])
+  // Nueva lógica: validación con el hook
+  const getTableValidation = useCallback((table: Table) => {
+    const isSelected = isTableSelected(table.id)
 
-  const handleTableToggle = useCallback((tableId: string) => {
-    if (selectedTableIds.includes(tableId)) {
-      // Deselect table
-      onSelectionChange(selectedTableIds.filter(id => id !== tableId))
-    } else if (selectedTableIds.length < maxSelections) {
-      // Select table
-      onSelectionChange([...selectedTableIds, tableId])
+    // Validación básica de máximo de selecciones
+    if (!isSelected && selectedTableIds.length >= maxSelections) {
+      return {
+        canSelect: false,
+        reason: `Máximo ${maxSelections} mesas por reserva`,
+        severity: 'info' as const
+      }
     }
-  }, [selectedTableIds, maxSelections, onSelectionChange])
+
+    // Validación de capacidad usando el hook
+    return validateTableSelection(table, partySize, selectedTables, isSelected)
+  }, [partySize, selectedTables, selectedTableIds.length, maxSelections, isTableSelected, validateTableSelection])
+
+  const handleTableToggle = useCallback((table: Table) => {
+    if (selectedTableIds.includes(table.id)) {
+      // Deselect table - siempre permitido
+      onSelectionChange(selectedTableIds.filter(id => id !== table.id))
+    } else {
+      // Attempt to select - validar primero
+      const validation = getTableValidation(table)
+
+      if (!validation.canSelect) {
+        // Mostrar razón con toast
+        if (validation.severity === 'error') {
+          toast.error(validation.reason || 'No se puede seleccionar esta mesa')
+        } else if (validation.severity === 'warning') {
+          toast.warning(validation.reason || 'Advertencia al seleccionar mesa')
+        } else {
+          toast.info(validation.reason || 'Información')
+        }
+        return
+      }
+
+      // Seleccionar mesa
+      onSelectionChange([...selectedTableIds, table.id])
+
+      // Si hay warning, mostrar toast informativo
+      if (validation.reason && validation.severity === 'warning') {
+        toast.info(validation.reason)
+      }
+    }
+  }, [selectedTableIds, onSelectionChange, getTableValidation])
 
   const clearSelection = useCallback(() => {
     onSelectionChange([])
@@ -135,10 +177,28 @@ export function MultiTableSelector({
 
             {/* Capacity validation */}
             {totalSelectedCapacity < partySize && (
-              <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded-md">
-                <p className="text-sm text-amber-700">
-                  ⚠️ Capacidad insuficiente: necesitas {partySize} personas, tienes {totalSelectedCapacity}
-                </p>
+              <div className="mt-3 p-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-amber-700 dark:text-amber-400">
+                    Capacidad insuficiente: necesitas {partySize} personas, tienes {totalSelectedCapacity}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Capacity info when feature flag enabled */}
+            {config.enabled && totalSelectedCapacity >= partySize && (
+              <div className="mt-3 p-2 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-md">
+                <div className="flex items-start gap-2">
+                  <Check className="h-4 w-4 text-green-600 dark:text-green-500 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-green-700 dark:text-green-400">
+                    <p className="font-medium">Capacidad apropiada para tu grupo</p>
+                    <p className="text-xs mt-0.5 opacity-80">
+                      Grupo: {partySize} personas • Capacidad: {totalSelectedCapacity} • Rango permitido: {capacityInfo.minCapacity}-{capacityInfo.maxCapacity}
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </CardContent>
@@ -161,7 +221,8 @@ export function MultiTableSelector({
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
               {locationTables.map(table => {
                 const selected = isTableSelected(table.id)
-                const canSelect = canSelectTable(table.id)
+                const validation = getTableValidation(table)
+                const canSelect = validation.canSelect
 
                 return (
                   <button
@@ -173,11 +234,16 @@ export function MultiTableSelector({
                       'active:scale-95',
                       selected
                         ? 'border-primary bg-primary/10 shadow-md'
-                        : 'border-border hover:border-primary/50 hover:shadow-sm',
-                      !canSelect && !selected && 'opacity-40 cursor-not-allowed'
+                        : canSelect
+                        ? 'border-border hover:border-primary/50 hover:shadow-sm'
+                        : 'border-border bg-muted/50 opacity-50 cursor-not-allowed',
+                      // Indicador visual de warning
+                      !selected && validation.severity === 'warning' && canSelect &&
+                        'border-amber-300 bg-amber-50/50 dark:border-amber-700 dark:bg-amber-950/30'
                     )}
-                    onClick={() => canSelect && handleTableToggle(table.id)}
+                    onClick={() => handleTableToggle(table)}
                     disabled={!canSelect && !selected}
+                    title={!canSelect && validation.reason ? validation.reason : undefined}
                   >
                     {/* Checkmark */}
                     {selected && (

@@ -26,6 +26,7 @@ import { useReservations } from '@/hooks/useReservations'
 import { useCart } from '@/hooks/useCart'
 import { useWeatherForecast } from '@/hooks/useWeatherForecast'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
+import { useCapacityValidation } from '@/hooks/useCapacityValidation'
 
 // Importar los nuevos componentes modulares
 import WeatherPanel from './WeatherPanel'
@@ -196,6 +197,7 @@ export default function EnhancedDateTimeAndTableStep({
   const { checkAvailability, createReservation } = useReservations()
   const { isGoodWeather } = useWeatherForecast({ lang: language })
   const { maxPartySize } = useBusinessHours()
+  const { validateFinalSelection } = useCapacityValidation()
 
   // Cargar zonas activas
   useEffect(() => {
@@ -339,8 +341,27 @@ export default function EnhancedDateTimeAndTableStep({
     if (!selectedDate || !selectedTime || !availabilityResults || selectedTables.length === 0) {
       toast.error(language === 'es' ?
         'Por favor completa todos los campos requeridos' :
-        'Please complete all required fields'
+        language === 'en' ?
+        'Please complete all required fields' :
+        'Bitte füllen Sie alle erforderlichen Felder aus'
       )
+      return
+    }
+
+    // NUEVA VALIDACIÓN: Validar capacidad final con el hook
+    const tablesForValidation = selectedTables.map(t => ({
+      id: t.id,
+      capacity: t.capacity
+    }))
+
+    const validation = validateFinalSelection(tablesForValidation, partySize)
+
+    if (!validation.canSelect) {
+      toast.error(validation.reason || (
+        language === 'es' ? 'Error de validación de capacidad' :
+        language === 'en' ? 'Capacity validation error' :
+        'Kapazitätsvalidierungsfehler'
+      ))
       return
     }
 
