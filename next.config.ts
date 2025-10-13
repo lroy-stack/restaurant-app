@@ -2,12 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: [
-      'lh3.googleusercontent.com', // Google OAuth profile images
-      'images.unsplash.com',
-      'plus.unsplash.com',
-      'source.unsplash.com',
-      'ik.imagekit.io' // ImageKit for restaurant images
+    remotePatterns: [
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'plus.unsplash.com' },
+      { protocol: 'https', hostname: 'source.unsplash.com' },
+      { protocol: 'https', hostname: 'ik.imagekit.io' },
+      { protocol: 'https', hostname: '*.cdninstagram.com', pathname: '/**' },
+      { protocol: 'https', hostname: '*.fbcdn.net', pathname: '/**' }
     ],
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
