@@ -26,9 +26,9 @@ interface ValidationResult {
 }
 
 export function useCapacityValidation() {
-  // Feature flag - OFF por defecto para no afectar producción
+  // Feature flag - ON por defecto (producción)
   const config: CapacityValidationConfig = useMemo(() => ({
-    enabled: process.env.NEXT_PUBLIC_ENABLE_CAPACITY_VALIDATION === 'true',
+    enabled: process.env.NEXT_PUBLIC_ENABLE_CAPACITY_VALIDATION !== 'false',
     minCapacityBuffer: 1.0,
     maxCapacityBuffer: 1.5
   }), [])
