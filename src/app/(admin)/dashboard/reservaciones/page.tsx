@@ -72,6 +72,27 @@ export default function ReservacionesPage() {
     toast.success('Lista de reservas actualizada')
   }
 
+  const handleReservationDelete = async (id: string) => {
+    try {
+      const response = await fetch(`/api/reservations/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Delete failed:', response.status, errorData)
+        throw new Error(errorData.error || 'Failed to delete reservation')
+      }
+
+      await refetch()
+      toast.success('Reserva eliminada correctamente')
+    } catch (error) {
+      console.error('Error deleting reservation:', error)
+      toast.error('Error al eliminar la reserva')
+      throw error
+    }
+  }
+
   if (error) {
     return (
       <div className="space-y-4 sm:space-y-6">
@@ -169,6 +190,7 @@ export default function ReservacionesPage() {
             loading={loading}
             onStatusUpdate={handleStatusUpdate}
             onReservationUpdate={updateReservation}
+            onReservationDelete={handleReservationDelete}
             bulkMode={false}
             // TODO: Add bulk selection state management
             // selectedIds={selectedIds}

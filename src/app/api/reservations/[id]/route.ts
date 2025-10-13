@@ -585,3 +585,61 @@ export async function GET(
     )
   }
 }
+
+// DELETE endpoint for permanently deleting a reservation
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: reservationId } = await params
+
+    if (!reservationId) {
+      return NextResponse.json(
+        { success: false, error: 'Reservation ID is required' },
+        { status: 400 }
+      )
+    }
+
+    console.log('🗑️ Deleting reservation:', reservationId)
+
+    // Delete reservation - SERVICE_KEY bypasses RLS
+    const deleteResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/reservations?id=eq.${reservationId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'Accept-Profile': 'restaurante',
+          'Content-Profile': 'restaurante',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'apikey': SUPABASE_SERVICE_KEY,
+          'Prefer': 'return=minimal'
+        }
+      }
+    )
+
+    if (!deleteResponse.ok) {
+      const errorText = await deleteResponse.text()
+      console.error('❌ Delete reservation failed:', deleteResponse.status, errorText)
+      return NextResponse.json(
+        { success: false, error: `Failed to delete reservation: ${errorText}` },
+        { status: 500 }
+      )
+    }
+
+    console.log('✅ Reservation deleted:', reservationId)
+
+    return NextResponse.json({
+      success: true,
+      message: 'Reservation deleted successfully'
+    })
+
+  } catch (error) {
+    console.error('❌ Delete reservation error:', error)
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

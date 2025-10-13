@@ -46,6 +46,17 @@ import { CancellationModal } from './cancellation-modal'
 import { CustomEmailComposer } from '@/components/email/custom-email-composer'
 import { useCustomerProfile } from '@/hooks/useCustomerProfile'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Trash2 } from 'lucide-react'
 
 interface MenuItem {
   id: string
@@ -95,6 +106,7 @@ interface CompactReservationListProps {
   onSelectionChange?: (ids: string[]) => void
   onStatusUpdate?: (id: string, status: string, additionalData?: any) => void
   onReservationUpdate?: (id: string, data: any) => Promise<boolean>
+  onReservationDelete?: (id: string) => Promise<void>
   bulkMode?: boolean
 }
 
@@ -299,14 +311,18 @@ function ReservationActions({
   reservation,
   onEdit,
   onViewDetails,
-  onStatusUpdate
+  onStatusUpdate,
+  onDelete
 }: {
   reservation: Reservation
   onEdit: () => void
   onViewDetails: () => void
   onStatusUpdate?: (id: string, status: string, additionalData?: any) => void
+  onDelete?: (id: string) => void
 }) {
   const [showCancellationModal, setShowCancellationModal] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
 
   const getPredefinedTemplates = async () => {
@@ -348,6 +364,20 @@ function ReservationActions({
     )
 
     window.open(`https://wa.me/${phoneWithCountry}?text=${message}`, '_blank')
+  }
+
+  const handleDelete = async () => {
+    if (!onDelete) return
+
+    setIsDeleting(true)
+    try {
+      await onDelete(reservation.id)
+      setShowDeleteDialog(false)
+    } catch (error) {
+      console.error('Error deleting reservation:', error)
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -506,6 +536,17 @@ function ReservationActions({
                 </DropdownMenuItem>
               }
             />
+
+            <DropdownMenuSeparator />
+
+            {/* Delete Action */}
+            <DropdownMenuItem
+              onClick={() => setShowDeleteDialog(true)}
+              className="text-red-600 focus:text-red-600"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Eliminar Reserva
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -517,6 +558,31 @@ function ReservationActions({
         customerName={reservation.customerName}
         onConfirm={handleCancellation}
       />
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar reserva?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente la reserva de <strong>{reservation.customerName}</strong> para {reservation.partySize} personas.
+              <br /><br />
+              Esta acción no se puede deshacer y se eliminarán todos los datos relacionados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
@@ -528,6 +594,7 @@ export function CompactReservationList({
   onSelectionChange,
   onStatusUpdate,
   onReservationUpdate,
+  onReservationDelete,
   bulkMode = false
 }: CompactReservationListProps) {
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
@@ -846,6 +913,7 @@ export function CompactReservationList({
                                 onEdit={() => setEditingReservation(reservation)}
                                 onViewDetails={() => setViewingReservation(reservation)}
                                 onStatusUpdate={onStatusUpdate}
+                                onDelete={onReservationDelete}
                               />
                             </TableCell>
                           </TableRow>
