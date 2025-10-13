@@ -2,14 +2,8 @@
 
 import { Button } from '@/components/ui/button'
 import { Instagram } from 'lucide-react'
+import { InstagramEmbed } from 'react-social-media-embed'
 import { cn } from '@/lib/utils'
-import dynamic from 'next/dynamic'
-
-// Importar InstagramEmbed sin SSR para evitar hydration errors
-const InstagramEmbed = dynamic(
-  () => import('react-social-media-embed').then((mod) => mod.InstagramEmbed),
-  { ssr: false }
-)
 
 interface InstagramFeedProps {
   className?: string
@@ -18,19 +12,19 @@ interface InstagramFeedProps {
 /**
  * Instagram Feed Component
  *
- * Muestra los últimos posts/reels de @enigmaconalma usando embeds nativos de Instagram
- * Sin SSR para evitar errores de hydration
- * Los thumbnails se cargan automáticamente desde Instagram
+ * Muestra los últimos posts de @enigmaconalma usando embeds nativos de Instagram
+ * No requiere API token, solo URLs de posts públicos
  */
 export function InstagramFeed({ className }: InstagramFeedProps) {
-  // URLs de Instagram - los thumbnails/portadas se cargan automáticamente
+  // URLs de los últimos 6 posts de Instagram
+  // TODO: Actualizar estos URLs periódicamente o implementar scraper automático
   const recentPosts = [
-    'https://www.instagram.com/reel/DOqLP0_CHbt/',
-    'https://www.instagram.com/reel/DN2rX1Aogr-/',
-    'https://www.instagram.com/reel/DM-vKuRIi39/',
-    'https://www.instagram.com/reel/DOqLP0_CHbt/',
-    'https://www.instagram.com/reel/DN2rX1Aogr-/',
-    'https://www.instagram.com/reel/DM-vKuRIi39/',
+    'https://www.instagram.com/reel/DMYPOovoXA5/',
+    'https://www.instagram.com/p/DNoG84kIUWm/',
+    'https://www.instagram.com/p/DOIyaaoiLlR/',
+    'https://www.instagram.com/p/DCvfW8UNn4v/',
+    'https://www.instagram.com/p/DCq7pAAN_0D/',
+    'https://www.instagram.com/p/DCnjf6wtS0d/'
   ]
 
   return (
@@ -58,18 +52,13 @@ export function InstagramFeed({ className }: InstagramFeedProps) {
           {recentPosts.map((url, idx) => (
             <div
               key={idx}
-              className={cn(
-                "rounded-lg overflow-hidden bg-muted",
-                "animate-in fade-in"
-              )}
-              style={{
-                animationDelay: `${idx * 100}ms`,
-                minHeight: '400px'
-              }}
+              className="aspect-[4/5] rounded-lg overflow-hidden bg-muted animate-in fade-in"
+              style={{ animationDelay: `${idx * 100}ms` }}
             >
               <InstagramEmbed
                 url={url}
                 width="100%"
+                captioned={false}
               />
             </div>
           ))}
