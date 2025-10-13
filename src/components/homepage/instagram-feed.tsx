@@ -29,9 +29,9 @@ export function InstagramFeed({ className }: InstagramFeedProps) {
     'https://www.instagram.com/p/DKpgnjFIF4p/',
     'https://www.instagram.com/p/DLNh-Uaooir/',
     'https://www.instagram.com/reel/DHNwxWeIag9/',
+    'https://www.instagram.com/p/DOD5dGzCN2P/',
     'https://www.instagram.com/reel/DMYPOovoXA5/',
-    'https://www.instagram.com/p/DNoG84kIUWm/',
-    'https://www.instagram.com/p/DOIyaaoiLlR/'
+    'https://www.instagram.com/p/DNoG84kIUWm/'
   ]
 
   return (
