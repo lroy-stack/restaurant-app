@@ -101,9 +101,14 @@ export function CustomerContactNew({
         // Refresh page to show updated data
         window.location.reload()
       } else {
-        const error = await response.json()
-        console.error('Update error:', error)
-        toast.error('Error al actualizar cliente')
+        const errorText = await response.text()
+        console.error('Update error:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+          changedFields
+        })
+        toast.error(`Error al actualizar cliente (${response.status})`)
       }
     } catch (error) {
       console.error('Save error:', error)
