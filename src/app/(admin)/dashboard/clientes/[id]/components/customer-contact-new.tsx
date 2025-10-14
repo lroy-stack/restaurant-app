@@ -80,9 +80,17 @@ export function CustomerContactNew({
       })
 
       if (response.ok) {
+        const result = await response.json()
         setIsEditing(false)
         toast.success('Información actualizada correctamente')
-        window.location.reload()
+
+        // Update parent component state instead of full page reload
+        if (result.customer && onUpdate) {
+          // Trigger parent refetch with updated data
+          Object.keys(formData).forEach(key => {
+            onUpdate(key, formData[key as keyof typeof formData])
+          })
+        }
       } else {
         toast.error('Error al actualizar cliente')
       }
