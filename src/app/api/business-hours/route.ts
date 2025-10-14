@@ -243,35 +243,27 @@ export async function PUT(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Update via Supabase
-    const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    // Use createServiceClient for proper authentication
+    const { createServiceClient } = await import('@/utils/supabase/server')
+    const supabase = await createServiceClient()
 
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/business_hours?day_of_week=eq.${day_of_week}&restaurant_id=eq.rest_enigma_001`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-          'apikey': SUPABASE_SERVICE_KEY,
-          'Prefer': 'return=representation'
-        },
-        body: JSON.stringify(updates)
-      }
-    )
+    // Update business hours
+    const { data, error: updateError } = await supabase
+      .from('business_hours')
+      .update(updates)
+      .eq('day_of_week', day_of_week)
+      .eq('restaurant_id', 'rest_enigma_001')
+      .select()
+      .single()
 
-    if (!response.ok) {
-      throw new Error(`Supabase error: ${response.status}`)
+    if (updateError) {
+      console.error('❌ [BUSINESS_HOURS_UPDATE] Supabase error:', updateError)
+      throw new Error(updateError.message)
     }
-
-    const data = await response.json()
 
     return NextResponse.json({
       success: true,
-      data: data[0],
+      data,
       message: 'Business hours updated successfully'
     })
 
