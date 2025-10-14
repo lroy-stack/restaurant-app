@@ -70,27 +70,13 @@ export function CustomerContactNew({
 
   const handleSave = async () => {
     try {
-      // Collect only changed fields
-      const changedFields: Record<string, unknown> = {}
-      for (const [field, value] of Object.entries(formData)) {
-        if (value !== (customer as Record<string, unknown>)[field]) {
-          changedFields[field] = value
-        }
-      }
-
-      // If no changes, just close
-      if (Object.keys(changedFields).length === 0) {
-        setIsEditing(false)
-        return
-      }
-
-      // Single PATCH with all changed fields
+      // Single PATCH with all fields
       const response = await fetch(`/api/customers/${customer.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(changedFields)
+        body: JSON.stringify(formData)
       })
 
       if (response.ok) {
@@ -101,7 +87,6 @@ export function CustomerContactNew({
         toast.error('Error al actualizar cliente')
       }
     } catch (error) {
-      console.error('Save error:', error)
       toast.error('Error al actualizar la información')
     }
   }
