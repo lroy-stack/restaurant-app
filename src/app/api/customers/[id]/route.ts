@@ -5,12 +5,22 @@ import { z } from 'zod'
 export const dynamic = 'force-dynamic'
 
 const updateCustomerSchema = z.object({
-  name: z.string().optional(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  email: z.string().email().optional(),
   phone: z.string().optional(),
-  preferences: z.string().optional(),
-  allergies: z.array(z.string()).optional(),
-  gdprConsent: z.boolean().optional(),
-  marketingConsent: z.boolean().optional()
+  language: z.string().optional(),
+  dateOfBirth: z.string().optional(),
+  preferredTime: z.string().optional(),
+  preferredLocation: z.string().optional(),
+  dietaryRestrictions: z.array(z.string()).optional(),
+  allergies: z.string().optional(),
+  favoriteDisheIds: z.array(z.string()).optional(),
+  isVip: z.boolean().optional(),
+  emailConsent: z.boolean().optional(),
+  smsConsent: z.boolean().optional(),
+  marketingConsent: z.boolean().optional(),
+  dataProcessingConsent: z.boolean().optional()
 })
 
 // GET specific customer
