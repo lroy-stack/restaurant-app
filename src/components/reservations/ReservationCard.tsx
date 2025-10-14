@@ -589,11 +589,17 @@ export function ReservationCard({
             </>
           )}
 
-          {/* ✅ Estados finales: solo mostrar mensaje de estado */}
+          {/* ✅ Estados finales: Ver Detalle */}
           {(reservation.status === 'COMPLETED' || reservation.status === 'CANCELLED' || reservation.status === 'NO_SHOW') && (
-            <div className="flex-1 h-9 flex items-center justify-center text-sm text-muted-foreground">
-              Reserva {statusLabels[reservation.status].toLowerCase()}
-            </div>
+            <Button
+              size="sm"
+              onClick={onViewDetails}
+              variant="outline"
+              className="flex-1 h-9 text-sm"
+            >
+              <Eye className="h-4 w-4 mr-1.5" />
+              Ver Detalle
+            </Button>
           )}
         </div>
       </CardContent>
