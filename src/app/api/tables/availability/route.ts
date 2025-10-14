@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
 
     // 1. Get all active tables
     // Detect if this is a public request (web form) or admin request
+    const searchParams = new URL(request.url).searchParams
     const includePrivate = searchParams.get('includePrivate') === 'true'
 
     // Use double quotes for camelCase columns in PostgreSQL

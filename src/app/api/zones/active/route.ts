@@ -30,9 +30,9 @@ const ZONE_METADATA = {
 // GET: Active zones only - 100% dynamic from database
 export async function GET(request: NextRequest) {
   try {
-    // Query ONLY active tables from database
+    // Query ONLY public AND active tables from database (for web form)
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/tables?select=location&isActive=eq.true`, 
+      `${SUPABASE_URL}/rest/v1/tables?select=location&isActive=eq.true&is_public=eq.true`, 
       {
         headers: {
           'Accept': 'application/json',
