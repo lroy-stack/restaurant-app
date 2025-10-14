@@ -139,7 +139,7 @@ export function ReservationForm({
     hasLunchService,
     hasDinnerService,
     isInGapPeriod
-  } = useBusinessHours(formData.date)
+  } = useBusinessHours(formData.date, true) // ✅ Admin: Skip advance check for immediate reservations
   const { tables } = useTables()
   const { createReservation, checkAvailability, isLoading } = useReservations() // ✅ ADDED: checkAvailability
 

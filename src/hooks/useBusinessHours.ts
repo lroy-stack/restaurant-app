@@ -59,7 +59,7 @@ interface UseBusinessHoursReturn {
   getDualScheduleDisplay: (dayOfWeek: number) => string
 }
 
-export function useBusinessHours(selectedDate?: string): UseBusinessHoursReturn {
+export function useBusinessHours(selectedDate?: string, skipAdvanceCheck: boolean = false): UseBusinessHoursReturn {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
   const [businessHours, setBusinessHours] = useState<BusinessHours[]>([])
   const [loading, setLoading] = useState(false)
@@ -92,7 +92,13 @@ export function useBusinessHours(selectedDate?: string): UseBusinessHoursReturn 
       setError(null)
       setLoading(true)
 
-      const response = await fetch(`/api/business-hours?action=slots&date=${date}`)
+      const params = new URLSearchParams({
+        action: 'slots',
+        date,
+        ...(skipAdvanceCheck && { skipAdvanceCheck: 'true' })
+      })
+
+      const response = await fetch(`/api/business-hours?${params}`)
       const data = await response.json()
 
       if (data.success && data.data) {
@@ -335,12 +341,12 @@ export function useBusinessHours(selectedDate?: string): UseBusinessHoursReturn 
     fetchBusinessHours()
   }, [])
 
-  // Fetch time slots when date changes
+  // Fetch time slots when date changes or skipAdvanceCheck changes
   useEffect(() => {
     if (selectedDate) {
       fetchTimeSlots(selectedDate)
     }
-  }, [selectedDate])
+  }, [selectedDate, skipAdvanceCheck])
 
   // Memoize dynamic values to prevent infinite re-renders
   const maxPartySize = useMemo(() => getMaxPartySize(), [businessHours])
