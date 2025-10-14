@@ -606,7 +606,49 @@ export async function DELETE(
 
     console.log('🗑️ Deleting reservation:', reservationId)
 
-    // Delete reservation - SERVICE_KEY bypasses RLS
+    // 1. Delete reservation_items first (foreign key constraint)
+    const deleteItemsResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/reservation_items?reservationId=eq.${reservationId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'Accept-Profile': 'restaurante',
+          'Content-Profile': 'restaurante',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'apikey': SUPABASE_SERVICE_KEY,
+        }
+      }
+    )
+
+    if (!deleteItemsResponse.ok) {
+      console.warn('⚠️ Failed to delete reservation items (non-critical):', await deleteItemsResponse.text())
+    } else {
+      console.log('✅ Deleted reservation items')
+    }
+
+    // 2. Delete reservation_tokens (foreign key constraint)
+    const deleteTokensResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/reservation_tokens?reservation_id=eq.${reservationId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'Accept-Profile': 'restaurante',
+          'Content-Profile': 'restaurante',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'apikey': SUPABASE_SERVICE_KEY,
+        }
+      }
+    )
+
+    if (!deleteTokensResponse.ok) {
+      console.warn('⚠️ Failed to delete reservation tokens (non-critical):', await deleteTokensResponse.text())
+    } else {
+      console.log('✅ Deleted reservation tokens')
+    }
+
+    // 3. Finally delete reservation
     const deleteResponse = await fetch(
       `${SUPABASE_URL}/rest/v1/reservations?id=eq.${reservationId}`,
       {
