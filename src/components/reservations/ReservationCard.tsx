@@ -183,11 +183,11 @@ function getUrgencyBadge(reservation: Reservation, bufferMinutes: number) {
       return { text: 'EN CURSO', variant: 'default' as const }
     }
 
-    if (hoursUntil <= 2 && hoursUntil > 0) {
+    if (hoursUntil <= 0.5 && hoursUntil > 0) {
       return { text: 'URGENTE', variant: 'destructive' as const }
     }
 
-    if (hoursUntil <= 6 && hoursUntil > 2) {
+    if (hoursUntil <= 3 && hoursUntil > 0.5) {
       return { text: 'PRONTO', variant: 'secondary' as const }
     }
 

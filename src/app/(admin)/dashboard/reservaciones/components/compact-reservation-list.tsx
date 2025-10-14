@@ -214,13 +214,13 @@ function getUrgencyBadge(reservation: Reservation, bufferMinutes: number) {
       return { text: 'EN CURSO', variant: 'default' as const, icon: CheckCircle }
     }
 
-    // ⚡ URGENTE: ≤2h before reservation (existing logic)
-    if (hoursUntil <= 2 && hoursUntil > 0) {
+    // ⚡ URGENTE: ≤30min before reservation
+    if (hoursUntil <= 0.5 && hoursUntil > 0) {
       return { text: 'URGENTE', variant: 'destructive' as const, icon: Timer }
     }
 
-    // 🟡 PRONTO: ≤6h before reservation (existing logic)
-    if (hoursUntil <= 6 && hoursUntil > 2) {
+    // 🟡 PRONTO: ≤3h before reservation and >30min
+    if (hoursUntil <= 3 && hoursUntil > 0.5) {
       return { text: 'PRONTO', variant: 'secondary' as const, icon: Clock }
     }
 
