@@ -95,6 +95,14 @@ export function CustomerContactNew({
         body: JSON.stringify(changedFields)
       })
 
+      console.log('RESPONSE DEBUG:', {
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+        url: response.url
+      })
+
       if (response.ok) {
         setIsEditing(false)
         toast.success('Información actualizada correctamente')
