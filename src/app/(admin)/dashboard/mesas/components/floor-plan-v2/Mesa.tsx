@@ -24,14 +24,16 @@ const Mesa = React.memo(({
     // ✅ MOBILE: Enhanced touch target calculation
     const minTouchTarget = Math.max(44 / scale, 60) // Never smaller than 60px
 
-    // ENIGMA: Adjust dimensions based on capacity for visual consistency
-    // 2 pax = square tables, 4+ pax = rectangular tables
-    let width = Number(mesa.dimensions.width) || (mesa.capacity <= 2 ? 80 : 120)
-    let height = Number(mesa.dimensions.height) || (mesa.capacity <= 2 ? 80 : 80)
+    // ✅ CRITICAL FIX: Use DB dimensions directly, no overrides
+    // Dimensions are now auto-managed by capacity in DB
+    let width = Number(mesa.dimensions.width) || 80
+    let height = Number(mesa.dimensions.height) || 80
 
-    // ✅ Ensure generous touch targets for better responsiveness
-    width = Math.max(width, minTouchTarget)
-    height = Math.max(height, minTouchTarget)
+    // ✅ Only apply minTouchTarget on extreme zoom out to maintain proper sizing
+    if (scale < 0.3) {
+      width = Math.max(width, minTouchTarget)
+      height = Math.max(height, minTouchTarget)
+    }
 
     return {
       type: shapeType,
