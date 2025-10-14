@@ -91,7 +91,9 @@ export async function PATCH(
 ) {
   try {
     const body = await request.json()
+    console.log('🔍 PATCH body:', body)
     const data = updateCustomerSchema.parse(body)
+    console.log('✅ Validation passed')
 
     const supabase = await createServiceClient()
 
