@@ -711,9 +711,9 @@ export default function ContactAndConfirmStep({
                 </Label>
               </div>
 
-              {/* Compact Notice */}
-              <div className="text-xs text-muted-foreground bg-muted/60 p-3 rounded-lg border">
-                <p><strong>{t.importantNotices}</strong> {t.compactNotice}</p>
+              {/* Compact Notice - TEXTO MÁS GRANDE */}
+              <div className="text-sm md:text-base text-muted-foreground bg-muted/60 p-3 md:p-4 rounded-lg border">
+                <p><strong className="text-foreground">{t.importantNotices}</strong> {t.compactNotice}</p>
               </div>
             </div>
 
@@ -748,8 +748,8 @@ export default function ContactAndConfirmStep({
         </Button>
       </div>
 
-      {/* Progress Indicator - MÁS VISIBLE */}
-      {!watchedStepFour?.dataProcessingConsent && (
+      {/* Progress Indicator - SOLO SI NO ESTÁ MARCADO */}
+      {watchedStepFour?.dataProcessingConsent === false && (
         <div className="mt-4 flex items-center justify-center gap-2 text-sm md:text-base font-semibold text-destructive bg-destructive/10 border-2 border-destructive/30 p-4 rounded-lg animate-pulse">
           <Shield className="h-5 w-5" />
           <span>
