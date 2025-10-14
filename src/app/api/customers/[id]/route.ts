@@ -1,17 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/utils/supabase/server'
-import { z } from 'zod'
+import { updateCustomerSchema } from '@/lib/validations/customer'
 
 export const dynamic = 'force-dynamic'
-
-const updateCustomerSchema = z.object({
-  name: z.string().optional(),
-  phone: z.string().optional(),
-  preferences: z.string().optional(),
-  allergies: z.array(z.string()).optional(),
-  gdprConsent: z.boolean().optional(),
-  marketingConsent: z.boolean().optional()
-})
 
 // GET specific customer
 export async function GET(
