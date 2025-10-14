@@ -439,29 +439,29 @@ export default function EnhancedDateTimeAndTableStep({
           compact={true}
         />
 
-        {/* Selector de personas y niños - PROPORCIONES RAZONABLES */}
+        {/* Selector de personas y niños - COMPACTO Y NATURAL */}
         <Card>
-          <CardContent className="p-4 md:p-5">
-            <div className="space-y-4">
+          <CardContent className="p-4">
+            <div className="space-y-3">
               {/* Número total de personas */}
-              <div>
-                <Label className="text-sm font-medium mb-2 flex items-center gap-2">
-                  <Users className="h-4 w-4 text-primary" />
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium flex items-center gap-1.5">
+                  <Users className="h-3.5 w-3.5 text-primary" />
                   {t.partySizeLabel}
                 </Label>
-                <div className="flex items-center justify-center gap-3 mt-2">
+                <div className="flex items-center gap-2">
                   <Button
                     size="icon"
                     variant="outline"
                     onClick={() => handlePartySizeChange(-1)}
                     disabled={partySize <= 1}
-                    className="h-9 w-9"
+                    className="h-8 w-8"
                   >
-                    <Minus className="h-4 w-4" />
+                    <Minus className="h-3.5 w-3.5" />
                   </Button>
-                  <div className="min-w-[80px] text-center bg-muted rounded-md p-2">
-                    <span className="text-xl font-bold">{partySize}</span>
-                    <span className="block text-xs text-muted-foreground">
+                  <div className="flex-1 text-center bg-muted rounded-md py-1.5 px-3">
+                    <span className="text-base font-semibold">{partySize}</span>
+                    <span className="text-xs text-muted-foreground ml-1.5">
                       {partySize === 1 ? t.person : t.people}
                     </span>
                   </div>
@@ -470,17 +470,17 @@ export default function EnhancedDateTimeAndTableStep({
                     variant="outline"
                     onClick={() => handlePartySizeChange(1)}
                     disabled={partySize >= (maxPartySize || 10)}
-                    className="h-9 w-9"
+                    className="h-8 w-8"
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </div>
 
               {/* Checkbox para indicar si hay niños */}
               {partySize > 1 && (
-                <div className="pt-3 border-t">
-                  <div className="flex items-start gap-2.5">
+                <div className="pt-2.5 border-t space-y-2">
+                  <div className="flex items-start gap-2">
                     <Checkbox
                       id="hasChildren"
                       checked={hasChildren}
@@ -495,7 +495,7 @@ export default function EnhancedDateTimeAndTableStep({
                         htmlFor="hasChildren"
                         className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
                       >
-                        <Baby className="h-4 w-4 text-accent" />
+                        <Baby className="h-3.5 w-3.5 text-accent" />
                         {language === 'es' ? '¿Hay niños en la mesa?' :
                          language === 'en' ? 'Are there children at the table?' :
                          'Gibt es Kinder am Tisch?'}
@@ -508,79 +508,66 @@ export default function EnhancedDateTimeAndTableStep({
                     </div>
                   </div>
 
-                  {/* Selector de cantidad de niños - aparece al marcar checkbox */}
+                  {/* Selector de cantidad de niños */}
                   {hasChildren && (
-                    <div className="mt-3 p-3 bg-accent/5 border border-accent/20 rounded-lg">
-                      <div className="space-y-3">
-                        <Label className="text-sm font-medium">
-                          {language === 'es' ? '¿Cuántos niños?' :
-                           language === 'en' ? 'How many children?' :
-                           'Wie viele Kinder?'}
-                        </Label>
-                        <div className="flex items-center justify-center gap-3">
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            onClick={() => handleChildrenCountChange(-1)}
-                            disabled={childrenCount === 0}
-                            className="h-9 w-9"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <div className="min-w-[80px] text-center bg-background rounded-md p-2 border border-accent/30">
-                            <span className="text-xl font-bold text-accent">{childrenCount}</span>
-                            <span className="block text-xs text-muted-foreground">
-                              {language === 'es' ? (childrenCount === 1 ? 'niño' : 'niños') :
-                               language === 'en' ? (childrenCount === 1 ? 'child' : 'children') :
-                               (childrenCount === 1 ? 'Kind' : 'Kinder')}
-                            </span>
-                          </div>
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            onClick={() => handleChildrenCountChange(1)}
-                            disabled={childrenCount >= partySize - 1}
-                            className="h-9 w-9"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
+                    <div className="pl-6 space-y-2">
+                      <Label className="text-sm font-medium">
+                        {language === 'es' ? '¿Cuántos niños?' :
+                         language === 'en' ? 'How many children?' :
+                         'Wie viele Kinder?'}
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          onClick={() => handleChildrenCountChange(-1)}
+                          disabled={childrenCount === 0}
+                          className="h-8 w-8"
+                        >
+                          <Minus className="h-3.5 w-3.5" />
+                        </Button>
+                        <div className="flex-1 text-center bg-accent/5 border border-accent/20 rounded-md py-1.5 px-3">
+                          <span className="text-base font-semibold text-accent">{childrenCount}</span>
+                          <span className="text-xs text-muted-foreground ml-1.5">
+                            {language === 'es' ? (childrenCount === 1 ? 'niño' : 'niños') :
+                             language === 'en' ? (childrenCount === 1 ? 'child' : 'children') :
+                             (childrenCount === 1 ? 'Kind' : 'Kinder')}
+                          </span>
                         </div>
-
-                        {/* Nota IMPORTANTE compacta */}
-                        <div className="p-2.5 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md">
-                          <div className="flex items-start gap-2">
-                            <Info className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-                            <p className="text-xs">
-                              <span className="font-semibold text-blue-900 dark:text-blue-100">
-                                {language === 'es' ? 'Importante:' :
-                                 language === 'en' ? 'Important:' :
-                                 'Wichtig:'}
-                              </span>{' '}
-                              <span className="text-blue-800 dark:text-blue-200">
-                                {language === 'es' ? 'Los niños se cuentan dentro del total de personas.' :
-                                 language === 'en' ? 'Children are counted within the total number of people.' :
-                                 'Kinder werden zur Gesamtzahl der Personen gezählt.'}
-                              </span>
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Desglose compacto */}
-                        {childrenCount > 0 && (
-                          <div className="p-2 bg-background border border-accent/20 rounded-md text-center">
-                            <p className="text-sm font-medium text-foreground">
-                              {language === 'es' ? `${partySize - childrenCount} adulto${partySize - childrenCount !== 1 ? 's' : ''} + ${childrenCount} niño${childrenCount !== 1 ? 's' : ''}` :
-                               language === 'en' ? `${partySize - childrenCount} adult${partySize - childrenCount !== 1 ? 's' : ''} + ${childrenCount} child${childrenCount !== 1 ? 'ren' : ''}` :
-                               `${partySize - childrenCount} Erwachsene${partySize - childrenCount !== 1 ? '' : 'r'} + ${childrenCount} Kind${childrenCount !== 1 ? 'er' : ''}`}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {language === 'es' ? `= ${partySize} personas en total` :
-                               language === 'en' ? `= ${partySize} people in total` :
-                               `= ${partySize} Personen insgesamt`}
-                            </p>
-                          </div>
-                        )}
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          onClick={() => handleChildrenCountChange(1)}
+                          disabled={childrenCount >= partySize - 1}
+                          className="h-8 w-8"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
+
+                      {/* Nota inline compacta */}
+                      <p className="text-xs text-muted-foreground flex items-start gap-1.5">
+                        <Info className="h-3 w-3 shrink-0 mt-0.5" />
+                        <span>
+                          <span className="font-medium">
+                            {language === 'es' ? 'Nota:' :
+                             language === 'en' ? 'Note:' :
+                             'Hinweis:'}
+                          </span>{' '}
+                          {language === 'es' ? 'Los niños se cuentan dentro del total de personas.' :
+                           language === 'en' ? 'Children are counted within the total number of people.' :
+                           'Kinder werden zur Gesamtzahl der Personen gezählt.'}
+                        </span>
+                      </p>
+
+                      {/* Desglose inline */}
+                      {childrenCount > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          {language === 'es' ? `${partySize - childrenCount} adulto${partySize - childrenCount !== 1 ? 's' : ''} + ${childrenCount} niño${childrenCount !== 1 ? 's' : ''} = ${partySize} total` :
+                           language === 'en' ? `${partySize - childrenCount} adult${partySize - childrenCount !== 1 ? 's' : ''} + ${childrenCount} child${childrenCount !== 1 ? 'ren' : ''} = ${partySize} total` :
+                           `${partySize - childrenCount} Erwachsene + ${childrenCount} Kind${childrenCount !== 1 ? 'er' : ''} = ${partySize} gesamt`}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
