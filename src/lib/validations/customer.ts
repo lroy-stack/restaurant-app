@@ -51,25 +51,25 @@ export const createCustomerSchema = customerSchema.omit({
   })
 })
 
-// Schema for customer updates (all fields optional except ID)
+// Schema for customer updates (all fields optional except ID) - PERMISSIVE
 export const updateCustomerSchema = z.object({
-  firstName: z.string().min(1, 'Nombre es requerido').max(50).optional(),
-  lastName: z.string().min(1, 'Apellido es requerido').max(50).optional(),
-  email: z.string().email('Email inválido').nullable().optional(),
-  phone: z.string().regex(/^(\+34|0034|34)?[6|7|8|9][0-9]{8}$/, 'Teléfono español inválido').nullable().optional(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  email: z.string().optional().nullable(),
+  phone: z.string().optional().nullable(),
   language: z.string().optional(),
-  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha debe ser YYYY-MM-DD').nullable().optional(),
-  preferredTime: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Hora debe ser HH:MM').nullable().optional(),
-  preferredLocation: z.enum(['TERRACE_CAMPANARI', 'SALA_VIP', 'TERRACE_JUSTICIA', 'SALA_PRINCIPAL']).nullable().optional(),
-  dietaryRestrictions: z.array(z.enum(['vegetarian', 'vegan', 'gluten_free', 'lactose_free', 'halal', 'kosher'])).optional(),
-  allergies: z.string().max(500, 'Alergias demasiado largas').nullable().optional(),
-  favoriteDisheIds: z.array(z.string().uuid()).optional(),
+  dateOfBirth: z.string().optional().nullable(),
+  preferredTime: z.string().optional().nullable(),
+  preferredLocation: z.string().optional().nullable(),
+  dietaryRestrictions: z.array(z.string()).optional(),
+  allergies: z.string().optional().nullable(),
+  favoriteDisheIds: z.array(z.string()).optional(),
   isVip: z.boolean().optional(),
   emailConsent: z.boolean().optional(),
   smsConsent: z.boolean().optional(),
   marketingConsent: z.boolean().optional(),
   dataProcessingConsent: z.boolean().optional()
-})
+}).passthrough()
 
 // Schema for GDPR consent updates
 export const gdprConsentUpdateSchema = z.object({
