@@ -18,11 +18,12 @@ export async function PATCH(
   try {
     const { id: reservationId } = await params
     const body = await request.json()
-    const { status, notes, restaurantMessage, preOrderItems, sendModificationEmail, ...additionalData } = body
+    const { status, notes, restaurantMessage, preOrderItems, sendModificationEmail, sendReviewEmail, ...additionalData } = body
 
     console.log('🔄 Updating reservation:', reservationId, 'to status:', status)
     console.log('🍽️ Pre-order items to update:', preOrderItems?.length || 0)
     console.log('📧 Send modification email:', sendModificationEmail)
+    console.log('📧 Send review email:', sendReviewEmail)
 
     // 🆕 MODERN MULTI-TABLE SUPPORT: Handle tableIds array from customer modifications
     let processedTableData = {}
@@ -179,8 +180,8 @@ export async function PATCH(
       }
     }
 
-    // 📧 CRITICAL: Send review request email if completing
-    if (status === 'COMPLETED') {
+    // 📧 CONDITIONAL: Send review request email if completing AND user opted in
+    if (status === 'COMPLETED' && sendReviewEmail === true) {
       try {
         console.log('📧 Enviando solicitud de reseña para reserva:', reservationId)
 
@@ -201,6 +202,8 @@ export async function PATCH(
         console.error('❌ Error crítico enviando email de reseña:', emailError)
         // Continue execution - don't block reservation completion
       }
+    } else if (status === 'COMPLETED' && sendReviewEmail === false) {
+      console.log('⏭️ Completando reserva SIN enviar email de reseña (opción del usuario)')
     }
 
     // 📧 NOTE: Modification email will be sent after token generation (below) to include new token URL

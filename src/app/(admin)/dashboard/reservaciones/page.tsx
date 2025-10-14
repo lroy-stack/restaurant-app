@@ -146,12 +146,14 @@ export default function ReservacionesPage() {
         </div>
       </div>
 
-      {/* QuickStats Dashboard Widgets */}
-      <QuickStats 
-        reservations={reservations}
-        // TODO: Add previousPeriodData for trends
-        // previousPeriodData={previousPeriodData}
-      />
+      {/* QuickStats Dashboard Widgets - Hidden on mobile */}
+      <div className="hidden lg:block">
+        <QuickStats
+          reservations={reservations}
+          // TODO: Add previousPeriodData for trends
+          // previousPeriodData={previousPeriodData}
+        />
+      </div>
 
       {/* View Toggle & Actions - RESPONSIVE EXCELLENCE */}
       <ViewToggle

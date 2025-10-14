@@ -5,6 +5,7 @@ import { useFormContext } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Users,
   MapPin,
@@ -13,7 +14,9 @@ import {
   Plus,
   Minus,
   Baby,
-  Info
+  Info,
+  Map,
+  Grid3x3
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -31,6 +34,8 @@ import CalendarWithWeather from './CalendarWithWeather'
 import TimeSlotSelector from './TimeSlotSelector'
 import { MultiTableSelector } from './MultiTableSelector'
 import CompactWeatherWidget from './CompactWeatherWidget'
+import { FloorPlanSelector } from './FloorPlanSelector'
+import { FloorPlanLegend } from './FloorPlanLegend'
 
 // DateTime Helper - Prevents timezone shift bugs
 function createSafeDateTime(date: Date, time: string): string {
@@ -177,6 +182,7 @@ export default function EnhancedDateTimeAndTableStep({
 
   // Refs
   const tableSelectorRef = useRef<HTMLDivElement>(null)
+  const zoneSelectorRef = useRef<HTMLDivElement>(null)
 
   // Estados locales
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -190,6 +196,7 @@ export default function EnhancedDateTimeAndTableStep({
   const [availabilityResults, setAvailabilityResults] = useState<AvailabilityData | null>(null)
   const [selectedTables, setSelectedTables] = useState<any[]>([])
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false)
+  const [viewMode, setViewMode] = useState<'floor' | 'grid'>('floor') // ✅ NEW: Toggle between floor plan and grid view
 
   // Hooks
   const { checkAvailability, createReservation } = useReservations()
@@ -246,20 +253,23 @@ export default function EnhancedDateTimeAndTableStep({
   const handleDateSelectFromCalendar = useCallback((date: Date) => {
     setSelectedDate(date)
     setSelectedTime(null)
-    // Verificar disponibilidad automáticamente si ya hay hora seleccionada
-    if (selectedTime) {
-      handleCheckAvailability(date, selectedTime, partySize, selectedZone)
-    }
-  }, [selectedTime, partySize, selectedZone])
+    // NO verificar disponibilidad automáticamente - esperar selección de zona
+  }, [])
 
   // Manejar selección de hora
   const handleTimeSelect = useCallback((time: string) => {
     setSelectedTime(time)
-    // Verificar disponibilidad automáticamente si ya hay fecha seleccionada
+    // NO verificar disponibilidad automáticamente - esperar selección de zona
+    // Auto-scroll al selector de zona
     if (selectedDate) {
-      handleCheckAvailability(selectedDate, time, partySize, selectedZone)
+      setTimeout(() => {
+        zoneSelectorRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        })
+      }, 300)
     }
-  }, [selectedDate, partySize, selectedZone])
+  }, [selectedDate])
 
   // Verificar disponibilidad
   const handleCheckAvailability = useCallback(async (
@@ -325,12 +335,18 @@ export default function EnhancedDateTimeAndTableStep({
     setChildrenCount(newCount)
   }
 
-  // Manejar selección de zona
+  // Manejar selección de zona - CARGA MESAS AQUÍ
   const handleZoneSelect = (zoneId: string) => {
-    setSelectedZone(selectedZone === zoneId ? null : zoneId)
-    // Re-verificar disponibilidad si ya hay fecha y hora
-    if (selectedDate && selectedTime) {
-      handleCheckAvailability(selectedDate, selectedTime, partySize, zoneId)
+    const newZone = selectedZone === zoneId ? null : zoneId
+    setSelectedZone(newZone)
+
+    // Cargar mesas SOLO cuando hay zona seleccionada
+    if (newZone && selectedDate && selectedTime) {
+      handleCheckAvailability(selectedDate, selectedTime, partySize, newZone)
+    } else {
+      // Si deselecciona zona, limpiar resultados
+      setAvailabilityResults(null)
+      setSelectedTables([])
     }
   }
 
@@ -588,121 +604,171 @@ export default function EnhancedDateTimeAndTableStep({
           />
         )}
 
-        {/* Selector de zona (opcional) */}
+        {/* Selector de zona (OBLIGATORIO antes de ver mesas) */}
         {selectedDate && selectedTime && (
-          <Card>
-            <CardHeader className="p-3 md:p-4 lg:p-6">
-              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                <MapPin className="h-4 w-4 md:h-5 md:w-5" />
+          <Card ref={zoneSelectorRef} className="border-2 border-primary/20 mt-4 md:mt-6">
+            <CardHeader className="p-4 md:p-5">
+              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                <MapPin className="h-5 w-5 md:h-6 md:w-6" />
                 {t.zoneTitle}
               </CardTitle>
+              <p className="text-sm md:text-base text-muted-foreground mt-2">
+                {language === 'es' ? 'Selecciona una zona para ver las mesas disponibles' :
+                 language === 'en' ? 'Select a zone to see available tables' :
+                 'Wählen Sie eine Zone, um verfügbare Tische zu sehen'}
+              </p>
             </CardHeader>
-            <CardContent className="p-3 md:p-4 lg:p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
+            <CardContent className="p-4 md:p-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                 {activeZones.map(zone => (
                   <button
                     key={zone.id}
                     onClick={() => handleZoneSelect(zone.id)}
+                    disabled={isCheckingAvailability}
                     className={cn(
-                      "p-2 md:p-3 rounded-lg border-2 transition-all",
-                      "hover:border-primary hover:shadow-md",
+                      "p-4 md:p-5 rounded-xl border-2 transition-all",
+                      "hover:border-primary hover:shadow-lg hover:scale-[1.02]",
+                      "disabled:opacity-50 disabled:cursor-not-allowed",
+                      "active:scale-95",
                       selectedZone === zone.id ?
-                        "border-primary bg-primary/5" :
+                        "border-primary bg-primary/10 shadow-md scale-[1.02]" :
                         "border-border bg-card"
                     )}
                   >
                     <div className="text-left">
-                      <p className="font-medium text-sm md:text-base">{zone.name[language]}</p>
-                      <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">
+                      <p className="font-semibold text-base md:text-lg">{zone.name[language]}</p>
+                      <p className="text-sm md:text-base text-muted-foreground mt-1.5 md:mt-2">
                         {zone.description[language]}
                       </p>
                     </div>
                   </button>
                 ))}
               </div>
+              {isCheckingAvailability && (
+                <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>
+                    {language === 'es' ? 'Cargando mesas disponibles...' :
+                     language === 'en' ? 'Loading available tables...' :
+                     'Verfügbare Tische werden geladen...'}
+                  </span>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
 
-        {/* Selector manual de mesas */}
+        {/* Selector manual de mesas - Floor Plan + Grid View */}
         {availabilityResults &&
          availabilityResults.recommendations &&
          availabilityResults.recommendations.length > 1 && (
           <Card ref={tableSelectorRef} className="mt-4 md:mt-6">
-            <CardHeader className="p-3 md:p-4 lg:p-6">
-              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                <MapPin className="h-4 w-4 md:h-5 md:w-5" />
+            <CardHeader className="p-4 md:p-5">
+              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                <MapPin className="h-5 w-5 md:h-6 md:w-6" />
                 {language === 'es' ? 'Personaliza tu selección de mesas' :
                  language === 'en' ? 'Customize your table selection' :
                  'Passen Sie Ihre Tischauswahl an'}
               </CardTitle>
-              <p className="text-xs md:text-sm text-muted-foreground">
+              <p className="text-sm md:text-base text-muted-foreground">
                 {language === 'es' ? 'Selecciona las mesas que prefieras para tu reserva.' :
                  language === 'en' ? 'Select the tables you prefer for your reservation.' :
                  'Wählen Sie die Tische für Ihre Reservierung.'}
               </p>
             </CardHeader>
-            <CardContent className="p-3 md:p-4 lg:p-6">
-              <MultiTableSelector
-                tables={transformedTables}
-                selectedTableIds={selectedTableIds}
-                onSelectionChange={handleTableSelectionChange}
-                partySize={partySize}
-                maxSelections={5}
-              />
+            <CardContent className="p-4 md:p-5 space-y-4">
+              {/* View Mode Toggle */}
+              <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'floor' | 'grid')}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="floor" className="flex items-center gap-2">
+                    <Map className="h-4 w-4" />
+                    <span className="hidden sm:inline">
+                      {language === 'es' ? 'Vista Sala' :
+                       language === 'en' ? 'Floor Plan' :
+                       'Raumplan'}
+                    </span>
+                    <span className="sm:hidden">
+                      {language === 'es' ? 'Sala' :
+                       language === 'en' ? 'Plan' :
+                       'Plan'}
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger value="grid" className="flex items-center gap-2">
+                    <Grid3x3 className="h-4 w-4" />
+                    <span className="hidden sm:inline">
+                      {language === 'es' ? 'Vista Lista' :
+                       language === 'en' ? 'List View' :
+                       'Listenansicht'}
+                    </span>
+                    <span className="sm:hidden">
+                      {language === 'es' ? 'Lista' :
+                       language === 'en' ? 'List' :
+                       'Liste'}
+                    </span>
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="floor" className="mt-4 space-y-4">
+                  {/* Floor Plan View */}
+                  <FloorPlanSelector
+                    tables={availabilityResults.allTables || availabilityResults.recommendations}
+                    selectedTableIds={selectedTableIds}
+                    onSelectionChange={handleTableSelectionChange}
+                    partySize={partySize}
+                    language={language}
+                    maxSelections={5}
+                  />
+
+                  {/* Legend */}
+                  <FloorPlanLegend language={language} className="mt-4" />
+                </TabsContent>
+
+                <TabsContent value="grid" className="mt-4">
+                  {/* Grid View (Original) */}
+                  <MultiTableSelector
+                    tables={transformedTables}
+                    selectedTableIds={selectedTableIds}
+                    onSelectionChange={handleTableSelectionChange}
+                    partySize={partySize}
+                    maxSelections={5}
+                  />
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         )}
 
-        {/* Botones de acción */}
-        {selectedDate && selectedTime && (
+        {/* Botones de acción - Solo después de seleccionar mesas */}
+        {availabilityResults && selectedTables.length > 0 && (
           <div className="flex flex-col sm:flex-row justify-end gap-2 md:gap-3">
-            {!availabilityResults ? (
-              <Button
-                onClick={() => handleCheckAvailability()}
-                disabled={isCheckingAvailability}
-                className="w-full sm:w-auto h-10 md:h-11"
-                size="default"
-              >
-                {isCheckingAvailability && (
-                  <Loader2 className="mr-2 h-3 w-3 md:h-4 md:w-4 animate-spin" />
-                )}
-                <span className="text-sm md:text-base">
-                  {isCheckingAvailability ? t.checking : t.checkAvailability}
-                </span>
-              </Button>
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setAvailabilityResults(null)
-                    setSelectedTables([])
-                  }}
-                  className="w-full sm:w-auto h-10 md:h-11"
-                  size="default"
-                >
-                  <span className="text-sm md:text-base">
-                    {language === 'es' ? 'Cambiar selección' :
-                     language === 'en' ? 'Change selection' :
-                     'Auswahl ändern'}
-                  </span>
-                </Button>
-                <Button
-                  onClick={handleContinue}
-                  disabled={selectedTables.length === 0}
-                  className="w-full sm:w-auto h-10 md:h-11"
-                  size="default"
-                >
-                  <span className="text-sm md:text-base">
-                    {language === 'es' ? 'Continuar' :
-                     language === 'en' ? 'Continue' :
-                     'Weiter'}
-                  </span>
-                  <ArrowRight className="ml-2 h-3 w-3 md:h-4 md:w-4" />
-                </Button>
-              </>
-            )}
+            <Button
+              variant="outline"
+              onClick={() => {
+                setAvailabilityResults(null)
+                setSelectedTables([])
+                setSelectedZone(null)
+              }}
+              className="w-full sm:w-auto h-10 md:h-11"
+              size="default"
+            >
+              <span className="text-sm md:text-base">
+                {language === 'es' ? 'Cambiar zona' :
+                 language === 'en' ? 'Change zone' :
+                 'Zone ändern'}
+              </span>
+            </Button>
+            <Button
+              onClick={handleContinue}
+              className="w-full sm:w-auto h-10 md:h-11"
+              size="default"
+            >
+              <span className="text-sm md:text-base">
+                {language === 'es' ? 'Continuar' :
+                 language === 'en' ? 'Continue' :
+                 'Weiter'}
+              </span>
+              <ArrowRight className="ml-2 h-3 w-3 md:h-4 md:w-4" />
+            </Button>
           </div>
         )}
       </div>

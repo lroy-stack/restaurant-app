@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { ReservationCard } from '@/components/reservations/ReservationCard'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -322,6 +323,7 @@ function ReservationActions({
 }) {
   const [showCancellationModal, setShowCancellationModal] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showCompleteDialog, setShowCompleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
 
@@ -341,7 +343,17 @@ function ReservationActions({
   }
 
   const handleStatusChange = (newStatus: string, additionalData?: any) => {
+    // Interceptar COMPLETED para mostrar modal de confirmación
+    if (newStatus === 'COMPLETED') {
+      setShowCompleteDialog(true)
+      return
+    }
     onStatusUpdate?.(reservation.id, newStatus, additionalData)
+  }
+
+  const handleCompleteReservation = (sendReviewEmail: boolean) => {
+    onStatusUpdate?.(reservation.id, 'COMPLETED', { sendReviewEmail })
+    setShowCompleteDialog(false)
   }
 
   const handleCancellation = (data: { notes: string; restaurantMessage?: string }) => {
@@ -364,6 +376,11 @@ function ReservationActions({
     )
 
     window.open(`https://wa.me/${phoneWithCountry}?text=${message}`, '_blank')
+  }
+
+  // Handler for mobile card
+  const handleMobileStatusUpdate = (status: string) => {
+    handleStatusChange(status)
   }
 
   const handleDelete = async () => {
@@ -583,6 +600,55 @@ function ReservationActions({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Complete Reservation Dialog */}
+      <AlertDialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              Completar Reserva
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 pt-2">
+                <div className="text-sm">
+                  ¿Deseas enviar un email de solicitud de reseña a <strong>{reservation.customerName}</strong>?
+                </div>
+                <div className="bg-muted/50 border border-border rounded-lg p-3 space-y-2">
+                  <div className="text-sm font-medium text-foreground">📧 El email incluye:</div>
+                  <ul className="text-sm space-y-1 ml-4 list-disc">
+                    <li>Enlaces a Google Reviews</li>
+                    <li>Enlaces a TripAdvisor</li>
+                    <li>Invitación a seguir en Instagram</li>
+                    <li>Opción de hacer nueva reserva</li>
+                  </ul>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  La reserva se completará en ambos casos. Solo cambia si se envía el email.
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel onClick={() => setShowCompleteDialog(false)}>
+              Cancelar
+            </AlertDialogCancel>
+            <Button
+              variant="outline"
+              onClick={() => handleCompleteReservation(false)}
+              className="sm:mr-2"
+            >
+              Completar sin Email
+            </Button>
+            <AlertDialogAction
+              onClick={() => handleCompleteReservation(true)}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              ✓ Completar y Enviar Email
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
@@ -705,7 +771,82 @@ export function CompactReservationList({
         </Card>
       )}
 
-      {/* Grouped Reservations using shadcn/ui Table - FIXED APPROACH */}
+      {/* Mobile View: Card-based Layout */}
+      <div className="lg:hidden space-y-4">
+        {Object.entries(groupedReservations).map(([groupName, groupReservations]) => {
+          if (groupReservations.length === 0) return null
+
+          const groupTitle = {
+            PASADAS: 'Reservas Pasadas',
+            HOY: 'Hoy',
+            MAÑANA: 'Mañana',
+            PRÓXIMOS_DÍAS: 'Próximos Días'
+          }[groupName] || groupName
+
+          const groupColor = {
+            PASADAS: 'border-l-gray-400',
+            HOY: 'border-l-red-400',
+            MAÑANA: 'border-l-orange-400',
+            PRÓXIMOS_DÍAS: 'border-l-blue-400'
+          }[groupName] || 'border-l-gray-400'
+
+          return (
+            <div key={groupName} className="space-y-2">
+              <div className={`flex items-center justify-between px-3 py-2 bg-muted/30 rounded border-l-4 ${groupColor}`}>
+                <h3 className="text-sm font-semibold">{groupTitle}</h3>
+                <Badge variant="outline" className="text-xs px-2 py-0.5">
+                  {groupReservations.length}
+                </Badge>
+              </div>
+
+              <div className="space-y-2">
+                {groupReservations.map((reservation) => (
+                  <ReservationCard
+                    key={reservation.id}
+                    reservation={reservation}
+                    onStatusUpdate={onStatusUpdate}
+                    onEdit={() => setEditingReservation(reservation)}
+                    onViewDetails={() => setViewingReservation(reservation)}
+                    onQuickEdit={async (reservationId, timeISO, tableIds) => {
+                      // Update reservation with new time and tables, then confirm
+                      if (onReservationUpdate && onStatusUpdate) {
+                        // timeISO is already in full ISO format "2025-10-14T19:00:00"
+                        const success = await onReservationUpdate(reservationId, {
+                          status: 'PENDING', // Required by API validation
+                          time: timeISO, // Send full ISO timestamp
+                          tableIds
+                        })
+                        if (success) {
+                          // Then confirm the reservation
+                          onStatusUpdate(reservationId, 'CONFIRMED')
+                        }
+                      }
+                    }}
+                    onWhatsApp={() => {
+                      if (!reservation.customerPhone) return
+                      const cleanPhone = reservation.customerPhone.replace(/[\s\-\(\)]/g, '')
+                      const phoneWithCountry = cleanPhone.startsWith('+')
+                        ? cleanPhone.substring(1)
+                        : cleanPhone.startsWith('34')
+                          ? cleanPhone
+                          : `34${cleanPhone}`
+                      const { date, time } = formatReservationDateTime(reservation.date, reservation.time)
+                      const message = encodeURIComponent(
+                        `Hola ${reservation.customerName}, te contacto sobre tu reserva para ${reservation.partySize} personas el ${date} a las ${time}.`
+                      )
+                      window.open(`https://wa.me/${phoneWithCountry}?text=${message}`, '_blank')
+                    }}
+                    bufferMinutes={bufferMinutes}
+                  />
+                ))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Desktop View: Table Layout */}
+      <div className="hidden lg:block space-y-4">
       {Object.entries(groupedReservations).map(([groupName, groupReservations]) => {
         if (groupReservations.length === 0) return null
 
@@ -925,6 +1066,7 @@ export function CompactReservationList({
           </Card>
         )
       })}
+      </div>
 
       {/* Modals - PRESERVE EXISTING FUNCTIONALITY */}
       <EditReservationModal

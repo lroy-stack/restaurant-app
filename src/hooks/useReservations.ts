@@ -31,6 +31,21 @@ export interface ReservationData {
   source?: 'admin' | 'web' // Source of reservation
 }
 
+export interface TableWithPosition {
+  id: string
+  number: string
+  capacity: number
+  location: string
+  available: boolean
+  status: string
+  position_x: number
+  position_y: number
+  rotation: number
+  width: number
+  height: number
+  priceMultiplier: number
+}
+
 export interface AvailabilityData {
   available: boolean
   totalTables: number
@@ -39,19 +54,15 @@ export interface AvailabilityData {
   duration: number
   preferredLocation?: string
   tablesByLocation: Record<string, any[]>
-  recommendations: Array<{
-    id: string
-    number: number
-    capacity: number
-    location: string
-    description: string
-    priceMultiplier: number
-  }>
+  recommendations: TableWithPosition[] // ✅ Updated with position data
+  allTables: TableWithPosition[] // ✅ NEW: All tables including unavailable
+  availableTables: TableWithPosition[] // ✅ NEW: Only available tables
 }
 
 export const useReservations = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false)
+  const [availabilityResults, setAvailabilityResults] = useState<AvailabilityData | null>(null)
 
   const checkAvailability = async (
     dateTime: string,
@@ -85,41 +96,57 @@ export const useReservations = () => {
 
       if (data.success && data.data) {
         console.log('✅ API Success, transforming tables...')
-        console.log('📋 Raw tables count:', data.data.tables?.length)
+        console.log('📋 All tables count:', data.data.tables?.length)
+        console.log('📋 Available tables count:', data.data.availableTables?.length)
 
-        // Transform API response (API now properly filters by isActive)
-        const availableTables = data.data.tables
-          .filter((table: any) => table.available) // Only filter by availability - API handles isActive
+        // ✅ Transform ALL tables (including unavailable) with position data
+        const allTables: TableWithPosition[] = data.data.tables
           .map((table: any) => ({
             id: table.tableId,
             number: table.tableNumber,
             capacity: table.capacity,
             location: table.zone,
+            available: table.available,
+            status: table.status || 'unknown',
+            position_x: table.position_x || 0,
+            position_y: table.position_y || 0,
+            rotation: table.rotation || 0,
+            width: table.width || 120,
+            height: table.height || 80,
             priceMultiplier: 1.0
           }))
           .sort((a: any, b: any) => {
-            // Ordenamiento natural: T1, T2, ..., T10, T11 en vez de T1, T10, T11, T2
-            const aNum = parseInt(a.number.replace(/[^0-9]/g, ''));
-            const bNum = parseInt(b.number.replace(/[^0-9]/g, ''));
-            return aNum - bNum;
+            // Natural sorting: T1, T2, ..., T10, T11
+            const aNum = parseInt(a.number.replace(/[^0-9]/g, ''))
+            const bNum = parseInt(b.number.replace(/[^0-9]/g, ''))
+            return aNum - bNum
           })
 
-        return {
+        // ✅ Separate available tables for backwards compatibility
+        const availableTables = allTables.filter(table => table.available)
+
+        const result = {
           available: availableTables.length > 0,
-          totalTables: availableTables.length,
+          totalTables: allTables.length,
           requestedDateTime: `${data.data.summary.requestedDate}T${data.data.summary.requestedTime}:00`,
           partySize: data.data.summary.requestedPartySize,
           duration: data.data.summary.searchDuration,
           preferredLocation: preferredLocation,
           tablesByLocation: {},
-          recommendations: availableTables
+          recommendations: availableTables, // For MultiTableSelector
+          allTables: allTables, // ✅ NEW: For FloorPlanSelector
+          availableTables: availableTables // ✅ NEW: Explicit available list
         }
+        setAvailabilityResults(result)
+        return result
       }
-      
+
+      setAvailabilityResults(null)
       return null
     } catch (error) {
       console.error('Error checking availability:', error)
       toast.error('Error al verificar disponibilidad. Inténtalo de nuevo.')
+      setAvailabilityResults(null)
       return null
     } finally {
       setIsCheckingAvailability(false)
@@ -238,5 +265,6 @@ export const useReservations = () => {
     getTables,
     isLoading,
     isCheckingAvailability,
+    availabilityResults,
   }
 }

@@ -130,27 +130,28 @@ export async function POST(request: NextRequest) {
 
     console.log(`🛡️ Blocked tables: ${Array.from(reservedTableIds).join(', ')}`)
 
-    // 4. Transform and filter available tables
-    const availableTables = activeTables
-      .filter((table: any) => {
-        // Filter by reservation conflicts
-        if (reservedTableIds.has(table.id)) return false
+    // 4. Transform ALL active tables with availability status and position data
+    const allTables = activeTables
+      .map((table: any) => {
+        const isReserved = reservedTableIds.has(table.id)
+        const isOccupied = table.currentstatus === 'occupied' || table.currentstatus === 'maintenance'
+        const isAvailable = !isReserved && !isOccupied
 
-        // 🚀 CRITICAL: Filter by manual status (occupied, maintenance)
-        if (table.currentstatus === 'occupied' || table.currentstatus === 'maintenance') {
-          return false
+        return {
+          tableId: table.id,
+          tableNumber: table.number,
+          zone: table.location,
+          capacity: table.capacity,
+          available: isAvailable,
+          status: isReserved ? 'reserved' : (isOccupied ? table.currentstatus : 'available'),
+          // ✅ NEW: Floor plan position data
+          position_x: Number(table.position_x) || 0,
+          position_y: Number(table.position_y) || 0,
+          rotation: Number(table.rotation) || 0,
+          width: Number(table.width) || 120,
+          height: Number(table.height) || 80
         }
-
-        return true
       })
-      .map((table: any) => ({
-        tableId: table.id,
-        tableNumber: table.number,
-        zone: table.location,
-        capacity: table.capacity,
-        available: true,
-        status: 'available'
-      }))
       .sort((a: any, b: any) => {
         // Natural sorting: T1, T2, ..., T10, T11
         const aNum = parseInt(a.tableNumber.replace(/[^0-9]/g, ''))
@@ -158,23 +159,28 @@ export async function POST(request: NextRequest) {
         return aNum - bNum
       })
 
+    // Separate available tables for backwards compatibility
+    const availableTables = allTables.filter((table: any) => table.available)
+
     console.log(`📊 Results: ${availableTables.length} tables available`)
 
     return NextResponse.json({
       success: true,
       data: {
-        tables: availableTables,
+        tables: allTables, // ✅ CHANGED: Return ALL tables with availability status
+        availableTables: availableTables, // ✅ NEW: Separate array for backwards compatibility
         summary: {
-          totalTables: availableTables.length,
+          totalTables: allTables.length,
           availableTables: availableTables.length,
-          availabilityRate: availableTables.length > 0 ? 1 : 0,
+          unavailableTables: allTables.length - availableTables.length,
+          availabilityRate: allTables.length > 0 ? availableTables.length / allTables.length : 0,
           requestedDate: date,
           requestedTime: time,
           requestedPartySize: partySize,
           searchDuration: duration
         },
         message: availableTables.length > 0
-          ? `${availableTables.length} mesa${availableTables.length !== 1 ? 's' : ''} disponible${availableTables.length !== 1 ? 's' : ''}`
+          ? `${availableTables.length} mesa${availableTables.length !== 1 ? 's' : ''} disponible${availableTables.length !== 1 ? 's' : ''} de ${allTables.length} total${allTables.length !== 1 ? 'es' : ''}`
           : 'No hay mesas disponibles en el horario solicitado'
       },
       timestamp: new Date().toISOString()

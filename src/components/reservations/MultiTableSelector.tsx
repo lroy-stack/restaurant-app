@@ -25,6 +25,7 @@ interface MultiTableSelectorProps {
   partySize: number
   maxSelections?: number
   className?: string
+  currentTableIds?: string[] // NEW: IDs of tables in the original reservation
 }
 
 export function MultiTableSelector({
@@ -33,7 +34,8 @@ export function MultiTableSelector({
   onSelectionChange,
   partySize,
   maxSelections = 5,
-  className
+  className,
+  currentTableIds = []
 }: MultiTableSelectorProps) {
   // Hook de validación de capacidad
   const { validateTableSelection, getCapacityInfo, config } = useCapacityValidation()
@@ -218,7 +220,7 @@ export function MultiTableSelector({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
               {locationTables.map(table => {
                 const selected = isTableSelected(table.id)
                 const validation = getTableValidation(table)

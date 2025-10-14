@@ -422,8 +422,8 @@ export default function TimeSlotSelector({
                 )} />
               </div>
 
-              {/* Grid de slots - primeros 4 siempre visibles en mobile */}
-              <div className="grid grid-cols-3 gap-2 md:gap-3 md:grid-cols-4">
+              {/* Grid de slots - 4x4 móvil, 6x6 desktop */}
+              <div className="grid grid-cols-4 gap-2 md:gap-3 lg:grid-cols-6">
                 {slots.slice(0, MOBILE_PREVIEW_COUNT).map((slot) => {
                   const isSelected = selectedTime === slot.time
                   const isHovered = hoveredSlot === slot.time
@@ -432,12 +432,13 @@ export default function TimeSlotSelector({
                     <button
                       key={slot.time}
                       className={cn(
-                        "relative group rounded-lg border-2 p-2 md:p-3 transition-all",
-                        "hover:shadow-lg hover:-translate-y-0.5",
+                        "relative group rounded-xl border p-2.5 md:p-3.5 transition-all",
+                        "hover:shadow-md hover:scale-[1.02] hover:border-primary/50",
+                        "bg-card/50 backdrop-blur-sm",
                         getPeriodColors(slot.period),
-                        isSelected && "ring-2 ring-primary ring-offset-2",
-                        !slot.available && "opacity-50 cursor-not-allowed",
-                        slot.available && "cursor-pointer"
+                        isSelected && "ring-2 ring-primary shadow-lg scale-[1.02] border-primary",
+                        !slot.available && "opacity-40 cursor-not-allowed grayscale",
+                        slot.available && "cursor-pointer active:scale-95"
                       )}
                       onClick={() => handleTimeSelect(slot)}
                       onMouseEnter={() => setHoveredSlot(slot.time)}
@@ -552,7 +553,7 @@ export default function TimeSlotSelector({
               {/* Slots adicionales expandidos (solo mobile) */}
               {hasMore && isExpanded && (
                 <div className="md:hidden">
-                  <div className="grid grid-cols-3 gap-2 mt-2">
+                  <div className="grid grid-cols-4 gap-2 mt-2">
                     {slots.slice(MOBILE_PREVIEW_COUNT).map((slot) => {
                       const isSelected = selectedTime === slot.time
                       const isHovered = hoveredSlot === slot.time
@@ -561,12 +562,13 @@ export default function TimeSlotSelector({
                         <button
                           key={slot.time}
                           className={cn(
-                            "relative group rounded-lg border-2 p-2 transition-all",
-                            "hover:shadow-lg hover:-translate-y-0.5",
+                            "relative group rounded-xl border p-2.5 transition-all",
+                            "hover:shadow-md hover:scale-[1.02] hover:border-primary/50",
+                            "bg-card/50 backdrop-blur-sm",
                             getPeriodColors(slot.period),
-                            isSelected && "ring-2 ring-primary ring-offset-2",
-                            !slot.available && "opacity-50 cursor-not-allowed",
-                            slot.available && "cursor-pointer"
+                            isSelected && "ring-2 ring-primary shadow-lg scale-[1.02] border-primary",
+                            !slot.available && "opacity-40 cursor-not-allowed grayscale",
+                            slot.available && "cursor-pointer active:scale-95"
                           )}
                           onClick={() => handleTimeSelect(slot)}
                           onMouseEnter={() => setHoveredSlot(slot.time)}
@@ -629,7 +631,7 @@ export default function TimeSlotSelector({
               )}
 
               {/* En desktop mostrar todos sin colapsar */}
-              <div className="hidden md:grid md:grid-cols-4 md:gap-3">
+              <div className="hidden md:grid lg:grid-cols-6 md:gap-3">
                 {slots.slice(MOBILE_PREVIEW_COUNT).map((slot) => {
                   const isSelected = selectedTime === slot.time
                   const isHovered = hoveredSlot === slot.time
@@ -638,12 +640,13 @@ export default function TimeSlotSelector({
                     <button
                       key={slot.time}
                       className={cn(
-                        "relative group rounded-lg border-2 p-3 transition-all",
-                        "hover:shadow-lg hover:-translate-y-0.5",
+                        "relative group rounded-xl border p-3.5 transition-all",
+                        "hover:shadow-md hover:scale-[1.02] hover:border-primary/50",
+                        "bg-card/50 backdrop-blur-sm",
                         getPeriodColors(slot.period),
-                        isSelected && "ring-2 ring-primary ring-offset-2",
-                        !slot.available && "opacity-50 cursor-not-allowed",
-                        slot.available && "cursor-pointer"
+                        isSelected && "ring-2 ring-primary shadow-lg scale-[1.02] border-primary",
+                        !slot.available && "opacity-40 cursor-not-allowed grayscale",
+                        slot.available && "cursor-pointer active:scale-95"
                       )}
                       onClick={() => handleTimeSelect(slot)}
                       onMouseEnter={() => setHoveredSlot(slot.time)}
