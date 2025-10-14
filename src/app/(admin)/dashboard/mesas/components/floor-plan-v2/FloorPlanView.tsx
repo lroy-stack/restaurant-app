@@ -8,6 +8,7 @@ import { AlertCircle, Map } from 'lucide-react'
 import Plano from './Plano'
 import { Modal } from './Modal'
 import { Toolbar } from './Toolbar'
+import { AlignmentToolbar } from './AlignmentToolbar'
 import { useFloorPlan } from './hooks/useFloorPlan'
 import { useKonvaSetup } from './hooks/useKonvaSetup'
 import { VisualMesa } from './types/mesa.types'
@@ -205,22 +206,25 @@ const FloorPlanView: React.FC<FloorPlanViewProps> = ({ tables: propTables = [] }
       </Card>
 
       {/* Toolbar with filters and controls */}
-      <Toolbar
-        selectedZone={selectedZone}
-        onZoneChange={setSelectedZone}
-        onZoomFit={handleZoomFit}
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-        zoneStats={zoneStats}
-        isDragMode={isDragMode}
-        onDragModeToggle={setIsDragMode}
-        isMultiSelectMode={isMultiSelectMode}
-        onMultiSelectModeToggle={setIsMultiSelectMode}
-        selectedCount={selectedTableIds.size}
-        onSelectAll={handleSelectAll}
-        onClearSelection={handleClearSelection}
-        onBulkStatusUpdate={handleBulkStatusUpdate}
-      />
+      <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between">
+        <Toolbar
+          selectedZone={selectedZone}
+          onZoneChange={setSelectedZone}
+          onZoomFit={handleZoomFit}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          zoneStats={zoneStats}
+          isDragMode={isDragMode}
+          onDragModeToggle={setIsDragMode}
+          isMultiSelectMode={isMultiSelectMode}
+          onMultiSelectModeToggle={setIsMultiSelectMode}
+          selectedCount={selectedTableIds.size}
+          onSelectAll={handleSelectAll}
+          onClearSelection={handleClearSelection}
+          onBulkStatusUpdate={handleBulkStatusUpdate}
+        />
+        <AlignmentToolbar onRefresh={refreshTables} />
+      </div>
 
       {/* Main floor plan visualization */}
       <Card className="overflow-hidden">
