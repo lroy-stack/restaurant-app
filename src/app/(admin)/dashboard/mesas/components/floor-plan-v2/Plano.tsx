@@ -5,6 +5,7 @@ import { Stage, Layer } from 'react-konva'
 import Konva from 'konva'
 import Mesa from './Mesa'
 import { PlanoProps, VisualMesa, FloorPlanState } from './types/mesa.types'
+import { useResponsiveLayout } from './hooks/useResponsiveLayout'
 
 export interface PlanoMethods {
   zoomIn: () => void
@@ -37,23 +38,20 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
     isDragging: false
   })
 
-  // ✅ PROFESSIONAL GRID SYSTEM - Fixed virtual dimensions
-  const VIRTUAL_WIDTH = 1600
-  const VIRTUAL_HEIGHT = 1000
-  const PADDING = 50
+  // ✅ RESPONSIVE ADAPTIVE LAYOUT
+  const { tables: responsiveTables, bounds: layoutBounds } = useResponsiveLayout(tables, dimensions)
 
-  // Calculate stage boundaries based on virtual grid
+  const contentWidth = layoutBounds.width
+  const contentHeight = layoutBounds.height
+
   const stageBounds = React.useMemo(() => {
     return {
       minX: 0,
       minY: 0,
-      maxX: VIRTUAL_WIDTH,
-      maxY: VIRTUAL_HEIGHT
+      maxX: layoutBounds.width,
+      maxY: layoutBounds.height
     }
-  }, [])
-
-  const contentWidth = VIRTUAL_WIDTH
-  const contentHeight = VIRTUAL_HEIGHT
+  }, [layoutBounds])
 
   // Brave Shield detection - MUST run before any Konva rendering
   useEffect(() => {
@@ -130,7 +128,7 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
     }
   }, [onTableDragEnd])
 
-  // ✅ PROFESSIONAL ZOOM: Calculate optimal scale to fit entire grid
+  // ✅ RESPONSIVE ZOOM: Calculate optimal scale based on content bounds
   const fitToScreen = useCallback(() => {
     const stage = stageRef.current
     if (!stage) return
@@ -138,16 +136,16 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
     const containerWidth = dimensions.width
     const containerHeight = dimensions.height
 
-    // Calculate scale to fit the virtual grid maintaining aspect ratio
-    const scaleX = containerWidth / VIRTUAL_WIDTH
-    const scaleY = containerHeight / VIRTUAL_HEIGHT
+    // Calculate scale to fit the content maintaining aspect ratio
+    const scaleX = containerWidth / contentWidth
+    const scaleY = containerHeight / contentHeight
 
     // Use smaller scale to ensure everything fits, with 95% factor for padding
     const scale = Math.min(scaleX, scaleY) * 0.95
 
     // Center the content
-    const centerX = (containerWidth - VIRTUAL_WIDTH * scale) / 2
-    const centerY = (containerHeight - VIRTUAL_HEIGHT * scale) / 2
+    const centerX = (containerWidth - contentWidth * scale) / 2
+    const centerY = (containerHeight - contentHeight * scale) / 2
 
     stage.scale({ x: scale, y: scale })
     stage.position({ x: centerX, y: centerY })
@@ -158,7 +156,7 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
       scale,
       position: { x: centerX, y: centerY }
     }))
-  }, [dimensions])
+  }, [dimensions, contentWidth, contentHeight])
 
   const zoomIn = useCallback(() => {
     const stage = stageRef.current
@@ -264,13 +262,13 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
     fitToScreen
   }), [zoomIn, zoomOut, fitToScreen])
 
-  // Initial fit to screen when tables change
+  // Initial fit to screen when tables or dimensions change
   useEffect(() => {
     if (tables.length > 0) {
       const timer = setTimeout(fitToScreen, 100)
       return () => clearTimeout(timer)
     }
-  }, [tables.length, fitToScreen])
+  }, [tables.length, dimensions.width, dimensions.height, fitToScreen])
 
   if (tables.length === 0) {
     return (
@@ -361,7 +359,7 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
 
         {/* Tables layer - interactive */}
         <Layer>
-          {tables.map((mesa) => (
+          {responsiveTables.map((mesa) => (
             <Mesa
               key={mesa.id}
               mesa={mesa}
@@ -430,7 +428,7 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
 
       {/* Table count indicator */}
       <div className="absolute top-4 left-4 bg-background/90 backdrop-blur border rounded px-2 py-1 text-xs text-muted-foreground">
-        {tables.length} mesa{tables.length !== 1 ? 's' : ''}
+        {responsiveTables.length} mesa{responsiveTables.length !== 1 ? 's' : ''}
       </div>
     </div>
   )
