@@ -70,23 +70,43 @@ export function CustomerContactNew({
 
   const handleSave = async () => {
     try {
-      let success = true
-
-      // Update each field that changed
+      // Collect only changed fields
+      const changedFields: Record<string, unknown> = {}
       for (const [field, value] of Object.entries(formData)) {
         if (value !== (customer as Record<string, unknown>)[field]) {
-          const fieldSuccess = await onUpdate(field, value)
-          if (!fieldSuccess) success = false
+          changedFields[field] = value
         }
       }
 
-      if (success) {
+      // If no changes, just close
+      if (Object.keys(changedFields).length === 0) {
+        setIsEditing(false)
+        return
+      }
+
+      // Single PATCH with all changed fields
+      const response = await fetch(`/api/customers/${customer.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept-Profile': 'restaurante',
+          'Content-Profile': 'restaurante'
+        },
+        body: JSON.stringify(changedFields)
+      })
+
+      if (response.ok) {
         setIsEditing(false)
         toast.success('Información actualizada correctamente')
+        // Refresh page to show updated data
+        window.location.reload()
       } else {
-        toast.error('Error al actualizar algunos campos')
+        const error = await response.json()
+        console.error('Update error:', error)
+        toast.error('Error al actualizar cliente')
       }
     } catch (error) {
+      console.error('Save error:', error)
       toast.error('Error al actualizar la información')
     }
   }
