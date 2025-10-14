@@ -229,7 +229,7 @@ const FloorPlanView: React.FC<FloorPlanViewProps> = ({ tables: propTables = [] }
       {/* Main floor plan visualization */}
       <Card className="overflow-hidden">
         <CardContent className="p-0">
-          <div className="h-[600px] md:h-[700px] lg:h-[800px]">
+          <div className="min-h-[500px] h-[calc(100vh-320px)] max-h-[900px]">
             <Plano
               ref={planoRef}
               tables={visibleTables}

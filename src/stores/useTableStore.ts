@@ -39,6 +39,7 @@ interface TableStore {
   toggleZone: (location: string, activate: boolean) => Promise<void>
   updateTableStatus: (tableId: string, status: string, notes?: string, estimatedFreeTime?: string) => Promise<void>
   updateTablePosition: (tableId: string, position_x: number, position_y: number) => Promise<void>
+  updateTableRotation: (tableId: string, rotation: number) => Promise<void>
 }
 
 export const useTableStore = create<TableStore>()(
@@ -278,6 +279,47 @@ export const useTableStore = create<TableStore>()(
         } catch (error) {
           console.error('Error updating table position:', error)
           toast.error('Error al mover la mesa')
+          throw error
+        }
+      },
+
+      // ✅ NEW: Rotation update with snapping to 90° increments
+      updateTableRotation: async (tableId: string, rotation: number) => {
+        try {
+          // Snap to 90° increments and normalize to 0-360
+          const snappedRotation = (Math.round(rotation / 90) * 90) % 360
+
+          const response = await fetch(`/api/tables/${tableId}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept-Profile': 'restaurante',
+              'Content-Profile': 'restaurante'
+            },
+            body: JSON.stringify({
+              rotation: snappedRotation
+            })
+          })
+
+          if (!response.ok) {
+            throw new Error('Failed to update table rotation')
+          }
+
+          // Update store immediately
+          set((state) => ({
+            tables: state.tables.map(table =>
+              table.id === tableId
+                ? { ...table, rotation: snappedRotation }
+                : table
+            )
+          }))
+
+          const table = get().tables.find(t => t.id === tableId)
+          toast.success(`Mesa ${table?.number} rotada a ${snappedRotation}°`)
+
+        } catch (error) {
+          console.error('Error updating table rotation:', error)
+          toast.error('Error al rotar la mesa')
           throw error
         }
       }

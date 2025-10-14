@@ -112,6 +112,7 @@ const Mesa = React.memo(({
     <Group
       x={mesa.position.x}
       y={mesa.position.y}
+      rotation={mesa.rotation || 0}  // ✅ ROTATION ACTIVADO: Renderiza rotación desde DB
       _useStrictMode={false}
       onClick={() => onClick(mesa)}
       onTap={() => onClick(mesa)} // Mobile touch support

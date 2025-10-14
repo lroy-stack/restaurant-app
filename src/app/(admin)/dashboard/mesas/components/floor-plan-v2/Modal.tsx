@@ -39,7 +39,9 @@ import {
   Star,
   UserCheck,
   Utensils,
-  ShoppingCart
+  ShoppingCart,
+  RotateCw,
+  Maximize2
 } from 'lucide-react'
 import { ModalProps, ENIGMA_ZONES, STATUS_COLORS } from './types/mesa.types'
 
@@ -54,7 +56,7 @@ export function Modal({ isOpen, onClose, table }: ModalProps) {
   const [hasActiveOrders, setHasActiveOrders] = useState(false)
   const [orderCount, setOrderCount] = useState(0)
 
-  const { updateTableStatus } = useTableStore()
+  const { updateTableStatus, updateTableRotation } = useTableStore()
 
   // Check active orders
   useEffect(() => {
@@ -231,6 +233,58 @@ export function Modal({ isOpen, onClose, table }: ModalProps) {
                   <Badge variant={table.isActive ? "default" : "secondary"}>
                     {table.isActive ? "Activa" : "Inactiva"}
                   </Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Layout de Mesa - Rotation & Dimensions */}
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="font-medium mb-3 flex items-center gap-2">
+                <Maximize2 className="h-4 w-4" />
+                Layout de Mesa
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                {/* Rotation Control */}
+                <div>
+                  <Label className="text-sm text-muted-foreground mb-2 block">
+                    Rotación
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-sm font-mono">
+                      {table.rotation || 0}°
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={async () => {
+                        const currentRotation = table.rotation || 0
+                        const newRotation = (currentRotation + 90) % 360
+                        try {
+                          await updateTableRotation(table.id, newRotation)
+                        } catch (error) {
+                          // Error already handled by store
+                        }
+                      }}
+                      className="h-8"
+                    >
+                      <RotateCw className="h-3.5 w-3.5 mr-1.5" />
+                      Rotar 90°
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Dimensions Info */}
+                <div>
+                  <Label className="text-sm text-muted-foreground mb-2 block">
+                    Dimensiones
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="font-mono text-sm">
+                      {table.dimensions.width} × {table.dimensions.height}
+                    </Badge>
+                  </div>
                 </div>
               </div>
             </CardContent>
