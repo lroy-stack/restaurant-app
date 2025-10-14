@@ -3,27 +3,23 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import {
-  Calendar,
-  Clock,
-  Users,
   MapPin,
   ArrowRight,
   Loader2,
   Plus,
   Minus,
-  Baby
+  Baby,
+  Info
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { Checkbox } from '@/components/ui/checkbox'
 import type { Language } from '@/lib/validations/reservation-professional'
 import type { AvailabilityData } from '@/hooks/useReservations'
 import { useReservations } from '@/hooks/useReservations'
-import { useCart } from '@/hooks/useCart'
 import { useWeatherForecast } from '@/hooks/useWeatherForecast'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { useCapacityValidation } from '@/hooks/useCapacityValidation'
@@ -186,6 +182,7 @@ export default function EnhancedDateTimeAndTableStep({
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [partySize, setPartySize] = useState<number>(2)
   const [childrenCount, setChildrenCount] = useState<number>(0)
+  const [hasChildren, setHasChildren] = useState<boolean>(false)
   const [selectedZone, setSelectedZone] = useState<string | null>(null)
   const [activeZones, setActiveZones] = useState<Zone[]>([])
   const [loadingZones, setLoadingZones] = useState(true)
@@ -441,97 +438,150 @@ export default function EnhancedDateTimeAndTableStep({
           compact={true}
         />
 
-        {/* Selector de personas y niños - Unificado */}
+        {/* Selector de personas y niños - MEJORADO */}
         <Card>
-          <CardContent className="p-3 md:p-4">
-            <div className="flex flex-col gap-3">
-              {/* Grid responsive: stack en mobile, horizontal en desktop */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {/* Número de personas */}
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-1.5 md:gap-2">
-                    <Users className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground" />
-                    <span className="text-xs md:text-sm font-medium text-muted-foreground">
-                      {t.partySizeLabel}
+          <CardContent className="p-4 md:p-5 lg:p-6">
+            <div className="space-y-4">
+              {/* Número total de personas */}
+              <div>
+                <Label className="text-sm md:text-base font-semibold mb-3 flex items-center gap-2">
+                  <Users className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                  {t.partySizeLabel}
+                </Label>
+                <div className="flex items-center justify-center gap-4 mt-3">
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    onClick={() => handlePartySizeChange(-1)}
+                    disabled={partySize <= 1}
+                    className="h-10 w-10 md:h-12 md:w-12"
+                  >
+                    <Minus className="h-4 w-4 md:h-5 md:w-5" />
+                  </Button>
+                  <div className="min-w-[100px] md:min-w-[120px] text-center bg-muted rounded-lg p-3">
+                    <span className="text-2xl md:text-3xl font-bold">{partySize}</span>
+                    <span className="block text-xs md:text-sm text-muted-foreground mt-1">
+                      {partySize === 1 ? t.person : t.people}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      onClick={() => handlePartySizeChange(-1)}
-                      disabled={partySize <= 1}
-                      className="h-7 w-7 md:h-8 md:w-8"
-                    >
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <div className="min-w-[60px] md:min-w-[80px] text-center">
-                      <span className="text-lg md:text-xl font-bold">{partySize}</span>
-                      <span className="ml-1 text-[10px] md:text-xs text-muted-foreground">
-                        {partySize === 1 ? t.person : t.people}
-                      </span>
-                    </div>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      onClick={() => handlePartySizeChange(1)}
-                      disabled={partySize >= (maxPartySize || 10)}
-                      className="h-7 w-7 md:h-8 md:w-8"
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                  </div>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    onClick={() => handlePartySizeChange(1)}
+                    disabled={partySize >= (maxPartySize || 10)}
+                    className="h-10 w-10 md:h-12 md:w-12"
+                  >
+                    <Plus className="h-4 w-4 md:h-5 md:w-5" />
+                  </Button>
                 </div>
-
-                {/* Niños (hasta 8 años) - Solo si partySize > 1 */}
-                {partySize > 1 && (
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-1.5 md:gap-2">
-                      <Baby className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground" />
-                      <span className="text-xs md:text-sm font-medium text-muted-foreground">
-                        {language === 'es' ? 'Niños (hasta 8 años)' :
-                         language === 'en' ? 'Children (up to 8 years)' :
-                         'Kinder (bis 8 Jahre)'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 md:gap-3">
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        onClick={() => handleChildrenCountChange(-1)}
-                        disabled={childrenCount === 0}
-                        className="h-7 w-7 md:h-8 md:w-8"
-                      >
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <div className="min-w-[60px] md:min-w-[80px] text-center">
-                        <span className="text-lg md:text-xl font-bold">{childrenCount}</span>
-                        <span className="ml-1 text-[10px] md:text-xs text-muted-foreground">
-                          {language === 'es' ? (childrenCount === 1 ? 'niño' : 'niños') :
-                           language === 'en' ? (childrenCount === 1 ? 'child' : 'children') :
-                           (childrenCount === 1 ? 'Kind' : 'Kinder')}
-                        </span>
-                      </div>
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        onClick={() => handleChildrenCountChange(1)}
-                        disabled={childrenCount >= partySize - 1}
-                        className="h-7 w-7 md:h-8 md:w-8"
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
               </div>
 
-              {/* Desglose siempre visible cuando hay niños */}
-              {partySize > 1 && childrenCount > 0 && (
-                <div className="pt-2 border-t text-xs text-muted-foreground text-center">
-                  {language === 'es' ? `${partySize - childrenCount} adulto(s) + ${childrenCount} niño(s)` :
-                   language === 'en' ? `${partySize - childrenCount} adult(s) + ${childrenCount} child(ren)` :
-                   `${partySize - childrenCount} Erwachsene + ${childrenCount} Kinder`}
+              {/* Checkbox para indicar si hay niños */}
+              {partySize > 1 && (
+                <div className="pt-4 border-t">
+                  <div className="flex items-start gap-3 mb-3">
+                    <Checkbox
+                      id="hasChildren"
+                      checked={hasChildren}
+                      onCheckedChange={(checked) => {
+                        setHasChildren(!!checked)
+                        if (!checked) setChildrenCount(0)
+                      }}
+                      className="mt-1 h-5 w-5"
+                    />
+                    <div className="flex-1">
+                      <Label
+                        htmlFor="hasChildren"
+                        className="text-sm md:text-base font-medium cursor-pointer flex items-center gap-2"
+                      >
+                        <Baby className="h-4 w-4 md:h-5 md:w-5 text-accent" />
+                        {language === 'es' ? '¿Hay niños en la mesa?' :
+                         language === 'en' ? 'Are there children at the table?' :
+                         'Gibt es Kinder am Tisch?'}
+                      </Label>
+                      <p className="text-xs md:text-sm text-muted-foreground mt-1">
+                        {language === 'es' ? 'Hasta 8 años' :
+                         language === 'en' ? 'Up to 8 years old' :
+                         'Bis 8 Jahre'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Selector de cantidad de niños - aparece al marcar checkbox */}
+                  {hasChildren && (
+                    <div className="mt-4 p-4 bg-accent/5 border-2 border-accent/20 rounded-lg animate-in slide-in-from-top-2">
+                      <div className="flex flex-col gap-3">
+                        <Label className="text-sm md:text-base font-medium">
+                          {language === 'es' ? '¿Cuántos niños?' :
+                           language === 'en' ? 'How many children?' :
+                           'Wie viele Kinder?'}
+                        </Label>
+                        <div className="flex items-center justify-center gap-4">
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            onClick={() => handleChildrenCountChange(-1)}
+                            disabled={childrenCount === 0}
+                            className="h-10 w-10 md:h-12 md:w-12"
+                          >
+                            <Minus className="h-4 w-4 md:h-5 md:w-5" />
+                          </Button>
+                          <div className="min-w-[100px] md:min-w-[120px] text-center bg-background rounded-lg p-3 border-2 border-accent">
+                            <span className="text-2xl md:text-3xl font-bold text-accent">{childrenCount}</span>
+                            <span className="block text-xs md:text-sm text-muted-foreground mt-1">
+                              {language === 'es' ? (childrenCount === 1 ? 'niño' : 'niños') :
+                               language === 'en' ? (childrenCount === 1 ? 'child' : 'children') :
+                               (childrenCount === 1 ? 'Kind' : 'Kinder')}
+                            </span>
+                          </div>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            onClick={() => handleChildrenCountChange(1)}
+                            disabled={childrenCount >= partySize - 1}
+                            className="h-10 w-10 md:h-12 md:w-12"
+                          >
+                            <Plus className="h-4 w-4 md:h-5 md:w-5" />
+                          </Button>
+                        </div>
+
+                        {/* Nota IMPORTANTE en negrita */}
+                        <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md">
+                          <div className="flex items-start gap-2">
+                            <Info className="h-4 w-4 md:h-5 md:w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                            <p className="text-xs md:text-sm">
+                              <span className="font-bold text-blue-900 dark:text-blue-100">
+                                {language === 'es' ? 'Importante:' :
+                                 language === 'en' ? 'Important:' :
+                                 'Wichtig:'}
+                              </span>{' '}
+                              <span className="text-blue-800 dark:text-blue-200">
+                                {language === 'es' ? 'Los niños se cuentan dentro del total de personas.' :
+                                 language === 'en' ? 'Children are counted within the total number of people.' :
+                                 'Kinder werden zur Gesamtzahl der Personen gezählt.'}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Desglose visual con mejor contraste */}
+                        {childrenCount > 0 && (
+                          <div className="mt-2 p-3 bg-background border-2 border-accent/30 rounded-md text-center">
+                            <p className="text-sm md:text-base font-semibold text-foreground">
+                              {language === 'es' ? `${partySize - childrenCount} adulto${partySize - childrenCount !== 1 ? 's' : ''} + ${childrenCount} niño${childrenCount !== 1 ? 's' : ''}` :
+                               language === 'en' ? `${partySize - childrenCount} adult${partySize - childrenCount !== 1 ? 's' : ''} + ${childrenCount} child${childrenCount !== 1 ? 'ren' : ''}` :
+                               `${partySize - childrenCount} Erwachsene${partySize - childrenCount !== 1 ? '' : 'r'} + ${childrenCount} Kind${childrenCount !== 1 ? 'er' : ''}`}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {language === 'es' ? `= ${partySize} personas en total` :
+                               language === 'en' ? `= ${partySize} people in total` :
+                               `= ${partySize} Personen insgesamt`}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

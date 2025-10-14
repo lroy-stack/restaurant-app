@@ -28,6 +28,21 @@ import { cn } from '@/lib/utils'
 import type { Language } from '@/lib/validations/reservation-professional'
 import type { AvailabilityData } from '@/hooks/useReservations'
 
+interface PreOrderItem {
+  id: string
+  name: string
+  price: number
+  quantity: number
+  type: string
+}
+
+interface SelectedTable {
+  id: string
+  number: string
+  capacity: number
+  location?: string
+}
+
 interface ContactAndConfirmStepProps {
   language: Language
   onPrevious: () => void
@@ -39,7 +54,7 @@ interface ContactAndConfirmStepProps {
   partySize: number
   childrenCount?: number
   tableIds?: string[]
-  preOrderItems?: Array<{ id: string; name: string; price: number; quantity: number; type: string }>
+  preOrderItems?: PreOrderItem[]
   preOrderTotal?: number
 }
 
@@ -494,34 +509,34 @@ export default function ContactAndConfirmStep({
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
-          {/* Reservation Summary */}
+          {/* Reservation Summary - MEJORADO PARA MÓVIL */}
           <div>
-            <div className="grid gap-2 md:gap-3">
-              <div className="flex justify-between items-center p-2 md:p-3 bg-muted rounded-lg">
-                <span className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
-                  <Calendar className="h-3 w-3 md:h-4 md:w-4" />
+            <div className="grid gap-3 md:gap-3">
+              <div className="flex justify-between items-center p-3 md:p-3 bg-muted rounded-lg">
+                <span className="flex items-center gap-2 md:gap-2 text-sm md:text-sm font-medium">
+                  <Calendar className="h-4 w-4 md:h-4 md:w-4" />
                   {t.date}
                 </span>
-                <span className="font-medium text-xs md:text-sm">{formatDate(selectedDate)}</span>
+                <span className="font-semibold text-sm md:text-sm">{formatDate(selectedDate)}</span>
               </div>
 
-              <div className="flex justify-between items-center p-2 md:p-3 bg-muted rounded-lg">
-                <span className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
-                  <Clock className="h-3 w-3 md:h-4 md:w-4" />
+              <div className="flex justify-between items-center p-3 md:p-3 bg-muted rounded-lg">
+                <span className="flex items-center gap-2 md:gap-2 text-sm md:text-sm font-medium">
+                  <Clock className="h-4 w-4 md:h-4 md:w-4" />
                   {t.time}
                 </span>
-                <span className="font-medium text-xs md:text-sm">{selectedTime}</span>
+                <span className="font-semibold text-sm md:text-sm">{selectedTime}</span>
               </div>
 
-              <div className="flex justify-between items-center p-2 md:p-3 bg-muted rounded-lg">
-                <span className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
-                  <Users className="h-3 w-3 md:h-4 md:w-4" />
+              <div className="flex justify-between items-center p-3 md:p-3 bg-muted rounded-lg">
+                <span className="flex items-center gap-2 md:gap-2 text-sm md:text-sm font-medium">
+                  <Users className="h-4 w-4 md:h-4 md:w-4" />
                   {t.people}
                 </span>
                 <div className="text-right">
-                  <span className="font-medium text-xs md:text-sm">{partySize}</span>
+                  <span className="font-semibold text-sm md:text-sm">{partySize}</span>
                   {childrenCount > 0 && (
-                    <span className="block text-[10px] md:text-xs text-muted-foreground mt-0.5">
+                    <span className="block text-xs md:text-xs text-muted-foreground mt-1">
                       ({partySize - childrenCount} {language === 'es' ? 'adulto(s)' : language === 'en' ? 'adult(s)' : 'Erwachsene'} + {childrenCount} {language === 'es' ? 'niño(s)' : language === 'en' ? 'child(ren)' : 'Kinder'})
                     </span>
                   )}
@@ -531,12 +546,12 @@ export default function ContactAndConfirmStep({
               {/* Multi-table support (new) */}
               {selectedTables.length > 0 && (
                 <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                  <span className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
+                  <span className="flex items-center gap-2 text-sm md:text-sm font-medium">
+                    <MapPin className="h-4 w-4 md:h-4 md:w-4" />
                     {t.table}
                   </span>
-                  <span className="font-medium">
-                    {selectedTables.map((table: any) => `Mesa ${table.number}`).join(', ')}
+                  <span className="font-semibold text-sm md:text-sm">
+                    {selectedTables.map((table) => `Mesa ${table.number}`).join(', ')}
                   </span>
                 </div>
               )}
@@ -544,11 +559,11 @@ export default function ContactAndConfirmStep({
               {/* Legacy single table fallback */}
               {selectedTables.length === 0 && selectedTable && (
                 <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                  <span className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
+                  <span className="flex items-center gap-2 text-sm md:text-sm font-medium">
+                    <MapPin className="h-4 w-4 md:h-4 md:w-4" />
                     {t.table}
                   </span>
-                  <span className="font-medium">
+                  <span className="font-semibold text-sm md:text-sm">
                     {selectedTable.number} ({locations[selectedTable.location as keyof typeof locations]?.name[language]})
                   </span>
                 </div>
@@ -556,27 +571,27 @@ export default function ContactAndConfirmStep({
             </div>
           </div>
 
-          {/* Contact Information */}
+          {/* Contact Information - MEJORADO PARA MÓVIL */}
           {(watchedStepThree?.firstName || watchedStepThree?.email) && (
             <div>
-              <h3 className="font-semibold text-sm sm:text-base mb-3">{t.contactInfo}</h3>
-              <div className="grid gap-2 text-sm">
+              <h3 className="font-semibold text-base sm:text-base mb-3">{t.contactInfo}</h3>
+              <div className="grid gap-3 text-sm md:text-sm">
                 {(watchedStepThree?.firstName || watchedStepThree?.lastName) && (
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    <span>{watchedStepThree?.firstName} {watchedStepThree?.lastName}</span>
+                  <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                    <Users className="h-4 w-4 md:h-4 md:w-4" />
+                    <span className="font-medium">{watchedStepThree?.firstName} {watchedStepThree?.lastName}</span>
                   </div>
                 )}
                 {watchedStepThree?.email && (
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    <span>{watchedStepThree.email}</span>
+                  <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                    <Mail className="h-4 w-4 md:h-4 md:w-4" />
+                    <span className="font-medium">{watchedStepThree.email}</span>
                   </div>
                 )}
                 {watchedStepThree?.phone && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4" />
-                    <span>{watchedStepThree.phone}</span>
+                  <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                    <Phone className="h-4 w-4 md:h-4 md:w-4" />
+                    <span className="font-medium">{watchedStepThree.phone}</span>
                   </div>
                 )}
               </div>
@@ -617,7 +632,7 @@ export default function ContactAndConfirmStep({
             <div>
               <h3 className="font-semibold text-sm sm:text-base mb-3">{t.preOrderSummary}</h3>
               <div className="space-y-2">
-                {preOrderItems.map((item: any) => (
+                {preOrderItems.map((item) => (
                   <div key={item.id} className="flex items-center justify-between text-sm">
                     <span>{item.name} x{item.quantity}</span>
                     <span className="font-medium">€{(item.price * item.quantity).toFixed(2)}</span>
@@ -642,54 +657,57 @@ export default function ContactAndConfirmStep({
                 {t.gdprTitle}
               </h3>
 
-              {/* Required Data Processing - Prominent */}
-              <div className="flex items-start gap-3 p-3 bg-primary/80 border border-primary rounded-lg">
+              {/* Required Data Processing - MÁS EVIDENTE */}
+              <div className="flex items-start gap-4 p-4 bg-primary border-4 border-primary rounded-xl shadow-lg">
                 <Checkbox
                   id="dataProcessingConsent"
                   checked={watchedStepFour?.dataProcessingConsent || false}
                   onCheckedChange={(checked) => setValue('stepFour.dataProcessingConsent', checked)}
-                  className="mt-0.5 shrink-0"
+                  className="mt-1 shrink-0 h-6 w-6 border-2 border-white data-[state=checked]:bg-white data-[state=checked]:text-primary"
                 />
-                <Label htmlFor="dataProcessingConsent" className="text-sm leading-relaxed cursor-pointer">
-                  <span className="font-medium text-white">
-                    {t.dataProcessing} <span className="text-red-200">*</span>
+                <Label htmlFor="dataProcessingConsent" className="text-sm md:text-base leading-relaxed cursor-pointer flex-1">
+                  <span className="font-bold text-white block mb-1">
+                    {t.dataProcessing} <span className="text-red-200 text-lg">*</span>
                   </span>
-                  <span className="text-primary-foreground/80"> {t.dataProcessingFull} </span>
-                  <Link
-                    href={language === 'es' ? '/legal/politica-privacidad' : '/legal/politica-privacidad/en'}
-                    className="text-white underline hover:text-primary-foreground transition-colors"
-                    target="_blank"
-                  >
-                    {t.privacyPolicy}
-                  </Link>
+                  <span className="text-white/90 block">
+                    {t.dataProcessingFull}{' '}
+                    <Link
+                      href={language === 'es' ? '/legal/politica-privacidad' : '/legal/politica-privacidad/en'}
+                      className="text-white font-semibold underline decoration-2 underline-offset-2 hover:text-primary-foreground transition-colors"
+                      target="_blank"
+                    >
+                      {t.privacyPolicy}
+                    </Link>
+                  </span>
                 </Label>
               </div>
               {errors.stepFour?.dataProcessingConsent && (
-                <p className="text-sm text-red-600 ml-6">
+                <p className="text-sm md:text-base text-red-600 font-semibold ml-6 flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
                   {errors.stepFour.dataProcessingConsent.message}
                 </p>
               )}
 
-              {/* Optional Consents - Horizontal on desktop, stack on mobile */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
-                <Label className="flex items-center gap-2 cursor-pointer text-sm">
-                  <Checkbox
-                    id="emailConsent"
-                    checked={Boolean(watchedStepFour?.emailConsent)}
-                    onCheckedChange={(checked) => setValue('stepFour.emailConsent', Boolean(checked))}
-                  />
-                  <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span>{t.emailConsentShort}</span>
-                </Label>
-
-                <Label className="flex items-center gap-2 cursor-pointer text-sm">
+              {/* Optional Marketing Consent - REMOVIDO checkbox de email (es obligatorio) */}
+              <div className="p-3 bg-muted/30 rounded-lg border">
+                <Label className="flex items-start gap-3 cursor-pointer text-sm">
                   <Checkbox
                     id="marketingConsent"
                     checked={Boolean(watchedStepFour?.marketingConsent)}
                     onCheckedChange={(checked) => setValue('stepFour.marketingConsent', Boolean(checked))}
+                    className="mt-0.5 h-5 w-5"
                   />
-                  <Utensils className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span>{t.marketingConsentShort}</span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 font-medium mb-1">
+                      <Utensils className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span>{t.marketingConsentShort}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {language === 'es' ? 'Recibe ofertas especiales y noticias sobre eventos' :
+                       language === 'en' ? 'Receive special offers and event news' :
+                       'Erhalten Sie Sonderangebote und Veranstaltungsnachrichten'}
+                    </p>
+                  </div>
                 </Label>
               </div>
 
@@ -730,11 +748,15 @@ export default function ContactAndConfirmStep({
         </Button>
       </div>
 
-      {/* Progress Indicator */}
+      {/* Progress Indicator - MÁS VISIBLE */}
       {!watchedStepFour?.dataProcessingConsent && (
-        <div className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
-          <Shield className="h-4 w-4" />
-          <span>Acepta la política de privacidad para continuar</span>
+        <div className="mt-4 flex items-center justify-center gap-2 text-sm md:text-base font-semibold text-destructive bg-destructive/10 border-2 border-destructive/30 p-4 rounded-lg animate-pulse">
+          <Shield className="h-5 w-5" />
+          <span>
+            {language === 'es' ? 'Debes aceptar la política de privacidad para continuar' :
+             language === 'en' ? 'You must accept the privacy policy to continue' :
+             'Sie müssen die Datenschutzrichtlinie akzeptieren, um fortzufahren'}
+          </span>
         </div>
       )}
     </div>
