@@ -323,7 +323,66 @@ function addDetailedReservations(
   const margin = 15
   const cardWidth = pageWidth - (margin * 2)
 
-  reservations.forEach((reservation, index) => {
+  // Group reservations by date for weekly exports
+  const groupedByDate: Map<string, EnhancedReservation[]> = new Map()
+  reservations.forEach(res => {
+    const dateKey = format(new Date(res.date), 'yyyy-MM-dd')
+    if (!groupedByDate.has(dateKey)) {
+      groupedByDate.set(dateKey, [])
+    }
+    groupedByDate.get(dateKey)!.push(res)
+  })
+
+  // Sort dates
+  const sortedDates = Array.from(groupedByDate.keys()).sort()
+
+  // Render by date groups (only for week exports)
+  if (options.dateRange === 'week' && sortedDates.length > 1) {
+    sortedDates.forEach((dateKey, dateIndex) => {
+      const dateReservations = groupedByDate.get(dateKey)!
+
+      // Add date separator for each day
+      if (currentY + 15 > pageHeight - 30) {
+        doc.addPage()
+        currentY = 15
+      }
+
+      doc.setFillColor(...ENIGMA_COLORS.primary)
+      doc.rect(margin, currentY, cardWidth, 8, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'bold')
+      const dateLabel = format(new Date(dateKey), "EEEE dd 'de' MMMM", { locale: es })
+      doc.text(dateLabel, margin + 5, currentY + 5.5)
+      doc.setFontSize(8)
+      doc.text(`${dateReservations.length} reservas`, cardWidth + margin - 5, currentY + 5.5, { align: 'right' })
+      currentY += 10
+
+      // Render reservations for this date
+      dateReservations.forEach((reservation, index) => {
+        let cardHeight = 35
+        if (reservation.occasion) cardHeight += 5
+        if (reservation.dietaryNotes) cardHeight += 8
+        if (reservation.specialRequests) cardHeight += 8
+        if (reservation.hasPreOrder && reservation.preOrderItems && reservation.preOrderItems.length > 0) {
+          cardHeight += 10 + (reservation.preOrderItems.length * 5)
+        }
+
+        if (currentY + cardHeight > pageHeight - 30) {
+          doc.addPage()
+          currentY = 15
+        }
+
+        drawReservationCard(doc, reservation, margin, currentY, cardWidth, cardHeight, options)
+        currentY += cardHeight + 5
+      })
+
+      // Add spacing between days
+      currentY += 3
+    })
+  } else {
+    // Single day export - original behavior
+    reservations.forEach((reservation, index) => {
     // Calculate card height dynamically
     let cardHeight = 35 // Base height
     if (reservation.occasion) cardHeight += 5
@@ -347,8 +406,9 @@ function addDetailedReservations(
     // Draw card
     drawReservationCard(doc, reservation, margin, currentY, cardWidth, cardHeight, options)
 
-    currentY += cardHeight + 5 // Card + spacing
-  })
+      currentY += cardHeight + 5 // Card + spacing
+    })
+  }
 
   // Footer on last page
   addFooter(doc, pageWidth, pageHeight)
@@ -378,11 +438,13 @@ function drawReservationCard(
   const statusLabel = STATUS_LABELS[reservation.status as keyof typeof STATUS_LABELS] || reservation.status
   doc.text(statusLabel, x + 15, y + 4, { align: 'center' })
 
-  // Time badge
+  // Date badge (showing full date for clarity)
   doc.setFillColor(...ENIGMA_COLORS.primary)
-  doc.rect(x + 35, y, 25, 6, 'F')
+  doc.rect(x + 35, y, 45, 6, 'F')
   doc.setTextColor(255, 255, 255)
-  doc.text(format(new Date(reservation.time), 'HH:mm'), x + 47.5, y + 4, { align: 'center' })
+  doc.setFontSize(7)
+  const dateTime = new Date(reservation.time)
+  doc.text(`${format(dateTime, 'dd/MM')} - ${format(dateTime, 'HH:mm')}`, x + 57.5, y + 4, { align: 'center' })
 
   // Main info
   doc.setTextColor(...ENIGMA_COLORS.text)
