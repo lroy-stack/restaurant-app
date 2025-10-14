@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
     // Detect if this is a public request (web form) or admin request
     const includePrivate = searchParams.get('includePrivate') === 'true'
 
+    // Use double quotes for camelCase columns in PostgreSQL
     let tablesQuery = `${SUPABASE_URL}/rest/v1/tables?select=*&isActive=eq.true`
 
     // Filter public tables for web form (exclude private/wildcard tables like S9, S10)
