@@ -320,27 +320,29 @@ export function FloorPlanSelector({
 
       {/* Floor Plan SVG */}
       <div
-        className="w-full flex items-center justify-center overflow-auto touch-pan-y border border-border rounded-lg bg-muted/30 p-4"
-        style={{ maxHeight: '500px', minHeight: '350px' }}
+        className="w-full border border-border rounded-lg bg-muted/30 overflow-hidden"
+        style={{ height: '450px', minHeight: '350px' }}
       >
         <div
-          className="flex items-center justify-center w-full h-full"
+          className="w-full h-full flex items-center justify-center"
           style={{
             transform: `scale(${scale})`,
             transformOrigin: 'center center',
-            transition: 'transform 0.2s ease-out'
+            transition: 'transform 0.2s ease-out',
+            WebkitTransform: `scale(${scale})`,
+            WebkitTransformOrigin: 'center center'
           }}
         >
           <svg
             viewBox={viewBox}
-            className="max-w-full max-h-full"
+            className="w-full h-full"
             style={{
-              width: 'auto',
-              height: 'auto',
-              maxWidth: '800px',
-              maxHeight: '450px'
+              maxWidth: '100%',
+              maxHeight: '100%',
+              display: 'block'
             }}
             preserveAspectRatio="xMidYMid meet"
+            xmlns="http://www.w3.org/2000/svg"
           >
             {/* Background */}
             <rect
