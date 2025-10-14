@@ -37,34 +37,23 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
     isDragging: false
   })
 
-  // ✅ RESPONSIVE: Detect mobile and adjust initial scale
-  const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768
-  const isTablet = typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth < 1024
+  // ✅ PROFESSIONAL GRID SYSTEM - Fixed virtual dimensions
+  const VIRTUAL_WIDTH = 1600
+  const VIRTUAL_HEIGHT = 1000
+  const PADDING = 50
 
-  // Calculate stage boundaries based on table positions
+  // Calculate stage boundaries based on virtual grid
   const stageBounds = React.useMemo(() => {
-    if (tables.length === 0) return { minX: 0, minY: 0, maxX: 800, maxY: 600 }
+    return {
+      minX: 0,
+      minY: 0,
+      maxX: VIRTUAL_WIDTH,
+      maxY: VIRTUAL_HEIGHT
+    }
+  }, [])
 
-    const positions = tables.map(table => ({
-      x: table.position.x,
-      y: table.position.y,
-      width: table.dimensions.width,
-      height: table.dimensions.height
-    }))
-
-    // ✅ MOBILE FIX: More padding on mobile for better spacing
-    const padding = isMobileDevice ? 100 : isTablet ? 80 : 50
-
-    const minX = Math.min(...positions.map(p => p.x)) - padding
-    const minY = Math.min(...positions.map(p => p.y)) - padding
-    const maxX = Math.max(...positions.map(p => p.x + p.width)) + padding
-    const maxY = Math.max(...positions.map(p => p.y + p.height)) + padding
-
-    return { minX, minY, maxX, maxY }
-  }, [tables, isMobileDevice, isTablet])
-
-  const contentWidth = stageBounds.maxX - stageBounds.minX
-  const contentHeight = stageBounds.maxY - stageBounds.minY
+  const contentWidth = VIRTUAL_WIDTH
+  const contentHeight = VIRTUAL_HEIGHT
 
   // Brave Shield detection - MUST run before any Konva rendering
   useEffect(() => {
@@ -141,7 +130,7 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
     }
   }, [onTableDragEnd])
 
-  // Zoom and pan functions
+  // ✅ PROFESSIONAL ZOOM: Calculate optimal scale to fit entire grid
   const fitToScreen = useCallback(() => {
     const stage = stageRef.current
     if (!stage) return
@@ -149,26 +138,16 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
     const containerWidth = dimensions.width
     const containerHeight = dimensions.height
 
-    const scaleX = containerWidth / contentWidth
-    const scaleY = containerHeight / contentHeight
+    // Calculate scale to fit the virtual grid maintaining aspect ratio
+    const scaleX = containerWidth / VIRTUAL_WIDTH
+    const scaleY = containerHeight / VIRTUAL_HEIGHT
 
-    // ✅ MOBILE FIX: Much more aggressive scaling for small screens to avoid crowding
-    let maxScale: number
-    if (isMobileDevice) {
-      // Mobile: Very small scale to give breathing room
-      maxScale = 0.7
-    } else if (isTablet) {
-      // Tablet: Medium scale
-      maxScale = 0.8
-    } else {
-      // Desktop: Normal scale
-      maxScale = 0.9
-    }
+    // Use smaller scale to ensure everything fits, with 95% factor for padding
+    const scale = Math.min(scaleX, scaleY) * 0.95
 
-    const scale = Math.min(scaleX, scaleY, 1) * maxScale
-
-    const centerX = (containerWidth - contentWidth * scale) / 2 - stageBounds.minX * scale
-    const centerY = (containerHeight - contentHeight * scale) / 2 - stageBounds.minY * scale
+    // Center the content
+    const centerX = (containerWidth - VIRTUAL_WIDTH * scale) / 2
+    const centerY = (containerHeight - VIRTUAL_HEIGHT * scale) / 2
 
     stage.scale({ x: scale, y: scale })
     stage.position({ x: centerX, y: centerY })
@@ -179,7 +158,7 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
       scale,
       position: { x: centerX, y: centerY }
     }))
-  }, [dimensions, stageBounds, isMobileDevice, isTablet, contentWidth, contentHeight])
+  }, [dimensions])
 
   const zoomIn = useCallback(() => {
     const stage = stageRef.current
