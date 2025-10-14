@@ -1,57 +1,15 @@
 "use client"
 
 import Link from "next/link"
-import { Phone, MapPin, Clock, Mail, Instagram, Facebook, Loader2, Check } from "lucide-react"
+import { Phone, MapPin, Mail, Instagram, Facebook } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { EnigmaLogo } from "@/components/ui/enigma-logo"
 import { WhatsAppIcon } from "@/components/ui/whatsapp-icon"
 import { useRestaurant } from "@/hooks/use-restaurant"
-import { useState } from "react"
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
   const { restaurant, loading } = useRestaurant()
-  const [email, setEmail] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
-  const [error, setError] = useState('')
-
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email || !email.includes('@')) return
-
-    setIsLoading(true)
-    setError('')
-
-    try {
-      const response = await fetch('/api/newsletter/subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          source: 'footer',
-          doubleOptIn: false
-        }),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        setIsSuccess(true)
-        setEmail('')
-        setTimeout(() => setIsSuccess(false), 3000)
-      } else {
-        setError(data.error || 'Error al suscribirse')
-      }
-    } catch (error) {
-      console.error('Newsletter subscription error:', error)
-      setError('Error de conexión. Inténtalo de nuevo.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   // Dynamic footer links with TripAdvisor from DB
   const footerLinks = {

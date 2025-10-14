@@ -206,7 +206,7 @@ export async function isRestaurantOpenOnDate(date: string): Promise<boolean> {
     const businessHours = await getBusinessHours()
     const selectedDate = new Date(date + 'T00:00:00')
     const dayOfWeek = selectedDate.getDay()
-    
+
     const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
     return dayHours ? dayHours.is_open : false
   } catch (error) {
@@ -214,6 +214,68 @@ export async function isRestaurantOpenOnDate(date: string): Promise<boolean> {
     // Conservative: Assume closed on Sunday
     const selectedDate = new Date(date + 'T00:00:00')
     return selectedDate.getDay() !== 0
+  }
+}
+
+/**
+ * Check if restaurant is open RIGHT NOW (CLIENT SIDE)
+ * Considers both lunch and dinner services
+ */
+export async function isRestaurantOpenNow(): Promise<boolean> {
+  try {
+    const businessHours = await getBusinessHours()
+    const now = new Date()
+    const dayOfWeek = now.getDay()
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+
+    const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
+
+    if (!dayHours) return false
+
+    // Helper to compare times (HH:MM format)
+    const timeToMinutes = (time: string): number => {
+      const [hours, minutes] = time.split(':').map(Number)
+      return hours * 60 + minutes
+    }
+
+    const currentMinutes = timeToMinutes(currentTime)
+
+    // Check dinner service
+    if (dayHours.is_open && dayHours.open_time && dayHours.close_time) {
+      const openMinutes = timeToMinutes(dayHours.open_time)
+      const closeMinutes = timeToMinutes(dayHours.close_time)
+
+      if (currentMinutes >= openMinutes && currentMinutes <= closeMinutes) {
+        return true
+      }
+    }
+
+    // Check lunch service (if enabled and fields exist)
+    const lunchEnabled = (dayHours as any).lunch_enabled
+    const lunchOpenTime = (dayHours as any).lunch_open_time
+    const lunchCloseTime = (dayHours as any).lunch_close_time
+
+    if (lunchEnabled && lunchOpenTime && lunchCloseTime) {
+      const lunchOpenMinutes = timeToMinutes(lunchOpenTime)
+      const lunchCloseMinutes = timeToMinutes(lunchCloseTime)
+
+      if (currentMinutes >= lunchOpenMinutes && currentMinutes <= lunchCloseMinutes) {
+        return true
+      }
+    }
+
+    return false
+  } catch (error) {
+    console.error('❌ [CLIENT] Error checking if open now:', error)
+    // Fallback: Simple time-based check (18:00-23:00)
+    const now = new Date()
+    const hour = now.getHours()
+    const dayOfWeek = now.getDay()
+
+    // Monday (1) closed
+    if (dayOfWeek === 1) return false
+
+    return hour >= 18 && hour < 23
   }
 }
 

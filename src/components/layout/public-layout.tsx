@@ -8,6 +8,7 @@ import { CartSidebar } from '@/components/cart/CartSidebar'
 import { CookieConsentBanner } from '@/components/legal/CookieConsentBanner'
 import { ThemeAwareMeshGradient } from '@/components/background/mesh-gradient-background'
 import { Footer } from './footer'
+import { NewsletterBanner } from './newsletter-banner'
 import { cn } from '@/lib/utils'
 import { CssCursorTrail } from '@/components/effects/CssCursorTrail'
 import { AnnouncementManager } from '@/components/announcements/AnnouncementManager'
@@ -53,7 +54,12 @@ export function PublicLayout({
         {children}
       </main>
 
-      {showFooter && <Footer />}
+      {showFooter && (
+        <>
+          <NewsletterBanner />
+          <Footer />
+        </>
+      )}
     </div>
   )
 }

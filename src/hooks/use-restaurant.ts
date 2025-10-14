@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { isRestaurantOpenNow as checkIsOpenNow } from '@/lib/business-hours-client'
 
 export interface RestaurantInfo {
   id: string
@@ -62,6 +63,7 @@ export function useRestaurant() {
   const [restaurant, setRestaurant] = useState<RestaurantInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isOpen, setIsOpen] = useState<boolean>(false)
 
   const fetchRestaurant = async () => {
     try {
@@ -179,11 +181,29 @@ export function useRestaurant() {
   }
 
   const isOpenNow = (): boolean => {
-    // Simple implementation - could be expanded with proper time checking
-    const now = new Date()
-    const hour = now.getHours()
-    return hour >= 18 && hour <= 24
+    return isOpen
   }
+
+  // Check if restaurant is open now (synced with DB)
+  useEffect(() => {
+    const checkOpenStatus = async () => {
+      try {
+        const openStatus = await checkIsOpenNow()
+        setIsOpen(openStatus)
+      } catch (error) {
+        console.error('Error checking open status:', error)
+        // Fallback to false
+        setIsOpen(false)
+      }
+    }
+
+    checkOpenStatus()
+
+    // Refresh status every minute
+    const interval = setInterval(checkOpenStatus, 60000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     fetchRestaurant()
