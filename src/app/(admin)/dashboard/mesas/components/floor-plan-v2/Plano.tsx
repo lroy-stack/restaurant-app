@@ -140,8 +140,8 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
     const scaleX = containerWidth / contentWidth
     const scaleY = containerHeight / contentHeight
 
-    // Use smaller scale to ensure everything fits, with 95% factor for padding
-    const scale = Math.min(scaleX, scaleY) * 0.95
+    // Use ALL available space - 98% factor for minimal padding
+    const scale = Math.min(scaleX, scaleY) * 0.98
 
     // Center the content
     const centerX = (containerWidth - contentWidth * scale) / 2

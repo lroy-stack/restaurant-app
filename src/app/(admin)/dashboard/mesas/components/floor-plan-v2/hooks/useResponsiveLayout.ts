@@ -92,8 +92,8 @@ export function useResponsiveLayout(
     }, {} as Record<string, VisualMesa[]>)
 
     const zoneOrder = ['TERRACE_CAMPANARI', 'SALA_PRINCIPAL', 'SALA_VIP']
-    const zonePadding = 80
-    const sidePadding = 40
+    const zonePadding = 40  // Reducido de 80 a 40
+    const sidePadding = 20  // Reducido de 40 a 20
     let currentY = zonePadding
 
     const transformedTables: VisualMesa[] = []
