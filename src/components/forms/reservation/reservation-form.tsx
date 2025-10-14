@@ -270,16 +270,20 @@ export function ReservationForm({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
 
-    if (!formData.customerName || !formData.customerEmail || !formData.customerPhone) {
+    // ✅ Email ahora opcional - solo validar nombre y teléfono
+    if (!formData.customerName || !formData.customerPhone) {
+      toast.error('Nombre y teléfono son obligatorios')
       return
     }
 
     if (!formData.date || !formData.time || !formData.partySize) {
+      toast.error('Fecha, hora y número de personas son obligatorios')
       return
     }
 
     // ✅ FIXED: Validar que se haya seleccionado al menos una mesa
     if (!formData.tableIds.length) {
+      toast.error('Debes seleccionar al menos una mesa')
       console.error('No se ha seleccionado ninguna mesa')
       return
     }
