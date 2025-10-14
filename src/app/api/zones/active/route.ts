@@ -30,9 +30,17 @@ const ZONE_METADATA = {
 // GET: Active zones only - 100% dynamic from database
 export async function GET(request: NextRequest) {
   try {
-    // Query ONLY public AND active tables from database (for web form)
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/tables?select=location&isActive=eq.true&is_public=eq.true`, 
+    // Detect if this is an admin request
+    const searchParams = new URL(request.url).searchParams
+    const includePrivate = searchParams.get('includePrivate') === 'true'
+
+    // Query active tables - filter by is_public for web, show all for admin
+    let query = `${SUPABASE_URL}/rest/v1/tables?select=location&isActive=eq.true`
+    if (!includePrivate) {
+      query += `&is_public=eq.true` // Web form: only public zones
+    }
+
+    const response = await fetch(query, 
       {
         headers: {
           'Accept': 'application/json',
