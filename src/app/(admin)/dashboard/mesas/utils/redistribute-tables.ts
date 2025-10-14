@@ -15,7 +15,7 @@ interface TablePosition {
   height: number
 }
 
-export async function redistributeTablesWithSpacing(spacingPx: number = 60) {
+export async function redistributeTablesWithSpacing(spacingPx: number = 100) {
   const supabase = await createServiceClient()
 
   // Get all active tables
@@ -59,13 +59,34 @@ export async function redistributeTablesWithSpacing(spacingPx: number = 60) {
       }
     })
 
-    // Redistribute each row with uniform spacing
+    // Redistribute each row with uniform spacing - ONLY IF NEEDED
     for (const row of rows) {
       // Sort tables by current X position
       row.sort((a, b) => Number(a.position_x || 0) - Number(b.position_x || 0))
 
-      // Calculate new positions with uniform spacing
-      let currentX = row[0].position_x // Start from first table's position
+      // Calculate current average spacing
+      let totalGaps = 0
+      let gapCount = 0
+      for (let i = 0; i < row.length - 1; i++) {
+        const currentTable = row[i]
+        const nextTable = row[i + 1]
+        const gap = Number(nextTable.position_x) - (Number(currentTable.position_x) + Number(currentTable.width))
+        totalGaps += gap
+        gapCount++
+      }
+      const avgGap = gapCount > 0 ? totalGaps / gapCount : 0
+
+      // ✅ ONLY redistribute if current spacing is LESS than desired
+      // This prevents collapsing wider spacing into narrower spacing
+      if (avgGap >= spacingPx) {
+        console.log(`Row already has ${avgGap}px spacing, skipping (desired: ${spacingPx}px)`)
+        continue
+      }
+
+      // ✅ Calculate new positions maintaining the FIRST table position
+      // and expanding outward
+      const firstX = Number(row[0].position_x)
+      let currentX = firstX
 
       for (let i = 0; i < row.length; i++) {
         const table = row[i]

@@ -15,7 +15,7 @@ import { redistributeTablesWithSpacing } from '@/app/(admin)/dashboard/mesas/uti
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { action = 'both', spacing = 60 } = body
+    const { action = 'both', spacing = 100 } = body
 
     const results: any = {
       success: true,
@@ -61,7 +61,7 @@ export async function GET() {
       method: 'POST',
       body: {
         action: 'resize | align | redistribute | both',
-        spacing: 'number (default: 60px)'
+        spacing: 'number (default: 100px)'
       }
     },
     actions: {

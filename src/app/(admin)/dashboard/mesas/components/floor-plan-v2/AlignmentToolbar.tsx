@@ -21,7 +21,7 @@ export function AlignmentToolbar({ onRefresh }: AlignmentToolbarProps) {
   const [isProcessing, setIsProcessing] = useState(false)
   const [lastResult, setLastResult] = useState<any>(null)
 
-  const executeFix = async (action: 'resize' | 'align' | 'redistribute' | 'both', spacing: number = 60) => {
+  const executeFix = async (action: 'resize' | 'align' | 'redistribute' | 'both', spacing: number = 100) => {
     setIsProcessing(true)
     setLastResult(null)
 
@@ -108,20 +108,20 @@ export function AlignmentToolbar({ onRefresh }: AlignmentToolbarProps) {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => executeFix('redistribute', 60)}
+            onClick={() => executeFix('redistribute', 100)}
             className="cursor-pointer"
           >
             <Grid3x3 className="h-4 w-4 mr-2" />
             <div className="flex-1">
-              <div className="font-medium">Redistribuir (60px)</div>
+              <div className="font-medium">Redistribuir (100px)</div>
               <div className="text-xs text-muted-foreground">
-                Espaciado uniforme entre mesas
+                Expande spacing si es menor a 100px
               </div>
             </div>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => executeFix('both', 60)}
+            onClick={() => executeFix('both', 100)}
             className="cursor-pointer"
           >
             <div className="flex-1">
