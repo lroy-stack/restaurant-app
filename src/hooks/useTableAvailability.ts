@@ -23,7 +23,8 @@ export function useTableAvailability(
   date: string,
   time: string,
   partySize: number,
-  zone?: string // 🆕 Add zone parameter for filtering
+  zone?: string, // 🆕 Add zone parameter for filtering
+  includePrivate: boolean = false // Admin context - include private tables
 ): UseTableAvailabilityResult {
   const [tables, setTables] = useState<Table[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -40,11 +41,16 @@ export function useTableAvailability(
 
     try {
       // 🚀 USE CENTRALIZED API: Clean API that returns individual available tables
-      console.log('🎯 [HOOK] Using centralized availability API for:', { date, time, partySize, zone })
-      const response = await fetch('/api/tables/availability', {
+      console.log('🎯 [HOOK] Using centralized availability API for:', { date, time, partySize, zone, includePrivate })
+
+      const params = new URLSearchParams({
+        includePrivate: includePrivate.toString()
+      })
+
+      const response = await fetch(`/api/tables/availability?${params}`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json' 
+        headers: {
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           date,
@@ -93,7 +99,7 @@ export function useTableAvailability(
 
   useEffect(() => {
     fetchAvailability()
-  }, [date, time, partySize, zone]) // 🚀 CRITICAL FIX: Include zone in dependencies
+  }, [date, time, partySize, zone, includePrivate]) // 🚀 CRITICAL FIX: Include all dependencies
 
   return { 
     tables, 
