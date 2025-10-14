@@ -130,7 +130,7 @@ export const stepThreeSchema = z.object({
   // Contact Information
   firstName: z.string().min(2),
   lastName: z.string().min(2),
-  email: z.string().email().refine(val => !val.includes('..'), "Email inválido"),
+  email: z.string().optional().refine(val => !val || val.length === 0 || z.string().email().safeParse(val).success, "Email inválido"),
   phone: z.string().min(1).regex(/^[+][1-9]\d{1,14}$/, "Formato: +código_país seguido de 8-14 dígitos"),
 
   // Special Requirements - Checkbox controlled
@@ -189,9 +189,9 @@ export const createProfessionalReservationSchema = (lang: Language = 'es', maxPa
         .min(1, messages.lastNameRequired)
         .min(2, messages.lastNameMinLength),
       email: z.string()
-        .min(1, messages.emailRequired)
-        .email(messages.emailInvalid)
-        .refine(val => !val.includes('..'), messages.emailInvalid),
+        .optional()
+        .refine(val => !val || val.length === 0 || z.string().email().safeParse(val).success, messages.emailInvalid)
+        .refine(val => !val || !val.includes('..'), messages.emailInvalid),
       phone: z.string()
         .min(1, messages.phoneRequired)
         .regex(/^[+][1-9]\d{1,14}$/, messages.phoneInvalid),

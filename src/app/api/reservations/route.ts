@@ -99,7 +99,7 @@ function createReservationSchema(maxPartySize: number) {
   return z.object({
     firstName: z.string().min(1),
     lastName: z.string().min(1),
-    email: z.string().email(),
+    email: z.string().optional().refine(val => !val || val.length === 0 || z.string().email().safeParse(val).success, "Email inválido si se proporciona"),
     phone: z.string().min(1),
     date: z.string(),
     time: z.string(),
@@ -381,10 +381,17 @@ export async function POST(request: NextRequest) {
     // Create/update customer
     console.log('🔄 Starting customer upsert process...')
 
+    // ✅ Generate placeholder email if not provided (for admin manual reservations)
+    const finalEmail = data.email && data.email.trim().length > 0
+      ? data.email
+      : `sinmail-${Date.now()}@enigmaconalma.local`
+
+    console.log('📧 Email handling:', data.email ? 'Real email provided' : `Generated placeholder: ${finalEmail}`)
+
     const customerData = {
       firstName: data.firstName,
       lastName: data.lastName,
-      email: data.email,
+      email: finalEmail,
       phone: data.phone,
       language: data.preferredLanguage,
       dataProcessingConsent: data.dataProcessingConsent,
@@ -425,7 +432,7 @@ export async function POST(request: NextRequest) {
     const reservationData = {
       id: `res_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`, // ✅ Generate ID
       customerName: `${data.firstName} ${data.lastName}`,
-      customerEmail: data.email,
+      customerEmail: finalEmail,
       customerPhone: data.phone,
       partySize: data.partySize,
       children_count: data.childrenCount || null, // ✅ FIX: Include children_count (snake_case for DB)
