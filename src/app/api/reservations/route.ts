@@ -378,49 +378,112 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ All tables available - no conflicts detected')
 
-    // Create/update customer
+    // Create/update customer with SMART IDENTIFICATION
     console.log('🔄 Starting customer upsert process...')
 
     // ✅ Generate placeholder email if not provided (for admin manual reservations)
-    const finalEmail = data.email && data.email.trim().length > 0
+    const hasRealEmail = data.email && data.email.trim().length > 0
+    const finalEmail = hasRealEmail
       ? data.email
       : `sinmail-${Date.now()}@enigmaconalma.local`
 
-    console.log('📧 Email handling:', data.email ? 'Real email provided' : `Generated placeholder: ${finalEmail}`)
+    console.log('📧 Email handling:', hasRealEmail ? 'Real email provided' : `Generated placeholder: ${finalEmail}`)
 
-    const customerData = {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: finalEmail,
-      phone: data.phone,
-      language: data.preferredLanguage,
-      dataProcessingConsent: data.dataProcessingConsent,
-      emailConsent: data.emailConsent,
-      marketingConsent: data.marketingConsent,
-      consentIpAddress: '::1', // Get from request headers in production
-      consentUserAgent: request.headers.get('user-agent') || 'unknown',
-      gdprPolicyVersion: 'v1.0',
-      consentMethod: 'web_form'
-    }
-
-    console.log('✅ EXTRACTED CUSTOMER DATA:', customerData)
-
-    const { data: customer, error: customerError } = await supabase
+    // 🎯 SMART LOOKUP: Find existing customer by phone first, then email
+    console.log('🔍 Smart lookup: Searching by phone first...')
+    const { data: existingByPhone } = await supabase
       .schema('restaurante')
       .from('customers')
-      .upsert(customerData, { onConflict: 'email' })
-      .select()
-      .single()
+      .select('*')
+      .eq('phone', data.phone)
+      .maybeSingle()
 
-    if (customerError || !customer) {
-      console.error('❌ Customer upsert failed:', customerError)
+    let customer = null
+
+    if (existingByPhone) {
+      console.log(`✅ Found existing customer by phone: ${existingByPhone.id}`)
+
+      // Update existing customer (merge data)
+      const updateData: any = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+        language: data.preferredLanguage,
+        dataProcessingConsent: data.dataProcessingConsent,
+        emailConsent: data.emailConsent,
+        marketingConsent: data.marketingConsent,
+      }
+
+      // 🎯 CRITICAL: Only update email if we have a REAL email (not placeholder)
+      if (hasRealEmail) {
+        console.log('📧 Upgrading placeholder email to real email:', finalEmail)
+        updateData.email = finalEmail
+      }
+
+      const { data: updated, error: updateError } = await supabase
+        .schema('restaurante')
+        .from('customers')
+        .update(updateData)
+        .eq('id', existingByPhone.id)
+        .select()
+        .single()
+
+      if (updateError) {
+        console.error('❌ Customer update failed:', updateError)
+        return NextResponse.json({
+          success: false,
+          error: 'Failed to update customer record'
+        }, { status: 500 })
+      }
+
+      customer = updated
+      console.log('✅ Customer updated successfully')
+    } else {
+      console.log('🆕 No existing customer found, creating new...')
+
+      const customerData = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: finalEmail,
+        phone: data.phone,
+        language: data.preferredLanguage,
+        dataProcessingConsent: data.dataProcessingConsent,
+        emailConsent: data.emailConsent,
+        marketingConsent: data.marketingConsent,
+        consentIpAddress: '::1',
+        consentUserAgent: request.headers.get('user-agent') || 'unknown',
+        gdprPolicyVersion: 'v1.0',
+        consentMethod: 'web_form'
+      }
+
+      const { data: created, error: createError } = await supabase
+        .schema('restaurante')
+        .from('customers')
+        .insert(customerData)
+        .select()
+        .single()
+
+      if (createError) {
+        console.error('❌ Customer creation failed:', createError)
+        return NextResponse.json({
+          success: false,
+          error: 'Failed to create customer record'
+        }, { status: 500 })
+      }
+
+      customer = created
+      console.log('✅ New customer created:', customer.id)
+    }
+
+    if (!customer) {
+      console.error('❌ Customer operation returned null')
       return NextResponse.json({
         success: false,
         error: 'Failed to create customer record'
       }, { status: 500 })
     }
 
-    console.log('✅ Customer upsert successful:', customer.id)
+    console.log('✅ Customer process completed:', customer.id)
 
     // Create reservation with table_ids array
     console.log('🆕 Creating reservation...')
