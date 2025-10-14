@@ -37,6 +37,10 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
     isDragging: false
   })
 
+  // ✅ RESPONSIVE: Detect mobile and adjust initial scale
+  const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768
+  const isTablet = typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth < 1024
+
   // Calculate stage boundaries based on table positions
   const stageBounds = React.useMemo(() => {
     if (tables.length === 0) return { minX: 0, minY: 0, maxX: 800, maxY: 600 }
@@ -48,16 +52,17 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
       height: table.dimensions.height
     }))
 
-    const minX = Math.min(...positions.map(p => p.x)) - 50
-    const minY = Math.min(...positions.map(p => p.y)) - 50
-    const maxX = Math.max(...positions.map(p => p.x + p.width)) + 50
-    const maxY = Math.max(...positions.map(p => p.y + p.height)) + 50
+    // ✅ MOBILE FIX: More padding on mobile for better spacing
+    const padding = isMobileDevice ? 100 : isTablet ? 80 : 50
+
+    const minX = Math.min(...positions.map(p => p.x)) - padding
+    const minY = Math.min(...positions.map(p => p.y)) - padding
+    const maxX = Math.max(...positions.map(p => p.x + p.width)) + padding
+    const maxY = Math.max(...positions.map(p => p.y + p.height)) + padding
 
     return { minX, minY, maxX, maxY }
-  }, [tables])
+  }, [tables, isMobileDevice, isTablet])
 
-  // ✅ RESPONSIVE: Detect mobile and adjust initial scale
-  const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768
   const contentWidth = stageBounds.maxX - stageBounds.minX
   const contentHeight = stageBounds.maxY - stageBounds.minY
 
@@ -147,8 +152,19 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
     const scaleX = containerWidth / contentWidth
     const scaleY = containerHeight / contentHeight
 
-    // ✅ MOBILE FIX: More aggressive scaling for small screens
-    const maxScale = isMobileDevice ? 0.85 : 0.9
+    // ✅ MOBILE FIX: Much more aggressive scaling for small screens to avoid crowding
+    let maxScale: number
+    if (isMobileDevice) {
+      // Mobile: Very small scale to give breathing room
+      maxScale = 0.7
+    } else if (isTablet) {
+      // Tablet: Medium scale
+      maxScale = 0.8
+    } else {
+      // Desktop: Normal scale
+      maxScale = 0.9
+    }
+
     const scale = Math.min(scaleX, scaleY, 1) * maxScale
 
     const centerX = (containerWidth - contentWidth * scale) / 2 - stageBounds.minX * scale
@@ -163,7 +179,7 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
       scale,
       position: { x: centerX, y: centerY }
     }))
-  }, [dimensions, stageBounds, isMobileDevice, contentWidth, contentHeight])
+  }, [dimensions, stageBounds, isMobileDevice, isTablet, contentWidth, contentHeight])
 
   const zoomIn = useCallback(() => {
     const stage = stageRef.current
