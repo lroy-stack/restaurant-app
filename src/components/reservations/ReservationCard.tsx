@@ -344,19 +344,17 @@ export function ReservationCard({
 
         {/* Quick Actions */}
         <div className="flex gap-2 pt-1">
-          {/* ✅ NUEVO: Botón Ver Detalle SIEMPRE visible en primer lugar */}
-          <Button
-            size="sm"
-            onClick={onViewDetails}
-            variant="outline"
-            className="h-9 w-9 p-0 flex-shrink-0"
-            title="Ver detalles de la reserva"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-
           {reservation.status === 'PENDING' && (
             <>
+              <Button
+                size="sm"
+                onClick={onViewDetails}
+                variant="outline"
+                className="h-9 text-sm px-3"
+              >
+                <Eye className="h-4 w-4 mr-1.5" />
+                Ver Detalle
+              </Button>
               <Sheet open={isQuickEditOpen} onOpenChange={setIsQuickEditOpen}>
                 <SheetTrigger asChild>
                   <Button
@@ -496,9 +494,10 @@ export function ReservationCard({
                 size="sm"
                 onClick={() => onStatusUpdate?.(reservation.id, 'CANCELLED')}
                 variant="outline"
-                className="h-9 w-9 p-0 border-red-300 text-red-700 hover:bg-red-50"
+                className="h-9 text-xs px-2 border-red-300 text-red-700 hover:bg-red-50"
               >
-                <XCircle className="h-4 w-4" />
+                <XCircle className="h-3.5 w-3.5 mr-1" />
+                Cancelar
               </Button>
               {reservation.customerPhone && (
                 <Button
@@ -518,6 +517,15 @@ export function ReservationCard({
             <>
               <Button
                 size="sm"
+                onClick={onViewDetails}
+                variant="outline"
+                className="h-9 text-sm px-3"
+              >
+                <Eye className="h-4 w-4 mr-1.5" />
+                Ver Detalle
+              </Button>
+              <Button
+                size="sm"
                 onClick={() => onStatusUpdate?.(reservation.id, 'SEATED')}
                 className="flex-1 h-9 text-sm bg-blue-600 hover:bg-blue-700"
               >
@@ -528,19 +536,10 @@ export function ReservationCard({
                 size="sm"
                 onClick={() => onStatusUpdate?.(reservation.id, 'NO_SHOW')}
                 variant="outline"
-                className="h-9 w-9 p-0 border-orange-300 text-orange-700 hover:bg-orange-50"
-                title="Marcar como No Show"
+                className="h-9 text-xs px-2 border-orange-300 text-orange-700 hover:bg-orange-50"
               >
-                <AlertCircle className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => onStatusUpdate?.(reservation.id, 'CANCELLED')}
-                variant="outline"
-                className="h-9 w-9 p-0 border-red-300 text-red-700 hover:bg-red-50"
-                title="Cancelar reserva"
-              >
-                <XCircle className="h-4 w-4" />
+                <AlertCircle className="h-3.5 w-3.5 mr-1" />
+                No Show
               </Button>
               {reservation.customerPhone && (
                 <Button
