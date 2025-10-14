@@ -968,7 +968,7 @@ export function CompactReservationList({
 
                                   {/* Special Requests - Texto completo */}
                                   {reservation.specialRequests && (
-                                    <div className="flex items-start gap-1 text-xs text-accent w-full">
+                                    <div className="flex items-start gap-1 text-xs text-amber-700 dark:text-amber-300 w-full">
                                       <MessageSquare className="h-3 w-3 flex-shrink-0 mt-0.5" />
                                       <span className="font-medium">{reservation.specialRequests}</span>
                                     </div>
