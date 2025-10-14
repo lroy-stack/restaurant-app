@@ -385,7 +385,7 @@ export async function POST(request: NextRequest) {
     const hasRealEmail = data.email && data.email.trim().length > 0
     const finalEmail = hasRealEmail
       ? data.email
-      : `sinmail@local`
+      : `${data.phone.replace(/[^0-9]/g, '')}@local` // Unique email based on phone
 
     console.log('📧 Email handling:', hasRealEmail ? 'Real email provided' : `Generated placeholder: ${finalEmail}`)
 
