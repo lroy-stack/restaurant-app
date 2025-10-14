@@ -48,13 +48,18 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
       height: table.dimensions.height
     }))
 
-    const minX = Math.min(...positions.map(p => p.x)) - 100
-    const minY = Math.min(...positions.map(p => p.y)) - 100
-    const maxX = Math.max(...positions.map(p => p.x + p.width)) + 100
-    const maxY = Math.max(...positions.map(p => p.y + p.height)) + 100
+    const minX = Math.min(...positions.map(p => p.x)) - 50
+    const minY = Math.min(...positions.map(p => p.y)) - 50
+    const maxX = Math.max(...positions.map(p => p.x + p.width)) + 50
+    const maxY = Math.max(...positions.map(p => p.y + p.height)) + 50
 
     return { minX, minY, maxX, maxY }
   }, [tables])
+
+  // ✅ RESPONSIVE: Detect mobile and adjust initial scale
+  const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768
+  const contentWidth = stageBounds.maxX - stageBounds.minX
+  const contentHeight = stageBounds.maxY - stageBounds.minY
 
   // Brave Shield detection - MUST run before any Konva rendering
   useEffect(() => {
@@ -138,12 +143,13 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
 
     const containerWidth = dimensions.width
     const containerHeight = dimensions.height
-    const contentWidth = stageBounds.maxX - stageBounds.minX
-    const contentHeight = stageBounds.maxY - stageBounds.minY
 
     const scaleX = containerWidth / contentWidth
     const scaleY = containerHeight / contentHeight
-    const scale = Math.min(scaleX, scaleY, 1) * 0.9 // 90% of available space
+
+    // ✅ MOBILE FIX: More aggressive scaling for small screens
+    const maxScale = isMobileDevice ? 0.85 : 0.9
+    const scale = Math.min(scaleX, scaleY, 1) * maxScale
 
     const centerX = (containerWidth - contentWidth * scale) / 2 - stageBounds.minX * scale
     const centerY = (containerHeight - contentHeight * scale) / 2 - stageBounds.minY * scale
@@ -157,7 +163,7 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
       scale,
       position: { x: centerX, y: centerY }
     }))
-  }, [dimensions, stageBounds])
+  }, [dimensions, stageBounds, isMobileDevice, contentWidth, contentHeight])
 
   const zoomIn = useCallback(() => {
     const stage = stageRef.current
@@ -298,7 +304,7 @@ const Plano = forwardRef<PlanoMethods, PlanoProps>(({
             Error del navegador detectado
           </div>
           <div className="text-sm text-muted-foreground max-w-md">
-            {konvaError.includes('Brave shield') ? (
+            {konvaError && konvaError.includes('Brave shield') ? (
               <>
                 <p className="mb-2">Brave Shield está bloqueando la visualización.</p>
                 <p className="mb-2">Para solucionarlo:</p>

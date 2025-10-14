@@ -43,10 +43,13 @@ export const useFloorPlan = (): UseFloorPlanReturn => {
     }))
   }, [tables])
 
-  // FILTER: Zone-based visibility with performance optimization
+  // FILTER: Zone-based visibility with performance optimization + HIDE INACTIVE TABLES
   const visibleTables = useMemo(() => {
-    if (selectedZone === 'all') return visualTables
-    return visualTables.filter(table => table.location === selectedZone)
+    // ✅ CRITICAL FIX: Filter out inactive tables (blocked rooms)
+    const activeTables = visualTables.filter(table => table.isActive)
+
+    if (selectedZone === 'all') return activeTables
+    return activeTables.filter(table => table.location === selectedZone)
   }, [visualTables, selectedZone])
 
   // STATS: Calculate zone statistics for toolbar
