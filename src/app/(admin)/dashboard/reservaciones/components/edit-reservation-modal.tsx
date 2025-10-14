@@ -576,12 +576,12 @@ export function EditReservationModal({ isOpen, onClose, reservation, onSave }: E
       const reservationDate = formatDateForInput(reservation.date)
       const reservationTime = formatTimeForInput(reservation.time)
 
-      // Initialize preOrderItems from existing reservation items
-      const initialPreOrderItems: PreOrderItem[] = reservation.reservation_items.map(item => ({
+      // Initialize preOrderItems from existing reservation items (with safety check)
+      const initialPreOrderItems: PreOrderItem[] = reservation.reservation_items?.map(item => ({
         menuItemId: item.menu_items.id,
         quantity: item.quantity,
-        notes: item.notes
-      }))
+        notes: item.notes || ''
+      })) || []
       setPreOrderItems(initialPreOrderItems)
 
       // 🔧 MULTI-TABLE SUPPORT: Initialize with tableIds array (backward compatibility)
