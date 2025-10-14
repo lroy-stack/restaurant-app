@@ -525,7 +525,7 @@ export function EditReservationModal({ isOpen, onClose, reservation, onSave }: E
   const loadActiveZones = async () => {
     setLoadingZones(true)
     try {
-      const response = await fetch('/api/zones/active', {
+      const response = await fetch('/api/zones/active?includePrivate=true', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
