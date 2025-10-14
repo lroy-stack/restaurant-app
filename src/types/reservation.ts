@@ -71,6 +71,7 @@ export interface Table {
   location: TableLocation
   qrCode: string
   isActive: boolean
+  is_public?: boolean // Controls visibility in public web form (default: true)
   restaurantId: string
   createdAt: string | Date
   updatedAt: string | Date

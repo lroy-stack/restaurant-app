@@ -57,7 +57,19 @@ export async function POST(request: NextRequest) {
     console.log(`🔍 [TABLES_AVAILABILITY] Request:`, { date, time, partySize, duration, tableZone })
 
     // 1. Get all active tables
+    // Detect if this is a public request (web form) or admin request
+    const includePrivate = searchParams.get('includePrivate') === 'true'
+
     let tablesQuery = `${SUPABASE_URL}/rest/v1/tables?select=*&isActive=eq.true`
+
+    // Filter public tables for web form (exclude private/wildcard tables like S9, S10)
+    if (!includePrivate) {
+      tablesQuery += `&is_public=eq.true`
+      console.log(`🌐 [PUBLIC REQUEST] Filtering only public tables`)
+    } else {
+      console.log(`🔐 [ADMIN REQUEST] Including private/wildcard tables`)
+    }
+
     if (tableZone) {
       tablesQuery += `&location=eq.${tableZone}`
     }

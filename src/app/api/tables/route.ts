@@ -82,7 +82,8 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       currentStatus: 'available',
-      isActive: tableData.isActive ?? true
+      isActive: tableData.isActive ?? true,
+      is_public: tableData.is_public ?? true // Default: visible in public web form
     }
     
     const response = await fetch(

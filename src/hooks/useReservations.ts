@@ -67,15 +67,21 @@ export const useReservations = () => {
   const checkAvailability = async (
     dateTime: string,
     partySize: number,
-    preferredLocation?: string
+    preferredLocation?: string,
+    includePrivate: boolean = false // Admin can see private/wildcard tables (S9, S10)
   ): Promise<AvailabilityData | null> => {
     setIsCheckingAvailability(true)
-    
+
     try {
       const [date, time] = dateTime.split('T')
       const timeOnly = time?.slice(0, 5) || '19:00'
-      
-      const response = await fetch('/api/tables/availability', {
+
+      // Build query params
+      const params = new URLSearchParams({
+        includePrivate: includePrivate.toString()
+      })
+
+      const response = await fetch(`/api/tables/availability?${params}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -208,7 +208,8 @@ export function ReservationForm({
         parseInt(minute)
       )).toISOString()
 
-      const result = await checkAvailability(dateTime, partySize, formData.preferredLocation)
+      // Admin can see private/wildcard tables (S9, S10) for flexible table management
+      const result = await checkAvailability(dateTime, partySize, formData.preferredLocation, true)
 
       if (result) {
         setAvailability(result)

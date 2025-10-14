@@ -27,7 +27,9 @@ import {
   Loader2,
   AlertTriangle,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Eye,
+  EyeOff
 } from 'lucide-react'
 
 // REAL Enigma location options
@@ -62,6 +64,7 @@ interface TableFormData {
   capacity: number
   location: string
   isActive: boolean
+  is_public: boolean // Controls visibility in public web form
 }
 
 // Table configuration card component
@@ -252,7 +255,8 @@ function TableFormDialog({
     number: table?.number || '',
     capacity: table?.capacity || 2,
     location: table?.location || 'TERRACE_CAMPANARI',
-    isActive: table?.isActive ?? true
+    isActive: table?.isActive ?? true,
+    is_public: table?.is_public ?? true
   })
   const [isSaving, setIsSaving] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -263,14 +267,16 @@ function TableFormDialog({
         number: table.number,
         capacity: table.capacity,
         location: table.location,
-        isActive: table.isActive
+        isActive: table.isActive,
+        is_public: table.is_public ?? true
       })
     } else {
       setFormData({
         number: '',
         capacity: 2,
         location: 'TERRACE_CAMPANARI',
-        isActive: true
+        isActive: true,
+        is_public: true
       })
     }
     setErrors({})
@@ -390,25 +396,58 @@ function TableFormDialog({
           </div>
 
           {/* Active Status */}
-          <div className="flex items-center space-x-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setFormData(prev => ({ ...prev, isActive: !prev.isActive }))}
-              className="flex items-center gap-2"
-            >
-              {formData.isActive ? (
-                <>
-                  <ToggleRight className="w-4 h-4 text-[#9FB289]" />
-                  Mesa Activa
-                </>
-              ) : (
-                <>
-                  <ToggleLeft className="w-4 h-4 text-muted-foreground" />
-                  Mesa Inactiva
-                </>
-              )}
-            </Button>
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Estado de la Mesa</Label>
+            <div className="flex flex-col gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setFormData(prev => ({ ...prev, isActive: !prev.isActive }))}
+                className="flex items-center gap-2 justify-start"
+              >
+                {formData.isActive ? (
+                  <>
+                    <ToggleRight className="w-4 h-4 text-[#9FB289]" />
+                    Mesa Activa (Uso Interno)
+                  </>
+                ) : (
+                  <>
+                    <ToggleLeft className="w-4 h-4 text-muted-foreground" />
+                    Mesa Inactiva (Temporalmente Cerrada)
+                  </>
+                )}
+              </Button>
+
+              {/* Public Visibility Toggle - Only available when table is active */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setFormData(prev => ({ ...prev, is_public: !prev.is_public }))}
+                className="flex items-center gap-2 justify-start"
+                disabled={!formData.isActive}
+              >
+                {formData.is_public ? (
+                  <>
+                    <Eye className="w-4 h-4 text-blue-600" />
+                    Visible en Web Pública
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="w-4 h-4 text-amber-600" />
+                    Solo Personal (Mesa Comodín)
+                  </>
+                )}
+              </Button>
+
+              {/* Help text */}
+              <p className="text-xs text-muted-foreground">
+                {!formData.isActive
+                  ? "Mesa temporalmente cerrada (no disponible para nadie)"
+                  : formData.is_public
+                    ? "Esta mesa aparece en el formulario web público"
+                    : "Esta mesa solo es visible para el personal (ideal para mesas comodín como S9, S10)"}
+              </p>
+            </div>
           </div>
 
           {/* QR Code Preview */}

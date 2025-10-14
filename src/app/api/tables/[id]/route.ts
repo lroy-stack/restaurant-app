@@ -8,6 +8,7 @@ interface TableUpdateData {
   capacity?: number
   location?: string
   isActive?: boolean
+  is_public?: boolean // Controls visibility in public web form
   currentStatus?: 'available' | 'reserved' | 'occupied' | 'maintenance'
   statusNotes?: string | null
   estimatedFreeTime?: string | null
