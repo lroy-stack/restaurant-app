@@ -146,11 +146,14 @@ export function QuickStats({ reservations, previousPeriodData }: QuickStatsProps
   today.setHours(0, 0, 0, 0)
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
-  
-  const todayReservations = reservations.filter(r => {
+
+  const todayReservationsList = reservations.filter(r => {
     const reservationDate = new Date(r.date)
     return reservationDate >= today && reservationDate < tomorrow
-  }).length
+  })
+
+  const todayReservations = todayReservationsList.length
+  const todayGuests = todayReservationsList.reduce((sum, r) => sum + r.partySize, 0)
   
   // Calculate rates
   const confirmationRate = totalReservations > 0 
@@ -216,7 +219,7 @@ export function QuickStats({ reservations, previousPeriodData }: QuickStatsProps
         title="Hoy"
         value={todayReservations}
         icon={Calendar}
-        trend={todayReservations > 0 ? { value: 0, label: `${totalGuests} comensales` } : undefined}
+        trend={todayReservations > 0 ? { value: 0, label: `${todayGuests} comensales` } : undefined}
         color={todayReservations > 0 ? "blue" : "default"}
         badge={todayReservations > 10 ? "ALTO" : undefined}
       />
