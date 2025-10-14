@@ -336,7 +336,7 @@ export function ReservationForm({
                 type="email"
                 value={formData.customerEmail}
                 onChange={(e) => setFormData(prev => ({...prev, customerEmail: e.target.value}))}
-                placeholder="email@ejemplo.com *Opcional"
+                placeholder="email@ejemplo.com"
                 className="h-9"
               />
             </div>
