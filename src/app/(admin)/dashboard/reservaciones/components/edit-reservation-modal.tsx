@@ -480,8 +480,9 @@ export function EditReservationModal({ isOpen, onClose, reservation, onSave }: E
   } = useTableAvailability(
     watchedDate || '',
     watchedTime || '',
-    watchedPartySize || 1
-    // 🚀 NO ZONE PARAMETER: Show ALL available tables for admin flexibility
+    watchedPartySize || 1,
+    undefined, // 🚀 NO ZONE PARAMETER: Show ALL available tables for admin flexibility
+    true // Admin context - include private tables (S9, S10, S10-B)
   )
 
   // Load menu items function
