@@ -282,41 +282,57 @@ export function useRealtimeReservations(filters: RealtimeFilters = {}): UseRealt
 
             switch (eventType) {
               case 'INSERT':
-                const newReservation = data.new as Reservation
-                setReservations(prev => [newReservation, ...prev])
-                setSummary(prev => ({
-                  total: (prev?.total || 0) + 1,
-                  pending: (prev?.pending || 0) + (newReservation.status === 'PENDING' ? 1 : 0),
-                  confirmed: (prev?.confirmed || 0) + (newReservation.status === 'CONFIRMED' ? 1 : 0),
-                  completed: prev?.completed || 0,
-                  cancelled: prev?.cancelled || 0,
-                  totalGuests: (prev?.totalGuests || 0) + (newReservation.partySize || 0)
-                }))
+                // Fetch completo con JOINs (reservation_items + tables)
+                fetch(`/api/reservations/${data.new.id}`)
+                  .then(res => res.json())
+                  .then(result => {
+                    if (result.success && result.reservation) {
+                      const newReservation = result.reservation as Reservation
+                      setReservations(prev => [newReservation, ...prev])
+                      setSummary(prev => ({
+                        total: (prev?.total || 0) + 1,
+                        pending: (prev?.pending || 0) + (newReservation.status === 'PENDING' ? 1 : 0),
+                        confirmed: (prev?.confirmed || 0) + (newReservation.status === 'CONFIRMED' ? 1 : 0),
+                        completed: prev?.completed || 0,
+                        cancelled: prev?.cancelled || 0,
+                        totalGuests: (prev?.totalGuests || 0) + (newReservation.partySize || 0)
+                      }))
 
-                // ✅ Notificar nueva reserva con audio
-                notifyNewReservation(newReservation as any)
+                      // ✅ Notificar nueva reserva con audio
+                      notifyNewReservation(newReservation as any)
+                    }
+                  })
+                  .catch(err => console.error('Error fetching new reservation:', err))
                 break
 
               case 'UPDATE':
-                const updatedReservation = data.new as Reservation
-                const oldReservation = data.old as Reservation
+                // Fetch completo con JOINs (reservation_items + tables)
+                fetch(`/api/reservations/${data.new.id}`)
+                  .then(res => res.json())
+                  .then(result => {
+                    if (result.success && result.reservation) {
+                      const updatedReservation = result.reservation as Reservation
+                      const oldReservation = data.old as Reservation
 
-                setReservations(prev =>
-                  prev.map(reservation =>
-                    reservation.id === updatedReservation.id
-                      ? { ...reservation, ...updatedReservation }
-                      : reservation
-                  )
-                )
+                      setReservations(prev =>
+                        prev.map(reservation =>
+                          reservation.id === updatedReservation.id
+                            ? updatedReservation
+                            : reservation
+                        )
+                      )
 
-                // ✅ Notificar cambios importantes
-                if (oldReservation && oldReservation.status !== updatedReservation.status) {
-                  if (updatedReservation.status === 'CANCELLED') {
-                    notifyCancelReservation(updatedReservation as any)
-                  } else {
-                    notifyUpdateReservation(updatedReservation as any)
-                  }
-                }
+                      // ✅ Notificar cambios importantes
+                      if (oldReservation && oldReservation.status !== updatedReservation.status) {
+                        if (updatedReservation.status === 'CANCELLED') {
+                          notifyCancelReservation(updatedReservation as any)
+                        } else {
+                          notifyUpdateReservation(updatedReservation as any)
+                        }
+                      }
+                    }
+                  })
+                  .catch(err => console.error('Error fetching updated reservation:', err))
                 break
 
               case 'DELETE':
