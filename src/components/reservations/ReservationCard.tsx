@@ -13,6 +13,16 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   CalendarDays,
   Clock,
   Users,
@@ -199,6 +209,7 @@ export function ReservationCard({
   const [isQuickEditOpen, setIsQuickEditOpen] = useState(false)
   const [editedTime, setEditedTime] = useState('')
   const [editedTableIds, setEditedTableIds] = useState<string[]>([])
+  const [showCompleteDialog, setShowCompleteDialog] = useState(false)
 
   const statusStyle = statusStyles[reservation.status]
   const urgencyBadge = getUrgencyBadge(reservation, bufferMinutes)
@@ -518,7 +529,7 @@ export function ReservationCard({
             <>
               <Button
                 size="sm"
-                onClick={() => onStatusUpdate?.(reservation.id, 'COMPLETED')}
+                onClick={() => setShowCompleteDialog(true)}
                 className="flex-1 h-9 text-sm bg-gray-600 hover:bg-gray-700"
               >
                 <CheckCircle className="h-4 w-4 mr-1.5" />
@@ -551,6 +562,48 @@ export function ReservationCard({
           )}
         </div>
       </CardContent>
+
+      {/* Complete Reservation Dialog - Pregunta email de reseña */}
+      <AlertDialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Completar Reserva</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 pt-2">
+                <div className="text-sm">
+                  ¿Deseas enviar un email solicitando una reseña al cliente?
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Cliente: {reservation.customerName} ({reservation.customerEmail})
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
+            <AlertDialogCancel onClick={() => setShowCompleteDialog(false)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                onStatusUpdate?.(reservation.id, 'COMPLETED', { sendReviewEmail: false })
+                setShowCompleteDialog(false)
+              }}
+              className="bg-gray-600 hover:bg-gray-700"
+            >
+              Completar sin Email
+            </AlertDialogAction>
+            <AlertDialogAction
+              onClick={() => {
+                onStatusUpdate?.(reservation.id, 'COMPLETED', { sendReviewEmail: true })
+                setShowCompleteDialog(false)
+              }}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Completar y Enviar Email
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   )
 }
