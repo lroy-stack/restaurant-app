@@ -500,120 +500,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ✅ CRITICAL: Generate reservation token using real system API
-    let reservationToken = null
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.headers.get('x-forwarded-proto') || 'http'}://${request.headers.get('host') || 'localhost:3000'}`
-      const tokenResponse = await fetch(`${baseUrl}/api/reservations/token/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reservationId: reservation.id,
-          customerEmail: data.email
-        })
-      })
-
-      if (tokenResponse.ok) {
-        const tokenResult = await tokenResponse.json()
-        reservationToken = tokenResult.token
-        console.log('✅ Token generated via real API:', tokenResult.token?.substring(0, 8) + '...')
-      } else {
-        console.error('⚠️ Token generation failed (non-critical):', await tokenResponse.text())
-      }
-    } catch (tokenError) {
-      console.error('⚠️ Token generation error (non-critical):', tokenError)
-    }
-
-    // ✅ FIXED: Send confirmation email using implemented email service
-    // 🎯 Send different email based on reservation status
-    try {
-      const { emailService } = await import('@/lib/email/emailService')
-
-      // Choose email method based on status
-      const emailMethod = body.source === 'admin'
-        ? emailService.sendReservationConfirmed.bind(emailService)  // Admin: "Reserva confirmada"
-        : emailService.sendReservationConfirmation.bind(emailService) // Public: "Nueva reserva recibida"
-
-      console.log(`📧 Sending ${body.source === 'admin' ? 'CONFIRMED' : 'CONFIRMATION'} email to ${data.email}`)
-
-      const emailResult = await emailMethod({
-        reservationId: reservation.id,
-        customerEmail: data.email,
-        customerName: `${data.firstName} ${data.lastName}`,
-        reservationDate: new Date(reservationDateTime).toLocaleDateString('es-ES', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        }),
-        reservationTime: new Date(reservationDateTime).toLocaleTimeString('es-ES', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false
-        }),
-        partySize: data.partySize,
-        tableNumber: tables.map(t => t.number).join(', '),
-        tableLocation: tables[0]?.location || 'Por asignar',
-        specialRequests: data.specialRequests || '',
-        preOrderItems: data.preOrderItems || [],
-        preOrderTotal: data.preOrderTotal || 0,
-        tokenUrl: reservationToken ? buildTokenUrl(reservationToken) : undefined
-      })
-      console.log('📧 Email confirmation result:', emailResult)
-    } catch (emailError) {
-      console.error('⚠️ Email sending failed (non-critical):', emailError)
-    }
-
-    // 🆕 NEW: Send notification to restaurant ONLY for web reservations
-    if (body.source === 'web' || !body.source) {
-      try {
-        // Import emailService for restaurant notification
-        const { emailService } = await import('@/lib/email/emailService')
-
-        // Get restaurant mailing email from DB
-        const { data: restaurantData } = await supabase
-          .schema('restaurante')
-          .from('restaurants')
-          .select('mailing')
-          .eq('id', 'rest_enigma_001')
-          .single()
-
-        const restaurantEmail = restaurantData?.mailing || 'abraldes80@gmail.com'
-
-        console.log(`📧 Enviando notificación al restaurante: ${restaurantEmail}`)
-
-        const notificationResult = await emailService.sendRestaurantNotification({
-          reservationId: reservation.id,
-          customerName: `${data.firstName} ${data.lastName}`,
-          customerEmail: data.email,
-          customerPhone: data.phone,
-          reservationDate: new Date(reservationDateTime).toLocaleDateString('es-ES', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          }),
-          reservationTime: new Date(reservationDateTime).toLocaleTimeString('es-ES', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-          }),
-          partySize: data.partySize,
-          childrenCount: data.childrenCount,
-          tableNumbers: tables.map(t => t.number).join(', '),
-          tableLocation: tables[0]?.location || 'Por asignar',
-          specialRequests: data.specialRequests,
-          preOrderItems: data.preOrderItems,
-          restaurantEmail: restaurantEmail
-        })
-
-        console.log('📧 Notificación restaurante result:', notificationResult)
-      } catch (notificationError) {
-        console.error('⚠️ Restaurant notification failed (non-critical):', notificationError)
-      }
-    }
-
-    return NextResponse.json({
+    // ⚡ RESPUESTA INMEDIATA - No bloquear cliente
+    const response = NextResponse.json({
       success: true,
       reservation: {
         id: reservation.id,
@@ -624,9 +512,120 @@ export async function POST(request: NextRequest) {
         tables: validatedTableNames,
         status: reservation.status
       },
-      token: reservationToken, // ✅ CRITICAL: Token for client modifications
       message: 'Reserva creada exitosamente'
     }, { status: 201 })
+
+    // 🚀 BACKGROUND: Token + Emails (mantiene TODA la lógica original)
+    setImmediate(async () => {
+      try {
+        // ✅ Token generation
+        let reservationToken = null
+        try {
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.headers.get('x-forwarded-proto') || 'http'}://${request.headers.get('host') || 'localhost:3000'}`
+          const tokenResponse = await fetch(`${baseUrl}/api/reservations/token/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              reservationId: reservation.id,
+              customerEmail: data.email
+            })
+          })
+
+          if (tokenResponse.ok) {
+            const tokenResult = await tokenResponse.json()
+            reservationToken = tokenResult.token
+            console.log('✅ Token generated (background):', tokenResult.token?.substring(0, 8) + '...')
+          }
+        } catch (tokenError) {
+          console.error('⚠️ Token generation error:', tokenError)
+        }
+
+        // ✅ Customer email
+        try {
+          const { emailService } = await import('@/lib/email/emailService')
+          const emailMethod = body.source === 'admin'
+            ? emailService.sendReservationConfirmed.bind(emailService)
+            : emailService.sendReservationConfirmation.bind(emailService)
+
+          console.log(`📧 Sending ${body.source === 'admin' ? 'CONFIRMED' : 'CONFIRMATION'} email (background)`)
+
+          await emailMethod({
+            reservationId: reservation.id,
+            customerEmail: data.email,
+            customerName: `${data.firstName} ${data.lastName}`,
+            reservationDate: new Date(reservationDateTime).toLocaleDateString('es-ES', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }),
+            reservationTime: new Date(reservationDateTime).toLocaleTimeString('es-ES', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+            }),
+            partySize: data.partySize,
+            tableNumber: tables.map(t => t.number).join(', '),
+            tableLocation: tables[0]?.location || 'Por asignar',
+            specialRequests: data.specialRequests || '',
+            preOrderItems: data.preOrderItems || [],
+            preOrderTotal: data.preOrderTotal || 0,
+            tokenUrl: reservationToken ? buildTokenUrl(reservationToken) : undefined
+          })
+          console.log('✅ Customer email sent (background)')
+        } catch (emailError) {
+          console.error('⚠️ Customer email error:', emailError)
+        }
+
+        // ✅ Restaurant notification
+        if (body.source === 'web' || !body.source) {
+          try {
+            const { emailService } = await import('@/lib/email/emailService')
+            const { data: restaurantData } = await supabase
+              .schema('restaurante')
+              .from('restaurants')
+              .select('mailing')
+              .eq('id', 'rest_enigma_001')
+              .single()
+
+            const restaurantEmail = restaurantData?.mailing || 'abraldes80@gmail.com'
+            console.log(`📧 Sending restaurant notification (background): ${restaurantEmail}`)
+
+            await emailService.sendRestaurantNotification({
+              reservationId: reservation.id,
+              customerName: `${data.firstName} ${data.lastName}`,
+              customerEmail: data.email,
+              customerPhone: data.phone,
+              reservationDate: new Date(reservationDateTime).toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              }),
+              reservationTime: new Date(reservationDateTime).toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+              }),
+              partySize: data.partySize,
+              childrenCount: data.childrenCount,
+              tableNumbers: tables.map(t => t.number).join(', '),
+              tableLocation: tables[0]?.location || 'Por asignar',
+              specialRequests: data.specialRequests,
+              preOrderItems: data.preOrderItems,
+              restaurantEmail: restaurantEmail
+            })
+            console.log('✅ Restaurant notification sent (background)')
+          } catch (notificationError) {
+            console.error('⚠️ Restaurant notification error:', notificationError)
+          }
+        }
+      } catch (error) {
+        console.error('⚠️ Background tasks error:', error)
+      }
+    })
+
+    return response
 
   } catch (error) {
     console.error('Error creating reservation:', error)

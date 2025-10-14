@@ -269,103 +269,127 @@ export async function PATCH(
 
     console.log('✅ Reservation status updated:', reservationId, 'to', status)
 
-    // 🔐 Generate new token if modification email was sent (customer modification)
-    if (sendModificationEmail && status === 'PENDING' && updatedReservation) {
+    // ⚡ RESPUESTA INMEDIATA
+    const response = NextResponse.json({
+      success: true,
+      reservation: updatedReservation,
+      message: preOrderItems ? 'Reservation and pre-order items updated successfully' : 'Reservation status updated successfully'
+    })
+
+    // 🚀 BACKGROUND: Emails + Tokens (mantiene TODA la lógica)
+    setImmediate(async () => {
       try {
-        console.log('🔐 Generating new token for modified reservation:', reservationId)
-
-        // 🗑️ FIRST: DELETE all old tokens for this reservation (SECURITY BEST PRACTICE)
-        console.log('🗑️ Deleting old tokens for reservation:', reservationId)
-        const deleteOldTokensResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/reservation_tokens?reservation_id=eq.${reservationId}`,
-          {
-            method: 'DELETE',
-            headers: {
-              'Accept': 'application/json',
-              'Accept-Profile': 'restaurante',
-              'Content-Profile': 'restaurante',
-              'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-              'apikey': SUPABASE_SERVICE_KEY,
-            }
-          }
-        )
-
-        if (deleteOldTokensResponse.ok) {
-          console.log('✅ Old tokens DELETED - PUFF, NO EXISTEN')
-        } else {
-          console.warn('⚠️ Could not delete old tokens, continuing...')
-        }
-
-        // Generate unique NEW token
-        const crypto = require('crypto')
-        const token = `rt_${crypto.randomUUID().replace(/-/g, '')}`
-
-        // Calculate expiration (2 hours before reservation time)
-        const reservationDateTime = new Date(updatedReservation.time)
-        const expirationDateTime = new Date(reservationDateTime.getTime() - (2 * 60 * 60 * 1000)) // 2 hours before
-
-        // Create new token in database
-        const tokenData = {
-          id: `rt_${crypto.randomUUID()}`,
-          reservation_id: reservationId,
-          token: token,
-          customer_email: updatedReservation.customerEmail,
-          expires: expirationDateTime.toISOString(),
-          created_at: new Date().toISOString(),
-          is_active: true,
-          purpose: 'reservation_management'
-        }
-
-        const createTokenResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/reservation_tokens`,
-          {
-            method: 'POST',
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              'Accept-Profile': 'restaurante',
-              'Content-Profile': 'restaurante',
-              'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-              'apikey': SUPABASE_SERVICE_KEY,
-              'Prefer': 'return=minimal'
-            },
-            body: JSON.stringify(tokenData)
-          }
-        )
-
-        if (createTokenResponse.ok) {
-          console.log('✅ New token generated for modified reservation:', token.substring(0, 8) + '...', 'expires:', expirationDateTime.toISOString())
-
-          // Update the email with the new token URL
+        // ✅ Confirmation email
+        if (status === 'CONFIRMED') {
           try {
-            console.log('📧 Re-sending modification email with new token...')
             const emailData = await emailService.buildEmailDataFromReservation(reservationId)
             if (emailData) {
-              // Add the new token URL
-              const updatedEmailData = {
-                ...emailData,
-                tokenUrl: buildTokenUrl(token)
-              }
+              await emailService.sendReservationConfirmed(emailData)
+              console.log('✅ Confirmation email sent (background)')
+            }
+          } catch (err) {
+            console.error('⚠️ Confirmation email error:', err)
+          }
+        }
 
-              const emailResult = await emailService.sendReservationModified(updatedEmailData)
-              if (emailResult === 'ok') {
-                console.log('✅ Email de modificación con nuevo token enviado exitosamente')
+        // ✅ Cancellation email
+        if (status === 'CANCELLED') {
+          try {
+            const emailData = await emailService.buildEmailDataFromReservation(reservationId)
+            if (emailData) {
+              await emailService.sendCancellation({
+                ...emailData,
+                cancellationReason: notes || 'Sin especificar',
+                restaurantMessage: restaurantMessage || undefined
+              })
+              console.log('✅ Cancellation email sent (background)')
+            }
+          } catch (err) {
+            console.error('⚠️ Cancellation email error:', err)
+          }
+        }
+
+        // ✅ Review email
+        if (status === 'COMPLETED' && sendReviewEmail === true) {
+          try {
+            const emailData = await emailService.buildEmailDataFromReservation(reservationId)
+            if (emailData) {
+              await emailService.sendReviewRequest(emailData)
+              console.log('✅ Review email sent (background)')
+            }
+          } catch (err) {
+            console.error('⚠️ Review email error:', err)
+          }
+        }
+
+        // ✅ Token + modification email
+        if (sendModificationEmail && status === 'PENDING' && updatedReservation) {
+          try {
+            const deleteOldTokensResponse = await fetch(
+              `${SUPABASE_URL}/rest/v1/reservation_tokens?reservation_id=eq.${reservationId}`,
+              {
+                method: 'DELETE',
+                headers: {
+                  'Accept': 'application/json',
+                  'Accept-Profile': 'restaurante',
+                  'Content-Profile': 'restaurante',
+                  'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+                  'apikey': SUPABASE_SERVICE_KEY,
+                }
+              }
+            )
+
+            const crypto = require('crypto')
+            const token = `rt_${crypto.randomUUID().replace(/-/g, '')}`
+            const reservationDateTime = new Date(updatedReservation.time)
+            const expirationDateTime = new Date(reservationDateTime.getTime() - (2 * 60 * 60 * 1000))
+
+            const createTokenResponse = await fetch(
+              `${SUPABASE_URL}/rest/v1/reservation_tokens`,
+              {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json',
+                  'Accept-Profile': 'restaurante',
+                  'Content-Profile': 'restaurante',
+                  'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+                  'apikey': SUPABASE_SERVICE_KEY,
+                  'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify({
+                  id: `rt_${crypto.randomUUID()}`,
+                  reservation_id: reservationId,
+                  token: token,
+                  customer_email: updatedReservation.customerEmail,
+                  expires: expirationDateTime.toISOString(),
+                  created_at: new Date().toISOString(),
+                  is_active: true,
+                  purpose: 'reservation_management'
+                })
+              }
+            )
+
+            if (createTokenResponse.ok) {
+              const emailData = await emailService.buildEmailDataFromReservation(reservationId)
+              if (emailData) {
+                await emailService.sendReservationModified({
+                  ...emailData,
+                  tokenUrl: buildTokenUrl(token)
+                })
+                console.log('✅ Modification email sent (background)')
               }
             }
-          } catch (emailError) {
-            console.error('❌ Error sending email with new token:', emailError)
+          } catch (err) {
+            console.error('⚠️ Token/modification email error:', err)
           }
-        } else {
-          console.error('❌ Failed to create new token for modified reservation')
-          // Continue execution - this is not critical for the modification to succeed
         }
-      } catch (tokenError) {
-        console.error('❌ Error generating new token for modified reservation:', tokenError)
-        // Continue execution - this is not critical for the modification to succeed
+      } catch (error) {
+        console.error('⚠️ Background tasks error:', error)
       }
-    }
+    })
 
-    // 🍽️ Handle pre-order items updates if provided
+    // 🍽️ Handle pre-order items updates if provided (SÍNCRONO - debe completar antes de responder)
     if (preOrderItems && Array.isArray(preOrderItems)) {
       try {
         console.log('🔄 Processing pre-order items update...')
@@ -463,11 +487,7 @@ export async function PATCH(
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      reservation: updatedReservation,
-      message: preOrderItems ? 'Reservation and pre-order items updated successfully' : 'Reservation status updated successfully'
-    })
+    return response
 
   } catch (error) {
     console.error('❌ Error updating reservation status:', error)
