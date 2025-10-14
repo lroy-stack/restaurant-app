@@ -10,11 +10,12 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { fixTableDimensions, alignTablePositions } from '@/app/(admin)/dashboard/mesas/utils/fix-table-dimensions'
+import { redistributeTablesWithSpacing } from '@/app/(admin)/dashboard/mesas/utils/redistribute-tables'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { action = 'both' } = body
+    const { action = 'both', spacing = 60 } = body
 
     const results: any = {
       success: true,
@@ -30,6 +31,11 @@ export async function POST(request: NextRequest) {
     if (action === 'align' || action === 'both') {
       const alignResult = await alignTablePositions()
       results.align = alignResult
+    }
+
+    if (action === 'redistribute' || action === 'both') {
+      const redistributeResult = await redistributeTablesWithSpacing(spacing)
+      results.redistribute = redistributeResult
     }
 
     return NextResponse.json(results, { status: 200 })
@@ -54,13 +60,15 @@ export async function GET() {
     usage: {
       method: 'POST',
       body: {
-        action: 'resize | align | both'
+        action: 'resize | align | redistribute | both',
+        spacing: 'number (default: 60px)'
       }
     },
     actions: {
       resize: 'Auto-resize tables based on capacity (2pax=80x80, 4pax=120x80, 6pax+=160x80)',
-      align: 'Align tables to 10px grid horizontally',
-      both: 'Perform both resize and align operations'
+      align: 'Align tables to 10px grid horizontally and vertically',
+      redistribute: 'Redistribute tables in rows with uniform spacing',
+      both: 'Perform all operations: resize + align + redistribute'
     }
   })
 }

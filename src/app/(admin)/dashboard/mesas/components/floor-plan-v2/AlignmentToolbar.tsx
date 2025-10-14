@@ -21,7 +21,7 @@ export function AlignmentToolbar({ onRefresh }: AlignmentToolbarProps) {
   const [isProcessing, setIsProcessing] = useState(false)
   const [lastResult, setLastResult] = useState<any>(null)
 
-  const executeFix = async (action: 'resize' | 'align' | 'both') => {
+  const executeFix = async (action: 'resize' | 'align' | 'redistribute' | 'both', spacing: number = 60) => {
     setIsProcessing(true)
     setLastResult(null)
 
@@ -31,7 +31,7 @@ export function AlignmentToolbar({ onRefresh }: AlignmentToolbarProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ action })
+        body: JSON.stringify({ action, spacing })
       })
 
       const result = await response.json()
@@ -108,13 +108,26 @@ export function AlignmentToolbar({ onRefresh }: AlignmentToolbarProps) {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => executeFix('both')}
+            onClick={() => executeFix('redistribute', 60)}
+            className="cursor-pointer"
+          >
+            <Grid3x3 className="h-4 w-4 mr-2" />
+            <div className="flex-1">
+              <div className="font-medium">Redistribuir (60px)</div>
+              <div className="text-xs text-muted-foreground">
+                Espaciado uniforme entre mesas
+              </div>
+            </div>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => executeFix('both', 60)}
             className="cursor-pointer"
           >
             <div className="flex-1">
-              <div className="font-medium">Ambas Operaciones</div>
+              <div className="font-medium">Todas las Operaciones</div>
               <div className="text-xs text-muted-foreground">
-                Redimensionar + Alinear
+                Redimensionar + Alinear + Redistribuir
               </div>
             </div>
           </DropdownMenuItem>
@@ -129,7 +142,7 @@ export function AlignmentToolbar({ onRefresh }: AlignmentToolbarProps) {
         >
           {lastResult.success ? (
             <>
-              ✓ {lastResult.resize?.updated || 0} redim. + {lastResult.align?.aligned || 0} alineadas
+              ✓ {lastResult.resize?.updated || 0} redim. + {lastResult.align?.aligned || 0} alin. + {lastResult.redistribute?.redistributed || 0} redist.
             </>
           ) : (
             <>✗ Error</>
