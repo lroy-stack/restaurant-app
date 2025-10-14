@@ -560,6 +560,15 @@ export function ReservationCard({
             <>
               <Button
                 size="sm"
+                onClick={onViewDetails}
+                variant="outline"
+                className="h-9 text-sm px-3"
+              >
+                <Eye className="h-4 w-4 mr-1.5" />
+                Ver Detalle
+              </Button>
+              <Button
+                size="sm"
                 onClick={() => setShowCompleteDialog(true)}
                 className="flex-1 h-9 text-sm bg-gray-600 hover:bg-gray-700"
               >
