@@ -5,23 +5,15 @@ import { z } from 'zod'
 export const dynamic = 'force-dynamic'
 
 const updateCustomerSchema = z.object({
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  email: z.string().email().or(z.literal('')).optional(),
+  email: z.string().optional(),
   phone: z.string().optional(),
+  dateOfBirth: z.string().optional(),
   language: z.string().optional(),
-  dateOfBirth: z.string().or(z.literal('')).optional(),
-  preferredTime: z.string().or(z.literal('')).optional(),
-  preferredLocation: z.string().or(z.literal('')).optional(),
+  preferredTime: z.string().optional(),
+  preferredLocation: z.string().optional(),
   dietaryRestrictions: z.array(z.string()).optional(),
-  allergies: z.string().optional(),
-  favoriteDisheIds: z.array(z.string()).optional(),
-  isVip: z.boolean().optional(),
-  emailConsent: z.boolean().optional(),
-  smsConsent: z.boolean().optional(),
-  marketingConsent: z.boolean().optional(),
-  dataProcessingConsent: z.boolean().optional()
-})
+  allergies: z.string().optional()
+}).passthrough()
 
 // GET specific customer
 export async function GET(
