@@ -477,29 +477,36 @@ function drawReservationCard(
 
   let detailY = y + 28
 
-  // Occasion
+  // Occasion (sin emojis para mejor compatibilidad)
   if (reservation.occasion) {
+    doc.setFillColor(255, 245, 230) // Light orange background
+    doc.rect(x + 2, detailY - 3, width - 4, 6, 'F')
     doc.setTextColor(...ENIGMA_COLORS.accent)
     doc.setFontSize(8)
     doc.setFont('helvetica', 'bold')
-    doc.text('🎉 Ocasión Especial: ', x + 5, detailY)
-    doc.setFont('helvetica', 'normal')
-    doc.text(reservation.occasion, x + 35, detailY)
-    detailY += 5
-  }
-
-  // Dietary notes (DESTACADO)
-  if (reservation.dietaryNotes) {
-    doc.setFillColor(255, 243, 205) // Light yellow background
-    doc.rect(x + 2, detailY - 3, width - 4, 6, 'F')
-    doc.setTextColor(...ENIGMA_COLORS.danger)
-    doc.setFontSize(8)
-    doc.setFont('helvetica', 'bold')
-    doc.text('⚠ ALERGIAS/DIETA: ', x + 5, detailY)
+    doc.text('OCASION ESPECIAL:', x + 5, detailY)
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(...ENIGMA_COLORS.text)
-    doc.text(reservation.dietaryNotes, x + 35, detailY)
+    doc.text(reservation.occasion, x + 42, detailY)
     detailY += 8
+  }
+
+  // Dietary notes (DESTACADO con mejor contraste)
+  if (reservation.dietaryNotes) {
+    doc.setFillColor(255, 243, 205) // Light yellow background
+    doc.rect(x + 2, detailY - 3, width - 4, 7, 'F')
+    doc.setDrawColor(...ENIGMA_COLORS.warning)
+    doc.setLineWidth(0.5)
+    doc.rect(x + 2, detailY - 3, width - 4, 7, 'S')
+    doc.setTextColor(...ENIGMA_COLORS.danger)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.text('ALERGIAS/DIETA:', x + 5, detailY)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8)
+    doc.setTextColor(...ENIGMA_COLORS.text)
+    doc.text(reservation.dietaryNotes, x + 42, detailY)
+    detailY += 10
   }
 
   // Special requests
@@ -511,37 +518,62 @@ function drawReservationCard(
     detailY += 8
   }
 
-  // Pre-order section
+  // Pre-order section (con mejor diseño y contraste)
   if (reservation.hasPreOrder && reservation.preOrderItems && reservation.preOrderItems.length > 0) {
-    doc.setDrawColor(...ENIGMA_COLORS.secondary)
-    doc.setLineWidth(0.2)
-    doc.line(x + 5, detailY, x + width - 5, detailY)
-    detailY += 4
+    // Header bar para pre-pedido
+    doc.setFillColor(232, 245, 233) // Light green background
+    doc.rect(x + 2, detailY, width - 4, 7, 'F')
+    doc.setDrawColor(...ENIGMA_COLORS.success)
+    doc.setLineWidth(0.5)
+    doc.rect(x + 2, detailY, width - 4, 7, 'S')
 
     doc.setTextColor(...ENIGMA_COLORS.success)
-    doc.setFontSize(8)
+    doc.setFontSize(9)
     doc.setFont('helvetica', 'bold')
-    doc.text('PRE-PEDIDO:', x + 5, detailY)
-    detailY += 5
+    doc.text('PRE-PEDIDO', x + 5, detailY + 4.5)
 
-    doc.setFont('helvetica', 'normal')
-    doc.setTextColor(...ENIGMA_COLORS.text)
+    // Item count
     doc.setFontSize(7)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`(${reservation.preOrderItems.length} items)`, x + 30, detailY + 4.5)
+    detailY += 9
+
+    // Items list with alternating background
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8)
 
     let total = 0
-    reservation.preOrderItems.forEach(item => {
+    reservation.preOrderItems.forEach((item, idx) => {
+      // Alternating row background
+      if (idx % 2 === 0) {
+        doc.setFillColor(248, 250, 252)
+        doc.rect(x + 4, detailY - 2, width - 8, 4.5, 'F')
+      }
+
       const itemTotal = item.quantity * item.menuItem.price
       total += itemTotal
       const itemName = item.menuItem.nameEn || item.menuItem.name
-      doc.text(`${item.quantity}x ${itemName}`, x + 8, detailY)
-      doc.text(`€${itemTotal.toFixed(2)}`, x + width - 20, detailY, { align: 'right' })
-      detailY += 4
+
+      doc.setTextColor(...ENIGMA_COLORS.text)
+      doc.setFont('helvetica', 'bold')
+      doc.text(`${item.quantity}x`, x + 6, detailY)
+      doc.setFont('helvetica', 'normal')
+      doc.text(itemName, x + 12, detailY)
+
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(...ENIGMA_COLORS.success)
+      doc.text(`${itemTotal.toFixed(2)} EUR`, x + width - 8, detailY, { align: 'right' })
+      detailY += 5
     })
 
-    // Total
+    // Total row with highlight
+    doc.setFillColor(...ENIGMA_COLORS.success)
+    doc.rect(x + 2, detailY - 2, width - 4, 6, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(9)
     doc.setFont('helvetica', 'bold')
-    doc.text('TOTAL PRE-PEDIDO:', x + 8, detailY)
-    doc.text(`€${total.toFixed(2)}`, x + width - 20, detailY, { align: 'right' })
+    doc.text('TOTAL PRE-PEDIDO:', x + 5, detailY + 1.5)
+    doc.text(`${total.toFixed(2)} EUR`, x + width - 8, detailY + 1.5, { align: 'right' })
   }
 }
 
