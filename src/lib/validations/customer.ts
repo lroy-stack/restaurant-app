@@ -56,7 +56,7 @@ export const updateCustomerSchema = z.object({
   firstName: z.string().min(1, 'Nombre es requerido').max(50).optional(),
   lastName: z.string().min(1, 'Apellido es requerido').max(50).optional(),
   email: z.string().email('Email inválido').nullable().optional(),
-  phone: z.string().regex(/^(\+34|0034|34)?[6|7|8|9][0-9]{0-9]{8}$/, 'Teléfono español inválido').nullable().optional(),
+  phone: z.string().regex(/^(\+34|0034|34)?[6|7|8|9][0-9]{8}$/, 'Teléfono español inválido').nullable().optional(),
   language: z.string().optional(),
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha debe ser YYYY-MM-DD').nullable().optional(),
   preferredTime: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Hora debe ser HH:MM').nullable().optional(),

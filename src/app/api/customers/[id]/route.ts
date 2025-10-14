@@ -1,19 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/utils/supabase/server'
-import { z } from 'zod'
+import { updateCustomerSchema } from '@/lib/validations/customer'
 
 export const dynamic = 'force-dynamic'
-
-const updateCustomerSchema = z.object({
-  email: z.string().optional(),
-  phone: z.string().optional(),
-  dateOfBirth: z.string().optional(),
-  language: z.string().optional(),
-  preferredTime: z.string().optional(),
-  preferredLocation: z.string().optional(),
-  dietaryRestrictions: z.array(z.string()).optional(),
-  allergies: z.string().optional()
-}).passthrough()
 
 // GET specific customer
 export async function GET(
@@ -83,12 +72,29 @@ export async function PATCH(
 ) {
   try {
     const body = await request.json()
-    console.log('🔍 PATCH body:', body)
-    const data = updateCustomerSchema.parse(body)
-    console.log('✅ Validation passed')
+    console.log('🔍 PATCH /api/customers/[id] received body:', JSON.stringify(body, null, 2))
+
+    // Validate with proper schema from lib/validations/customer.ts
+    const validationResult = updateCustomerSchema.safeParse(body)
+
+    if (!validationResult.success) {
+      console.error('❌ Validation failed:', validationResult.error.format())
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid data',
+          details: validationResult.error.errors
+        },
+        { status: 400 }
+      )
+    }
+
+    const data = validationResult.data
+    console.log('✅ Validation passed:', JSON.stringify(data, null, 2))
 
     const supabase = await createServiceClient()
 
+    // Update customer with validated data
     const { data: updatedCustomer, error } = await supabase
       .from('customers')
       .update({
@@ -100,10 +106,10 @@ export async function PATCH(
       .single()
 
     if (error) {
-      console.error('Update customer error:', error)
+      console.error('❌ Supabase update error:', error)
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Failed to update customer',
           details: error.message
         },
@@ -111,6 +117,7 @@ export async function PATCH(
       )
     }
 
+    console.log('✅ Customer updated successfully:', updatedCustomer.id)
     return NextResponse.json({
       success: true,
       customer: updatedCustomer,
@@ -118,13 +125,7 @@ export async function PATCH(
     })
 
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid data', details: error.errors },
-        { status: 400 }
-      )
-    }
-
+    console.error('❌ Unexpected error in PATCH /api/customers/[id]:', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
