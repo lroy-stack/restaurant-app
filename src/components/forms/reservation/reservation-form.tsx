@@ -329,12 +329,14 @@ export function ReservationForm({
           {/* Contact Fields - Responsive */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
+              <label className="text-sm font-medium">
+                Email <span className="text-muted-foreground text-xs">(opcional)</span>
+              </label>
               <Input
                 type="email"
                 value={formData.customerEmail}
                 onChange={(e) => setFormData(prev => ({...prev, customerEmail: e.target.value}))}
-                required
+                placeholder="email@ejemplo.com *Opcional"
                 className="h-9"
               />
             </div>
@@ -344,6 +346,7 @@ export function ReservationForm({
                 type="tel"
                 value={formData.customerPhone}
                 onChange={(e) => setFormData(prev => ({...prev, customerPhone: e.target.value}))}
+                placeholder="+34 600 123 456"
                 required
                 className="h-9"
               />
