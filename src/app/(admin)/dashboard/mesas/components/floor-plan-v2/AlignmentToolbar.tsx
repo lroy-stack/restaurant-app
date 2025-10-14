@@ -37,11 +37,11 @@ export function AlignmentToolbar({ onRefresh }: AlignmentToolbarProps) {
       const result = await response.json()
       setLastResult(result)
 
-      if (result.success && onRefresh) {
-        // Refresh floor plan after 1 second
+      if (result.success) {
+        // Force full page reload to clear any caches
         setTimeout(() => {
-          onRefresh()
-        }, 1000)
+          window.location.reload()
+        }, 1500)
       }
     } catch (error) {
       console.error('Error executing fix:', error)
