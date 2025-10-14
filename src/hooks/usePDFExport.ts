@@ -195,8 +195,26 @@ export function usePDFExport() {
                        options.dateRange === 'tomorrow' ? 'mañana' : 'semana'
       const filename = `enigma-reservas-${rangeStr}-${dateStr}.pdf`
 
-      // Save PDF
-      doc.save(filename)
+      // Open print dialog instead of direct download
+      doc.autoPrint() // Mark PDF to auto-print when opened
+      const pdfBlob = doc.output('blob')
+      const pdfUrl = URL.createObjectURL(pdfBlob)
+
+      // Open in new window which will trigger print dialog
+      const printWindow = window.open(pdfUrl, '_blank')
+
+      if (!printWindow) {
+        // Fallback: if popup blocked, download instead
+        doc.save(filename)
+        return {
+          success: true,
+          filename,
+          error: 'Popup bloqueado - PDF descargado. Habilita popups para imprimir directamente.'
+        }
+      }
+
+      // Clean up URL after a delay
+      setTimeout(() => URL.revokeObjectURL(pdfUrl), 60000)
 
       return {
         success: true,

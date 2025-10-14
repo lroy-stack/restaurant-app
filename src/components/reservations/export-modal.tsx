@@ -93,7 +93,12 @@ export function ExportModal({ isOpen, onClose, reservations, totalCount }: Expor
     const result = await generatePDF(reservations, options)
 
     if (result.success) {
-      toast.success(`PDF exportado: ${result.filename}`)
+      if (result.error) {
+        // Popup bloqueado, se descargó en su lugar
+        toast.warning(result.error)
+      } else {
+        toast.success('PDF abierto para imprimir')
+      }
       onClose()
     } else {
       toast.error(result.error || 'Error al generar PDF')
@@ -115,9 +120,12 @@ export function ExportModal({ isOpen, onClose, reservations, totalCount }: Expor
             Exportar Reservas
           </DialogTitle>
           <DialogDescription>
-            Genera un PDF con la lista de reservas para imprimir o compartir.
+            Abre el PDF en una nueva ventana lista para imprimir.
             <span className="block mt-1 text-xs text-muted-foreground">
               Total disponible: {totalCount} reservas
+            </span>
+            <span className="block mt-1 text-xs text-amber-600">
+              💡 El PDF se abrirá con la ventana de impresión automáticamente
             </span>
           </DialogDescription>
         </DialogHeader>
@@ -250,7 +258,7 @@ export function ExportModal({ isOpen, onClose, reservations, totalCount }: Expor
             ) : (
               <>
                 <Download className="w-4 h-4 mr-2" />
-                Exportar PDF
+                Abrir e Imprimir
               </>
             )}
           </Button>
