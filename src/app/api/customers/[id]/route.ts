@@ -124,8 +124,6 @@ export async function PATCH(
     })
 
   } catch (error) {
-    console.error('PATCH customer error:', error)
-    
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Invalid data', details: error.errors },
@@ -134,7 +132,7 @@ export async function PATCH(
     }
 
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

@@ -88,35 +88,17 @@ export function CustomerContactNew({
       const response = await fetch(`/api/customers/${customer.id}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(changedFields)
-      })
-
-      console.log('RESPONSE DEBUG:', {
-        ok: response.ok,
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
-        url: response.url
       })
 
       if (response.ok) {
         setIsEditing(false)
         toast.success('Información actualizada correctamente')
-        // Refresh page to show updated data
         window.location.reload()
       } else {
-        const errorText = await response.text()
-        console.error('Update error:', {
-          status: response.status,
-          statusText: response.statusText,
-          body: errorText,
-          changedFields
-        })
-        toast.error(`Error al actualizar cliente (${response.status})`)
+        toast.error('Error al actualizar cliente')
       }
     } catch (error) {
       console.error('Save error:', error)
