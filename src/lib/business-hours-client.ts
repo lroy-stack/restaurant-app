@@ -58,14 +58,16 @@ export async function getBusinessHours(): Promise<BusinessHours[]> {
  */
 export async function getAvailableTimeSlots(
   date: string,
-  currentDateTime: Date = new Date()
+  currentDateTime: Date = new Date(),
+  skipAdvanceCheck: boolean = false // Pass through admin override
 ): Promise<TimeSlot[]> {
-  
+
   try {
     const params = new URLSearchParams({
       action: 'slots',
       date,
-      currentDateTime: currentDateTime.toISOString()
+      currentDateTime: currentDateTime.toISOString(),
+      ...(skipAdvanceCheck && { skipAdvanceCheck: 'true' })
     })
 
     const response = await fetch(`/api/business-hours?${params}`, {

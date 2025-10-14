@@ -68,7 +68,8 @@ export async function GET(request: NextRequest) {
         // Get available time slots for date
         const date = searchParams.get('date')
         const currentDateTimeParam = searchParams.get('currentDateTime')
-        
+        const skipAdvanceCheck = searchParams.get('skipAdvanceCheck') === 'true' // Admin override
+
         if (!date) {
           return NextResponse.json({
             success: false,
@@ -90,11 +91,11 @@ export async function GET(request: NextRequest) {
           }, { status: 400 })
         }
 
-        const currentDateTime = currentDateTimeParam 
-          ? new Date(currentDateTimeParam) 
+        const currentDateTime = currentDateTimeParam
+          ? new Date(currentDateTimeParam)
           : new Date()
 
-        const slots = await getAvailableTimeSlots(date, currentDateTime)
+        const slots = await getAvailableTimeSlots(date, currentDateTime, skipAdvanceCheck)
 
         return NextResponse.json({
           success: true,

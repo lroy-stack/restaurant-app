@@ -138,7 +138,8 @@ function getDefaultBusinessHours(): BusinessHours[] {
  */
 export async function getAvailableTimeSlots(
   date: string,
-  currentDateTime: Date = new Date()
+  currentDateTime: Date = new Date(),
+  skipAdvanceCheck: boolean = false // Admin override for immediate reservations
 ): Promise<TimeSlot[]> {
 
   const businessHours = await getBusinessHours()
@@ -162,7 +163,7 @@ export async function getAvailableTimeSlots(
       openTime: dayHours.lunch_open_time!,
       lastReservationTime: dayHours.lunch_last_reservation_time!,
       slotDuration: dayHours.slot_duration_minutes || 15,
-      advanceMinutes: dayHours.lunch_advance_booking_minutes || 30,
+      advanceMinutes: skipAdvanceCheck ? 0 : (dayHours.lunch_advance_booking_minutes || 30),
       shiftType: 'lunch',
       date,
       currentDateTime
@@ -176,7 +177,7 @@ export async function getAvailableTimeSlots(
       openTime: dayHours.open_time,
       lastReservationTime: dayHours.last_reservation_time,
       slotDuration: dayHours.slot_duration_minutes || 15,
-      advanceMinutes: dayHours.advance_booking_minutes || 30,
+      advanceMinutes: skipAdvanceCheck ? 0 : (dayHours.advance_booking_minutes || 30),
       shiftType: 'dinner',
       date,
       currentDateTime
