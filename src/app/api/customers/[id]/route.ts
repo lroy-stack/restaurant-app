@@ -13,6 +13,7 @@ export async function GET(
     const supabase = await createServiceClient()
 
     const { data: customer, error } = await supabase
+      .schema('restaurante')
       .from('customers')
       .select('*')
       .eq('id', (await params).id)
@@ -27,6 +28,7 @@ export async function GET(
 
     // Get customer's reservations
     const { data: reservations } = await supabase
+      .schema('restaurante')
       .from('reservations')
       .select('*')
       .eq('customerEmail', customer.email)
@@ -96,6 +98,7 @@ export async function PATCH(
 
     // Update customer with validated data
     const { data: updatedCustomer, error } = await supabase
+      .schema('restaurante')
       .from('customers')
       .update({
         ...data,
