@@ -514,9 +514,9 @@ export async function GET(
       )
     }
 
-    // Get reservation using direct fetch
+    // Get reservation using direct fetch with FULL JOINs (reservation_items + menu_items)
     const getResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/reservations?select=id,customerName,customerEmail,customerPhone,partySize,children_count,date,time,status,specialRequests,hasPreOrder,tableId,table_ids,createdAt,updatedAt&id=eq.${reservationId}`,
+      `${SUPABASE_URL}/rest/v1/reservations?select=id,customerName,customerEmail,customerPhone,partySize,children_count,date,time,status,specialRequests,hasPreOrder,tableId,table_ids,createdAt,updatedAt,reservation_items(id,quantity,notes,menu_items(id,name,price,menu_categories(name,type)))&id=eq.${reservationId}`,
       {
         method: 'GET',
         headers: {
@@ -579,7 +579,7 @@ export async function GET(
         if (tablesResponse.ok) {
           const tablesData = await tablesResponse.json()
           reservation.allTables = tablesData
-          reservation.tables = tablesData[0] || null // Single table for backward compatibility
+          reservation.tables = tablesData // ✅ FIX: Array of tables for realtime updates
         } else {
           reservation.allTables = []
           reservation.tables = null
