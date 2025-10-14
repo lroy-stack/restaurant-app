@@ -502,6 +502,7 @@ export async function POST(request: NextRequest) {
       date: reservationDateTime,
       time: reservationDateTime,
       status: reservationStatus, // 🎯 AUTO-CONFIRM for admin requests
+      source: body.source || 'web', // ✅ NEW: Track reservation source (admin, web, phone, walk-in)
       specialRequests: data.specialRequests || null,
       hasPreOrder: (data.preOrderItems?.length || 0) > 0,
       table_ids: data.tableIds, // ✅ NEW: Use array
