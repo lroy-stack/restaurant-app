@@ -304,12 +304,22 @@ export function ReservationCard({
 
         {/* Special Info */}
         {(reservation.hasPreOrder || reservation.specialRequests || reservation.dietaryNotes || reservation.occasion) && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-col gap-1.5">
             {reservation.hasPreOrder && reservation.reservation_items?.length > 0 && (
-              <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                <Utensils className="h-3 w-3 mr-1" />
-                Pre-pedido ({reservation.reservation_items.length})
-              </Badge>
+              <div className="w-full bg-secondary/30 border border-secondary rounded p-2 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-secondary-foreground">
+                  <Utensils className="h-3 w-3" />
+                  Pre-pedido ({reservation.reservation_items.length} items)
+                </div>
+                <div className="space-y-0.5 pl-4 text-xs">
+                  {reservation.reservation_items.map((item, idx) => (
+                    <div key={idx} className="flex justify-between gap-2">
+                      <span>{item.quantity}x {item.menu_items.name}</span>
+                      <span className="text-muted-foreground">{item.menu_items.price}€</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
             {reservation.specialRequests && (
               <div className="w-full flex items-start gap-1.5 text-xs bg-accent/20 rounded p-1.5">
