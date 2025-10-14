@@ -234,8 +234,8 @@ export function ReservationCard({
     setEditedTableIds(reservation.table_ids || [reservation.tableId].filter(Boolean))
     setIsQuickEditOpen(true)
 
-    // Load availability for current time
-    await checkAvailability(timeString, reservation.partySize)
+    // Load availability for current time (admin context - include private tables)
+    await checkAvailability(timeString, reservation.partySize, undefined, true)
   }
 
   const handleTimeSlotSelect = async (timeHHMM: string) => {
@@ -243,8 +243,8 @@ export function ReservationCard({
     const dateTimeISO = `${reservationDate}T${timeHHMM}:00`
     setEditedTime(dateTimeISO)
 
-    // Check availability for this time
-    await checkAvailability(dateTimeISO, reservation.partySize)
+    // Check availability for this time (admin context - include private tables)
+    await checkAvailability(dateTimeISO, reservation.partySize, undefined, true)
   }
 
   const handleSaveQuickEdit = () => {
