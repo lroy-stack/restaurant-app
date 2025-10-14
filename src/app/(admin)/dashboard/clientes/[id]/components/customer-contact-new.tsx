@@ -136,14 +136,14 @@ export function CustomerContactNew({
               Datos personales y preferencias del cliente
             </CardDescription>
           </div>
-          {canEdit && (
+          {canEdit && !isEditing && (
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsEditing(!isEditing)}
+              onClick={() => setIsEditing(true)}
             >
               <Edit className="h-4 w-4 mr-2" />
-              {isEditing ? 'Cancelar' : 'Editar'}
+              Editar
             </Button>
           )}
         </div>
