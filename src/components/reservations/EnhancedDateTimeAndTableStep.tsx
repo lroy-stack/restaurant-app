@@ -439,29 +439,29 @@ export default function EnhancedDateTimeAndTableStep({
           compact={true}
         />
 
-        {/* Selector de personas y niños - MEJORADO */}
+        {/* Selector de personas y niños - PROPORCIONES RAZONABLES */}
         <Card>
-          <CardContent className="p-4 md:p-5 lg:p-6">
+          <CardContent className="p-4 md:p-5">
             <div className="space-y-4">
               {/* Número total de personas */}
               <div>
-                <Label className="text-sm md:text-base font-semibold mb-3 flex items-center gap-2">
-                  <Users className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                <Label className="text-sm font-medium mb-2 flex items-center gap-2">
+                  <Users className="h-4 w-4 text-primary" />
                   {t.partySizeLabel}
                 </Label>
-                <div className="flex items-center justify-center gap-4 mt-3">
+                <div className="flex items-center justify-center gap-3 mt-2">
                   <Button
                     size="icon"
                     variant="outline"
                     onClick={() => handlePartySizeChange(-1)}
                     disabled={partySize <= 1}
-                    className="h-10 w-10 md:h-12 md:w-12"
+                    className="h-9 w-9"
                   >
-                    <Minus className="h-4 w-4 md:h-5 md:w-5" />
+                    <Minus className="h-4 w-4" />
                   </Button>
-                  <div className="min-w-[100px] md:min-w-[120px] text-center bg-muted rounded-lg p-3">
-                    <span className="text-2xl md:text-3xl font-bold">{partySize}</span>
-                    <span className="block text-xs md:text-sm text-muted-foreground mt-1">
+                  <div className="min-w-[80px] text-center bg-muted rounded-md p-2">
+                    <span className="text-xl font-bold">{partySize}</span>
+                    <span className="block text-xs text-muted-foreground">
                       {partySize === 1 ? t.person : t.people}
                     </span>
                   </div>
@@ -470,17 +470,17 @@ export default function EnhancedDateTimeAndTableStep({
                     variant="outline"
                     onClick={() => handlePartySizeChange(1)}
                     disabled={partySize >= (maxPartySize || 10)}
-                    className="h-10 w-10 md:h-12 md:w-12"
+                    className="h-9 w-9"
                   >
-                    <Plus className="h-4 w-4 md:h-5 md:w-5" />
+                    <Plus className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
 
               {/* Checkbox para indicar si hay niños */}
               {partySize > 1 && (
-                <div className="pt-4 border-t">
-                  <div className="flex items-start gap-3 mb-3">
+                <div className="pt-3 border-t">
+                  <div className="flex items-start gap-2.5">
                     <Checkbox
                       id="hasChildren"
                       checked={hasChildren}
@@ -488,19 +488,19 @@ export default function EnhancedDateTimeAndTableStep({
                         setHasChildren(!!checked)
                         if (!checked) setChildrenCount(0)
                       }}
-                      className="mt-1 h-5 w-5"
+                      className="mt-0.5"
                     />
                     <div className="flex-1">
                       <Label
                         htmlFor="hasChildren"
-                        className="text-sm md:text-base font-medium cursor-pointer flex items-center gap-2"
+                        className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
                       >
-                        <Baby className="h-4 w-4 md:h-5 md:w-5 text-accent" />
+                        <Baby className="h-4 w-4 text-accent" />
                         {language === 'es' ? '¿Hay niños en la mesa?' :
                          language === 'en' ? 'Are there children at the table?' :
                          'Gibt es Kinder am Tisch?'}
                       </Label>
-                      <p className="text-xs md:text-sm text-muted-foreground mt-1">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {language === 'es' ? 'Hasta 8 años' :
                          language === 'en' ? 'Up to 8 years old' :
                          'Bis 8 Jahre'}
@@ -510,26 +510,26 @@ export default function EnhancedDateTimeAndTableStep({
 
                   {/* Selector de cantidad de niños - aparece al marcar checkbox */}
                   {hasChildren && (
-                    <div className="mt-4 p-4 bg-accent/5 border-2 border-accent/20 rounded-lg animate-in slide-in-from-top-2">
-                      <div className="flex flex-col gap-3">
-                        <Label className="text-sm md:text-base font-medium">
+                    <div className="mt-3 p-3 bg-accent/5 border border-accent/20 rounded-lg">
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">
                           {language === 'es' ? '¿Cuántos niños?' :
                            language === 'en' ? 'How many children?' :
                            'Wie viele Kinder?'}
                         </Label>
-                        <div className="flex items-center justify-center gap-4">
+                        <div className="flex items-center justify-center gap-3">
                           <Button
                             size="icon"
                             variant="outline"
                             onClick={() => handleChildrenCountChange(-1)}
                             disabled={childrenCount === 0}
-                            className="h-10 w-10 md:h-12 md:w-12"
+                            className="h-9 w-9"
                           >
-                            <Minus className="h-4 w-4 md:h-5 md:w-5" />
+                            <Minus className="h-4 w-4" />
                           </Button>
-                          <div className="min-w-[100px] md:min-w-[120px] text-center bg-background rounded-lg p-3 border-2 border-accent">
-                            <span className="text-2xl md:text-3xl font-bold text-accent">{childrenCount}</span>
-                            <span className="block text-xs md:text-sm text-muted-foreground mt-1">
+                          <div className="min-w-[80px] text-center bg-background rounded-md p-2 border border-accent/30">
+                            <span className="text-xl font-bold text-accent">{childrenCount}</span>
+                            <span className="block text-xs text-muted-foreground">
                               {language === 'es' ? (childrenCount === 1 ? 'niño' : 'niños') :
                                language === 'en' ? (childrenCount === 1 ? 'child' : 'children') :
                                (childrenCount === 1 ? 'Kind' : 'Kinder')}
@@ -540,18 +540,18 @@ export default function EnhancedDateTimeAndTableStep({
                             variant="outline"
                             onClick={() => handleChildrenCountChange(1)}
                             disabled={childrenCount >= partySize - 1}
-                            className="h-10 w-10 md:h-12 md:w-12"
+                            className="h-9 w-9"
                           >
-                            <Plus className="h-4 w-4 md:h-5 md:w-5" />
+                            <Plus className="h-4 w-4" />
                           </Button>
                         </div>
 
-                        {/* Nota IMPORTANTE en negrita */}
-                        <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md">
+                        {/* Nota IMPORTANTE compacta */}
+                        <div className="p-2.5 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md">
                           <div className="flex items-start gap-2">
-                            <Info className="h-4 w-4 md:h-5 md:w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-                            <p className="text-xs md:text-sm">
-                              <span className="font-bold text-blue-900 dark:text-blue-100">
+                            <Info className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                            <p className="text-xs">
+                              <span className="font-semibold text-blue-900 dark:text-blue-100">
                                 {language === 'es' ? 'Importante:' :
                                  language === 'en' ? 'Important:' :
                                  'Wichtig:'}
@@ -565,15 +565,15 @@ export default function EnhancedDateTimeAndTableStep({
                           </div>
                         </div>
 
-                        {/* Desglose visual con mejor contraste */}
+                        {/* Desglose compacto */}
                         {childrenCount > 0 && (
-                          <div className="mt-2 p-3 bg-background border-2 border-accent/30 rounded-md text-center">
-                            <p className="text-sm md:text-base font-semibold text-foreground">
+                          <div className="p-2 bg-background border border-accent/20 rounded-md text-center">
+                            <p className="text-sm font-medium text-foreground">
                               {language === 'es' ? `${partySize - childrenCount} adulto${partySize - childrenCount !== 1 ? 's' : ''} + ${childrenCount} niño${childrenCount !== 1 ? 's' : ''}` :
                                language === 'en' ? `${partySize - childrenCount} adult${partySize - childrenCount !== 1 ? 's' : ''} + ${childrenCount} child${childrenCount !== 1 ? 'ren' : ''}` :
                                `${partySize - childrenCount} Erwachsene${partySize - childrenCount !== 1 ? '' : 'r'} + ${childrenCount} Kind${childrenCount !== 1 ? 'er' : ''}`}
                             </p>
-                            <p className="text-xs text-muted-foreground mt-1">
+                            <p className="text-xs text-muted-foreground">
                               {language === 'es' ? `= ${partySize} personas en total` :
                                language === 'en' ? `= ${partySize} people in total` :
                                `= ${partySize} Personen insgesamt`}
