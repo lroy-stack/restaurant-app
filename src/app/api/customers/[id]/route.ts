@@ -94,6 +94,17 @@ export async function PATCH(
     const data = validationResult.data
     console.log('✅ Validation passed:', JSON.stringify(data, null, 2))
 
+    // SANITIZE: Convert empty strings to null for timestamp fields
+    const sanitizedData = {
+      ...data,
+      dateOfBirth: data.dateOfBirth === '' ? null : data.dateOfBirth,
+      preferredTime: data.preferredTime === '' ? null : data.preferredTime,
+      preferredLocation: data.preferredLocation === '' ? null : data.preferredLocation,
+      allergies: data.allergies === '' ? null : data.allergies,
+      phone: data.phone === '' ? null : data.phone,
+      email: data.email === '' ? null : data.email
+    }
+
     const supabase = await createServiceClient()
 
     // Update customer with validated data
@@ -101,7 +112,7 @@ export async function PATCH(
       .schema('restaurante')
       .from('customers')
       .update({
-        ...data,
+        ...sanitizedData,
         updatedAt: new Date().toISOString()
       })
       .eq('id', (await params).id)
