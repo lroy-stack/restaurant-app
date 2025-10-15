@@ -135,7 +135,7 @@ export const createTableAvailabilitySchema = (maxPartySize: number = 10) => z.ob
   date: z.string(),
   time: z.string(),
   partySize: z.number().int().min(1).max(maxPartySize), // DYNAMIC
-  duration: z.number().int().min(60).max(300).default(150), // minutes
+  duration: z.number().int().min(60).max(300).default(120), // minutes from DB buffer_minutes
   tableZone: z.enum(['TERRACE', 'INTERIOR', 'BAR', 'TERRACE_CAMPANARI', 'SALA_VIP', 'SALA_PRINCIPAL', 'TERRACE_JUSTICIA']).optional(),
   preferredTables: z.array(z.string()).optional()
 })
