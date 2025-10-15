@@ -88,7 +88,7 @@ export const useReservations = () => {
           date,
           time: timeOnly,
           partySize,
-          duration: 150, // 2.5 hours default
+          // duration removed - let API use DB buffer_minutes dynamically
           tableZone: preferredLocation,
         }),
       })

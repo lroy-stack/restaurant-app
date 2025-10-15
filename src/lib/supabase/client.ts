@@ -484,7 +484,7 @@ export const checkTableAvailability = async (
   tableId: string,
   date: string,
   time: string,
-  duration: number = 150
+  duration: number = 120
 ) => {
   const { data, error } = await supabase.rpc('check_table_availability', {
     p_table_id: tableId,

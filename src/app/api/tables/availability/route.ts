@@ -23,7 +23,7 @@ async function getAvailabilityConfig(): Promise<{ maxPartySize: number; bufferMi
       if (data && data[0]) {
         return {
           maxPartySize: data[0].max_party_size || 10,
-          bufferMinutes: data[0].buffer_minutes || 150
+          bufferMinutes: data[0].buffer_minutes || 120
         }
       }
     }
@@ -31,7 +31,7 @@ async function getAvailabilityConfig(): Promise<{ maxPartySize: number; bufferMi
     console.warn('Error fetching availability config, using defaults:', error)
   }
 
-  return { maxPartySize: 10, bufferMinutes: 150 }
+  return { maxPartySize: 10, bufferMinutes: 120 }
 }
 
 // Create dynamic schema function
@@ -40,7 +40,7 @@ function createAvailabilityRequestSchema(maxPartySize: number) {
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
     time: z.string().regex(/^\d{2}:\d{2}$/, "Time must be in HH:MM format"),
     partySize: z.number().int().min(1).max(maxPartySize),
-    duration: z.number().int().min(60).max(300).optional().default(150),
+    duration: z.number().int().min(60).max(300).optional(),
     tableZone: z.string().optional(),
   })
 }
@@ -54,7 +54,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { date, time, partySize, duration, tableZone } = availabilityRequestSchema.parse(body)
 
-    console.log(`🔍 [TABLES_AVAILABILITY] Request:`, { date, time, partySize, duration, tableZone })
+    // Use DB buffer_minutes instead of client-provided duration
+    const actualDuration = duration || config.bufferMinutes
+
+    console.log(`🔍 [TABLES_AVAILABILITY] Request:`, { date, time, partySize, duration: actualDuration, tableZone, bufferFromDB: config.bufferMinutes })
 
     // 1. Get all active tables
     // Detect if this is a public request (web form) or admin request
@@ -191,7 +194,7 @@ export async function POST(request: NextRequest) {
           requestedDate: date,
           requestedTime: time,
           requestedPartySize: partySize,
-          searchDuration: duration
+          searchDuration: actualDuration
         },
         message: availableTables.length > 0
           ? `${availableTables.length} mesa${availableTables.length !== 1 ? 's' : ''} disponible${availableTables.length !== 1 ? 's' : ''} de ${allTables.length} total${allTables.length !== 1 ? 'es' : ''}`
