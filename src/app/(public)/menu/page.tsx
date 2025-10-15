@@ -733,10 +733,10 @@ export default function MenuPage() {
                                   {item.vintage}
                                 </Badge>
                               )}
-                              {(category.type === 'WINE' || category.type === 'BEVERAGE') && item.alcoholContent && item.alcoholContent > 0 && (
+                              {(category.type === 'WINE' || category.type === 'BEVERAGE') && item.alcoholContent !== null && item.alcoholContent !== undefined && (
                                 <Badge variant="outline" className="text-xs px-2 py-0.5">
                                   <Wine className="w-3 h-3 mr-1 inline" />
-                                  {item.alcoholContent}%
+                                  {item.alcoholContent.toFixed(1)}%
                                 </Badge>
                               )}
                             </div>
