@@ -25,7 +25,7 @@ import { isValidPhoneNumber } from 'libphonenumber-js'
 // Validation schema
 const reservationSchema = z.object({
   dateTime: z.string().min(1),
-  tableIds: z.array(z.string()).min(0), // Min 0 para permitir grupos grandes sin mesas
+  tableIds: z.array(z.string()).default([]), // Opcional - staff asigna mesas
   partySize: z.number().int().min(1).max(20),
   childrenCount: z.number().int().min(0).optional(),
   location: z.string().default(''),
@@ -56,8 +56,8 @@ type ReservationFormData = z.infer<typeof reservationSchema>
 
 const steps = [
   {
-    name: { es: 'Fecha, Hora y Mesa', en: 'Date, Time & Table', de: 'Datum, Zeit & Tisch' },
-    description: { es: 'Elige cuándo y qué mesa', en: 'Choose when and which table', de: 'Wählen Sie wann und welchen Tisch' }
+    name: { es: 'Fecha y Hora', en: 'Date & Time', de: 'Datum & Zeit' },
+    description: { es: 'Elige cuándo quieres venir', en: 'Choose when you want to come', de: 'Wählen Sie, wann Sie kommen möchten' }
   },
   {
     name: { es: 'Contacto y Confirmación', en: 'Contact & Confirmation', de: 'Kontakt & Bestätigung' },
@@ -111,15 +111,14 @@ export default function ReservasPage() {
   const handleNext = () => {
     if (currentStep === 1) {
       const dateTime = form.getValues('dateTime')
-      const tableIds = form.getValues('tableIds')
       const partySize = form.getValues('partySize')
 
-      // Para grupos grandes (9+), no requieren mesas (usan flujo de contacto)
-      if (!dateTime || (partySize <= 8 && tableIds.length === 0)) {
+      // Validar solo fecha/hora (mesas se asignan por staff)
+      if (!dateTime || !partySize) {
         toast.error(
-          language === 'es' ? 'Selecciona fecha, hora y mesa' :
-          language === 'en' ? 'Select date, time and table' :
-          'Wählen Sie Datum, Uhrzeit und Tisch'
+          language === 'es' ? 'Selecciona fecha y hora' :
+          language === 'en' ? 'Select date and time' :
+          'Wählen Sie Datum und Uhrzeit'
         )
         return
       }

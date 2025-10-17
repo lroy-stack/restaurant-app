@@ -1,43 +1,33 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Users,
-  MapPin,
   ArrowRight,
   Loader2,
   Plus,
   Minus,
   Baby,
   Info,
-  Map,
-  Grid3x3,
   MessageCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { Checkbox } from '@/components/ui/checkbox'
 import type { Language } from '@/lib/validations/reservation-professional'
-import type { AvailabilityData } from '@/hooks/useReservations'
-import { useReservations } from '@/hooks/useReservations'
 import { useWeatherForecast } from '@/hooks/useWeatherForecast'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
-import { useCapacityValidation } from '@/hooks/useCapacityValidation'
 
 // Importar los nuevos componentes modulares
 import WeatherPanel from './WeatherPanel'
 import CalendarWithWeather from './CalendarWithWeather'
-import TimeSlotSelector from './TimeSlotSelector'
-import { MultiTableSelector } from './MultiTableSelector'
 import CompactWeatherWidget from './CompactWeatherWidget'
-import { FloorPlanSelector } from './FloorPlanSelector'
-import { FloorPlanLegend } from './FloorPlanLegend'
 import { LargeGroupSection } from './LargeGroupSection'
+import { TwoTurnTimeSlotSelector } from './TwoTurnTimeSlotSelector'
 
 // DateTime Helper - Prevents timezone shift bugs
 function createSafeDateTime(date: Date, time: string): string {
@@ -58,37 +48,43 @@ function createSafeDateTime(date: Date, time: string): string {
   )).toISOString()
 }
 
-// Multi-table selection algorithm
-interface Table {
-  id: string
-  number: string
-  capacity: number
-  location?: string
+interface Slot {
+  time: string
+  available: boolean
+  currentPersons: number
+  maxPersons: number
+  remainingCapacity: number
+  utilizationPercent: number
 }
 
-function selectOptimalTables(
-  recommendations: Table[],
+interface Turn {
+  name: { es: string; en: string; de: string }
+  period: string
+  start: string
+  end: string
+  maxPerSlot: number
+  totalSlots: number
+  slots: Slot[]
+  availableCount: number
+  totalCapacity: number
+}
+
+interface Service {
+  type: 'lunch' | 'dinner'
+  name: { es: string; en: string; de: string }
+  period: string
+  turns: Turn[]
+}
+
+interface AvailabilityData {
+  date: string
   partySize: number
-): Table[] {
-  if (recommendations.length === 0) return []
-
-  // Try single table first - find one that fits the party size
-  const singleTable = recommendations.find(t => t.capacity >= partySize)
-  if (singleTable) return [singleTable]
-
-  // Sort by capacity descending for optimal combination
-  const sorted = [...recommendations].sort((a, b) => b.capacity - a.capacity)
-
-  const selected: Table[] = []
-  let remainingCapacity = partySize
-
-  for (const table of sorted) {
-    if (remainingCapacity <= 0) break
-    selected.push(table)
-    remainingCapacity -= table.capacity
+  capacity: {
+    total: number
+    target: number
+    targetOccupancy: string
   }
-
-  return selected
+  services: Service[]
 }
 
 interface EnhancedDateTimeAndTableStepProps {
@@ -97,80 +93,48 @@ interface EnhancedDateTimeAndTableStepProps {
   onAvailabilityChange?: (availability: AvailabilityData | null) => void
 }
 
-interface Zone {
-  id: string
-  isActive: boolean
-  name: { es: string; en: string; de: string }
-  type: 'terrace' | 'indoor'
-  description: { es: string; en: string; de: string }
-}
-
 const content = {
   es: {
     title: 'Fecha, Hora y Mesa',
     subtitle: 'Elige el momento perfecto para tu experiencia gastronómica',
     partySizeLabel: 'Número de personas',
-    locationLabel: 'Zona preferida (opcional)',
-    checkAvailability: 'Verificar Disponibilidad',
-    checking: 'Verificando...',
     person: 'persona',
     people: 'personas',
-    next: 'Siguiente',
-    back: 'Atrás',
+    next: 'Continuar',
     weatherTitle: 'Pronóstico del Tiempo',
     calendarTitle: 'Selecciona una Fecha',
     timeTitle: 'Elige tu Horario',
-    zoneTitle: 'Zona Preferida',
-    terrace: 'Terraza',
-    indoor: 'Interior',
-    vip: 'Sala VIP',
     noDateSelected: 'Por favor selecciona una fecha',
     noTimeSelected: 'Por favor selecciona una hora',
-    loadingZones: 'Cargando zonas disponibles...'
+    completeAllFields: 'Por favor completa todos los campos requeridos'
   },
   en: {
     title: 'Date, Time & Table',
     subtitle: 'Choose the perfect moment for your dining experience',
     partySizeLabel: 'Party size',
-    locationLabel: 'Preferred area (optional)',
-    checkAvailability: 'Check Availability',
-    checking: 'Checking...',
     person: 'person',
     people: 'people',
-    next: 'Next',
-    back: 'Back',
+    next: 'Continue',
     weatherTitle: 'Weather Forecast',
     calendarTitle: 'Select a Date',
     timeTitle: 'Choose Your Time',
-    zoneTitle: 'Preferred Zone',
-    terrace: 'Terrace',
-    indoor: 'Indoor',
-    vip: 'VIP Room',
     noDateSelected: 'Please select a date',
     noTimeSelected: 'Please select a time',
-    loadingZones: 'Loading available zones...'
+    completeAllFields: 'Please complete all required fields'
   },
   de: {
     title: 'Datum, Zeit & Tisch',
     subtitle: 'Wählen Sie den perfekten Moment für Ihr kulinarisches Erlebnis',
     partySizeLabel: 'Personenanzahl',
-    locationLabel: 'Bevorzugter Bereich (optional)',
-    checkAvailability: 'Verfügbarkeit prüfen',
-    checking: 'Wird geprüft...',
     person: 'Person',
     people: 'Personen',
     next: 'Weiter',
-    back: 'Zurück',
     weatherTitle: 'Wettervorhersage',
     calendarTitle: 'Datum wählen',
     timeTitle: 'Zeit wählen',
-    zoneTitle: 'Bevorzugter Bereich',
-    terrace: 'Terrasse',
-    indoor: 'Innenbereich',
-    vip: 'VIP-Raum',
     noDateSelected: 'Bitte wählen Sie ein Datum',
     noTimeSelected: 'Bitte wählen Sie eine Zeit',
-    loadingZones: 'Verfügbare Bereiche werden geladen...'
+    completeAllFields: 'Bitte füllen Sie alle erforderlichen Felder aus'
   }
 }
 
@@ -182,129 +146,63 @@ export default function EnhancedDateTimeAndTableStep({
   const t = content[language]
   const form = useFormContext()
 
-  // Refs
-  const tableSelectorRef = useRef<HTMLDivElement>(null)
-  const zoneSelectorRef = useRef<HTMLDivElement>(null)
-
   // Estados locales
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [partySize, setPartySize] = useState<number>(2)
   const [childrenCount, setChildrenCount] = useState<number>(0)
   const [hasChildren, setHasChildren] = useState<boolean>(false)
-  const [selectedZone, setSelectedZone] = useState<string | null>(null)
-  const [activeZones, setActiveZones] = useState<Zone[]>([])
-  const [loadingZones, setLoadingZones] = useState(true)
   const [availabilityResults, setAvailabilityResults] = useState<AvailabilityData | null>(null)
-  const [selectedTables, setSelectedTables] = useState<any[]>([])
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false)
-  const [viewMode, setViewMode] = useState<'floor' | 'grid'>('floor') // ✅ NEW: Toggle between floor plan and grid view
 
   // Hooks
-  const { checkAvailability, createReservation } = useReservations()
   const { isGoodWeather } = useWeatherForecast({ lang: language })
   const { maxPartySize } = useBusinessHours()
-  const { validateFinalSelection } = useCapacityValidation()
-
-  // Cargar zonas activas
-  useEffect(() => {
-    const fetchActiveZones = async () => {
-      try {
-        const response = await fetch('/api/zones/active')
-        if (!response.ok) throw new Error('Failed to fetch zones')
-
-        const data = await response.json()
-        if (data.success && data.data && data.data.zones) {
-          setActiveZones(data.data.zones)
-        }
-      } catch (error) {
-        console.error('Error fetching zones:', error)
-        toast.error(language === 'es' ?
-          'Error al cargar zonas. Intenta recargar la página.' :
-          'Error loading zones. Try reloading the page.'
-        )
-        setActiveZones([])
-      } finally {
-        setLoadingZones(false)
-      }
-    }
-
-    fetchActiveZones()
-  }, [])
-
-  // Auto-scroll inteligente al selector de mesas cuando hay disponibilidad
-  useEffect(() => {
-    if (availabilityResults && availabilityResults.recommendations && availabilityResults.recommendations.length > 0) {
-      setTimeout(() => {
-        tableSelectorRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        })
-      }, 300)
-    }
-  }, [availabilityResults])
 
   // Manejar selección de fecha desde el panel del tiempo
   const handleDateSelectFromWeather = useCallback((date: Date) => {
     setSelectedDate(date)
-    // Limpiar selección de hora al cambiar fecha
     setSelectedTime(null)
+    setAvailabilityResults(null)
   }, [])
 
   // Manejar selección de fecha desde el calendario
   const handleDateSelectFromCalendar = useCallback((date: Date) => {
     setSelectedDate(date)
     setSelectedTime(null)
-    // NO verificar disponibilidad automáticamente - esperar selección de zona
+    setAvailabilityResults(null)
   }, [])
 
-  // Manejar selección de hora
-  const handleTimeSelect = useCallback((time: string) => {
-    setSelectedTime(time)
-    // NO verificar disponibilidad automáticamente - esperar selección de zona
-    // Auto-scroll al selector de zona
-    if (selectedDate) {
-      setTimeout(() => {
-        zoneSelectorRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        })
-      }, 300)
-    }
-  }, [selectedDate])
-
-  // Verificar disponibilidad
-  const handleCheckAvailability = useCallback(async (
-    date: Date | null = selectedDate,
-    time: string | null = selectedTime,
-    size: number = partySize,
-    zone: string | null = selectedZone
-  ) => {
-    if (!date || !time) {
-      toast.error(language === 'es' ?
-        'Por favor selecciona fecha y hora' :
-        'Please select date and time'
-      )
-      return
-    }
+  // Verificar disponibilidad (auto-trigger cuando hay fecha y partySize)
+  const handleCheckAvailability = useCallback(async () => {
+    if (!selectedDate || !partySize) return
 
     setIsCheckingAvailability(true)
 
     try {
-      // Use createSafeDateTime to prevent timezone shift
-      const dateTime = createSafeDateTime(date, time)
+      const dateStr = selectedDate.toISOString().split('T')[0]
 
-      const availability = await checkAvailability(
-        dateTime,
-        size,
-        zone || undefined
-      )
+      const response = await fetch('/api/tables/availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: dateStr,
+          partySize
+        })
+      })
 
-      if (availability) {
-        setAvailabilityResults(availability)
-        onAvailabilityChange?.(availability)
-        // Usuario selecciona manualmente - NO preseleccionar
-        setSelectedTables([])
+      const data = await response.json()
+
+      if (data.success && data.data) {
+        setAvailabilityResults(data.data)
+        onAvailabilityChange?.(data.data)
+        // Clear selected time when new availability loads
+        setSelectedTime(null)
+      } else {
+        toast.error(language === 'es' ?
+          'Error al verificar disponibilidad' :
+          'Error checking availability'
+        )
       }
     } catch (error) {
       console.error('Error checking availability:', error)
@@ -315,7 +213,14 @@ export default function EnhancedDateTimeAndTableStep({
     } finally {
       setIsCheckingAvailability(false)
     }
-  }, [selectedDate, selectedTime, partySize, selectedZone, checkAvailability, language])
+  }, [selectedDate, partySize, language, onAvailabilityChange])
+
+  // Auto-trigger availability check cuando cambia fecha o partySize
+  useEffect(() => {
+    if (selectedDate && partySize && partySize <= 8) {
+      handleCheckAvailability()
+    }
+  }, [selectedDate, partySize, handleCheckAvailability])
 
   // Manejar cambio de tamaño del grupo
   const handlePartySizeChange = (increment: number) => {
@@ -327,8 +232,9 @@ export default function EnhancedDateTimeAndTableStep({
       setChildrenCount(Math.max(0, newSize - 1))
     }
 
-    // Limpiar disponibilidad al cambiar tamaño
+    // Clear availability when party size changes
     setAvailabilityResults(null)
+    setSelectedTime(null)
   }
 
   // Manejar cambio de niños
@@ -337,89 +243,22 @@ export default function EnhancedDateTimeAndTableStep({
     setChildrenCount(newCount)
   }
 
-  // Manejar selección de zona - CARGA MESAS AQUÍ
-  const handleZoneSelect = (zoneId: string) => {
-    const newZone = selectedZone === zoneId ? null : zoneId
-    setSelectedZone(newZone)
-
-    // Cargar mesas SOLO cuando hay zona seleccionada
-    if (newZone && selectedDate && selectedTime) {
-      handleCheckAvailability(selectedDate, selectedTime, partySize, newZone)
-    } else {
-      // Si deselecciona zona, limpiar resultados
-      setAvailabilityResults(null)
-      setSelectedTables([])
-    }
-  }
-
   // Continuar al siguiente paso
   const handleContinue = () => {
-    if (!selectedDate || !selectedTime || !availabilityResults || selectedTables.length === 0) {
-      toast.error(language === 'es' ?
-        'Por favor completa todos los campos requeridos' :
-        language === 'en' ?
-        'Please complete all required fields' :
-        'Bitte füllen Sie alle erforderlichen Felder aus'
-      )
+    if (!selectedDate || !selectedTime || !partySize) {
+      toast.error(t.completeAllFields)
       return
     }
 
-    // NUEVA VALIDACIÓN: Validar capacidad final con el hook
-    const tablesForValidation = selectedTables.map(t => ({
-      id: t.id,
-      capacity: t.capacity
-    }))
-
-    const validation = validateFinalSelection(tablesForValidation, partySize)
-
-    if (!validation.canSelect) {
-      toast.error(validation.reason || (
-        language === 'es' ? 'Error de validación de capacidad' :
-        language === 'en' ? 'Capacity validation error' :
-        'Kapazitätsvalidierungsfehler'
-      ))
-      return
-    }
-
-    // Use createSafeDateTime to prevent timezone shift
     const dateTime = createSafeDateTime(selectedDate, selectedTime)
 
     form.setValue('dateTime', dateTime)
-    form.setValue('tableIds', selectedTables.map(t => t.id))
+    form.setValue('tableIds', []) // ✅ Sin mesas - staff asigna después
     form.setValue('partySize', partySize)
     form.setValue('childrenCount', childrenCount > 0 ? childrenCount : undefined)
-    form.setValue('location', selectedZone || '')
 
     onNext()
   }
-
-  // Obtener calidad del clima para la fecha seleccionada
-  const weatherQuality = selectedDate ? isGoodWeather(selectedDate) : undefined
-
-  // Memorize transformed tables array to prevent infinite re-renders
-  const transformedTables = useMemo(() => {
-    if (!availabilityResults?.recommendations) return []
-    return availabilityResults.recommendations.map(t => ({
-      id: t.id,
-      number: t.number.toString(),
-      capacity: t.capacity,
-      location: t.location,
-      status: 'available' as const,
-      available: true
-    }))
-  }, [availabilityResults])
-
-  // Memorize selection change handler
-  const handleTableSelectionChange = useCallback((newIds: string[]) => {
-    if (!availabilityResults?.recommendations) return
-    const newSelection = availabilityResults.recommendations.filter(t => newIds.includes(t.id))
-    setSelectedTables(newSelection)
-  }, [availabilityResults])
-
-  // Memorize selected table IDs array
-  const selectedTableIds = useMemo(() => {
-    return selectedTables.map(t => t.id)
-  }, [selectedTables])
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
@@ -620,16 +459,51 @@ export default function EnhancedDateTimeAndTableStep({
           </CardContent>
         </Card>
 
-        {/* Selector de hora con diferenciación */}
-        {selectedDate && (
-          <TimeSlotSelector
-            language={language}
-            selectedDate={selectedDate}
+        {/* Two-Turn Time Slot Selector */}
+        {partySize <= 8 && selectedDate && isCheckingAvailability && (
+          <div className="flex items-center justify-center gap-2 py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            <span className="text-sm text-muted-foreground">
+              {language === 'es' ? 'Cargando horarios disponibles...' :
+               language === 'en' ? 'Loading available times...' :
+               'Verfügbare Zeiten werden geladen...'}
+            </span>
+          </div>
+        )}
+
+        {partySize <= 8 && availabilityResults && !isCheckingAvailability && (
+          <TwoTurnTimeSlotSelector
+            services={availabilityResults.services}
             selectedTime={selectedTime}
-            onTimeSelect={handleTimeSelect}
-            partySize={partySize}
-            isLoading={isCheckingAvailability}
+            onSelectTime={setSelectedTime}
+            language={language}
           />
+        )}
+
+        {/* Selector de hora simple para grupos grandes */}
+        {partySize >= 9 && selectedDate && !selectedTime && (
+          <Card>
+            <CardContent className="p-4">
+              <Label className="text-sm font-medium mb-3 block">
+                {language === 'es' ? 'Selecciona una hora aproximada' :
+                 language === 'en' ? 'Select an approximate time' :
+                 'Wählen Sie eine ungefähre Zeit'}
+              </Label>
+              <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
+                {['13:00', '13:30', '14:00', '14:30', '15:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00'].map(time => (
+                  <Button
+                    key={time}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedTime(time)}
+                    className="h-10"
+                  >
+                    {time}
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Sección de Grupos Grandes (9+ personas) */}
@@ -641,170 +515,15 @@ export default function EnhancedDateTimeAndTableStep({
           />
         )}
 
-        {/* Selector de zona (OBLIGATORIO antes de ver mesas) - Solo para grupos <= 8 */}
+        {/* Botón continuar - Solo después de seleccionar time */}
         {partySize <= 8 && selectedDate && selectedTime && (
-          <Card ref={zoneSelectorRef} className="border-2 border-primary/20 mt-4 md:mt-6">
-            <CardHeader className="p-4 md:p-5">
-              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                <MapPin className="h-5 w-5 md:h-6 md:w-6" />
-                {t.zoneTitle}
-              </CardTitle>
-              <p className="text-sm md:text-base text-muted-foreground mt-2">
-                {language === 'es' ? 'Selecciona una zona para ver las mesas disponibles' :
-                 language === 'en' ? 'Select a zone to see available tables' :
-                 'Wählen Sie eine Zone, um verfügbare Tische zu sehen'}
-              </p>
-            </CardHeader>
-            <CardContent className="p-4 md:p-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-                {activeZones.map(zone => (
-                  <button
-                    key={zone.id}
-                    onClick={() => handleZoneSelect(zone.id)}
-                    disabled={isCheckingAvailability}
-                    className={cn(
-                      "p-4 md:p-5 rounded-xl border-2 transition-all",
-                      "hover:border-primary hover:shadow-lg hover:scale-[1.02]",
-                      "disabled:opacity-50 disabled:cursor-not-allowed",
-                      "active:scale-95",
-                      selectedZone === zone.id ?
-                        "border-primary bg-primary/10 shadow-md scale-[1.02]" :
-                        "border-border bg-card"
-                    )}
-                  >
-                    <div className="text-left">
-                      <p className="font-semibold text-base md:text-lg">{zone.name[language]}</p>
-                      <p className="text-sm md:text-base text-muted-foreground mt-1.5 md:mt-2">
-                        {zone.description[language]}
-                      </p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-              {isCheckingAvailability && (
-                <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>
-                    {language === 'es' ? 'Cargando mesas disponibles...' :
-                     language === 'en' ? 'Loading available tables...' :
-                     'Verfügbare Tische werden geladen...'}
-                  </span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Selector manual de mesas - Floor Plan + Grid View - Solo para grupos <= 8 */}
-        {partySize <= 8 &&
-         availabilityResults &&
-         availabilityResults.recommendations &&
-         availabilityResults.recommendations.length > 1 && (
-          <Card ref={tableSelectorRef} className="mt-4 md:mt-6">
-            <CardHeader className="p-4 md:p-5">
-              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                <MapPin className="h-5 w-5 md:h-6 md:w-6" />
-                {language === 'es' ? 'Personaliza tu selección de mesas' :
-                 language === 'en' ? 'Customize your table selection' :
-                 'Passen Sie Ihre Tischauswahl an'}
-              </CardTitle>
-              <p className="text-sm md:text-base text-muted-foreground">
-                {language === 'es' ? 'Selecciona las mesas que prefieras para tu reserva.' :
-                 language === 'en' ? 'Select the tables you prefer for your reservation.' :
-                 'Wählen Sie die Tische für Ihre Reservierung.'}
-              </p>
-            </CardHeader>
-            <CardContent className="p-4 md:p-5 space-y-4">
-              {/* View Mode Toggle */}
-              <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'floor' | 'grid')}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="floor" className="flex items-center gap-2">
-                    <Map className="h-4 w-4" />
-                    <span className="hidden sm:inline">
-                      {language === 'es' ? 'Vista Sala' :
-                       language === 'en' ? 'Floor Plan' :
-                       'Raumplan'}
-                    </span>
-                    <span className="sm:hidden">
-                      {language === 'es' ? 'Sala' :
-                       language === 'en' ? 'Plan' :
-                       'Plan'}
-                    </span>
-                  </TabsTrigger>
-                  <TabsTrigger value="grid" className="flex items-center gap-2">
-                    <Grid3x3 className="h-4 w-4" />
-                    <span className="hidden sm:inline">
-                      {language === 'es' ? 'Vista Lista' :
-                       language === 'en' ? 'List View' :
-                       'Listenansicht'}
-                    </span>
-                    <span className="sm:hidden">
-                      {language === 'es' ? 'Lista' :
-                       language === 'en' ? 'List' :
-                       'Liste'}
-                    </span>
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="floor" className="mt-4 space-y-4">
-                  {/* Floor Plan View */}
-                  <FloorPlanSelector
-                    tables={availabilityResults.allTables || availabilityResults.recommendations}
-                    selectedTableIds={selectedTableIds}
-                    onSelectionChange={handleTableSelectionChange}
-                    partySize={partySize}
-                    language={language}
-                    maxSelections={5}
-                  />
-
-                  {/* Legend */}
-                  <FloorPlanLegend language={language} className="mt-4" />
-                </TabsContent>
-
-                <TabsContent value="grid" className="mt-4">
-                  {/* Grid View (Original) */}
-                  <MultiTableSelector
-                    tables={transformedTables}
-                    selectedTableIds={selectedTableIds}
-                    onSelectionChange={handleTableSelectionChange}
-                    partySize={partySize}
-                    maxSelections={5}
-                  />
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Botones de acción - Solo después de seleccionar mesas y grupos <= 8 */}
-        {partySize <= 8 && availabilityResults && selectedTables.length > 0 && (
-          <div className="flex flex-col sm:flex-row justify-end gap-2 md:gap-3">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setAvailabilityResults(null)
-                setSelectedTables([])
-                setSelectedZone(null)
-              }}
-              className="w-full sm:w-auto h-10 md:h-11"
-              size="default"
-            >
-              <span className="text-sm md:text-base">
-                {language === 'es' ? 'Cambiar zona' :
-                 language === 'en' ? 'Change zone' :
-                 'Zone ändern'}
-              </span>
-            </Button>
+          <div className="flex justify-end">
             <Button
               onClick={handleContinue}
               className="w-full sm:w-auto h-10 md:h-11"
               size="default"
             >
-              <span className="text-sm md:text-base">
-                {language === 'es' ? 'Continuar' :
-                 language === 'en' ? 'Continue' :
-                 'Weiter'}
-              </span>
+              <span className="text-sm md:text-base">{t.next}</span>
               <ArrowRight className="ml-2 h-3 w-3 md:h-4 md:w-4" />
             </Button>
           </div>

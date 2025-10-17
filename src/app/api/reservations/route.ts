@@ -105,7 +105,7 @@ function createReservationSchema(maxPartySize: number) {
     time: z.string(),
     partySize: z.number().int().min(1).max(maxPartySize),
     childrenCount: z.number().int().min(0).optional().nullable(), // ✅ FIX: Validate children count
-    tableIds: z.array(z.string()).min(1), // ✅ NEW: Array of table IDs
+    tableIds: z.array(z.string()).default([]), // ✅ UPDATED: Opcional - staff asigna mesas
     occasion: z.string().nullable().optional(),
     dietaryNotes: z.string().nullable().optional(),
     specialRequests: z.string().nullable().optional(),
@@ -295,88 +295,100 @@ export async function POST(request: NextRequest) {
 
     const supabase = createDirectAdminClient()
 
-    // ✅ NEW: Validate all table IDs exist and are active
-    console.log('🔍 Validating table IDs:', data.tableIds)
+    // ✅ DYNAMIC VALIDATION: Only validate tables if they are provided
+    let tables: any[] = []
+    let validatedTableNames = 'Staff will assign'
 
-    const { data: tables, error: tablesError } = await supabase
-      .schema('restaurante')
-      .from('tables')
-      .select('id,number,location,capacity,restaurantId')
-      .in('id', data.tableIds)
-      .eq('isActive', true)
+    if (data.tableIds && data.tableIds.length > 0) {
+      console.log('🔍 Validating provided table IDs:', data.tableIds)
 
-    if (tablesError || !tables || tables.length !== data.tableIds.length) {
-      console.error('❌ Invalid or inactive tables:', data.tableIds)
-      return NextResponse.json({
-        success: false,
-        error: 'One or more selected tables are not available'
-      }, { status: 400 })
+      const { data: fetchedTables, error: tablesError } = await supabase
+        .schema('restaurante')
+        .from('tables')
+        .select('id,number,location,capacity,restaurantId')
+        .in('id', data.tableIds)
+        .eq('isActive', true)
+
+      if (tablesError || !fetchedTables || fetchedTables.length !== data.tableIds.length) {
+        console.error('❌ Invalid or inactive tables:', data.tableIds)
+        return NextResponse.json({
+          success: false,
+          error: 'One or more selected tables are not available'
+        }, { status: 400 })
+      }
+
+      tables = fetchedTables
+      validatedTableNames = tables.map(t => `${t.number}(${t.id})`).join(', ')
+      console.log('✅ Validated tables:', validatedTableNames)
+
+      // ✅ Validate total capacity vs party size
+      const totalCapacity = tables.reduce((sum, table) => sum + table.capacity, 0)
+      console.log(`🔍 Capacity validation: ${data.partySize} people vs ${totalCapacity} total capacity`)
+
+      if (totalCapacity < data.partySize) {
+        console.error(`❌ Insufficient capacity: need ${data.partySize}, have ${totalCapacity}`)
+        return NextResponse.json({
+          success: false,
+          error: `Selected tables have capacity for ${totalCapacity} people, but you need ${data.partySize} seats. Please select additional tables.`
+        }, { status: 400 })
+      }
+
+      console.log('✅ Capacity validation passed')
+    } else {
+      console.log('ℹ️  No tables provided - staff will assign later')
     }
 
-    const validatedTableNames = tables.map(t => `${t.number}(${t.id})`).join(', ')
-    console.log('✅ Validated tables:', validatedTableNames)
+    // Check for table conflicts (only if tables are provided)
+    if (data.tableIds && data.tableIds.length > 0) {
+      console.log('🔍 Checking conflicts for validated tables...')
 
-    // ✅ NEW: Validate total capacity vs party size
-    const totalCapacity = tables.reduce((sum, table) => sum + table.capacity, 0)
-    console.log(`🔍 Capacity validation: ${data.partySize} people vs ${totalCapacity} total capacity`)
+      const { data: existingReservations, error: conflictError } = await supabase
+        .schema('restaurante')
+        .from('reservations')
+        .select('id,table_ids,tableId,time,status')
+        .gte('date', `${data.date}T00:00:00`)
+        .lte('date', `${data.date}T23:59:59`)
+        .in('status', ['PENDING', 'CONFIRMED', 'SEATED'])
 
-    if (totalCapacity < data.partySize) {
-      console.error(`❌ Insufficient capacity: need ${data.partySize}, have ${totalCapacity}`)
-      return NextResponse.json({
-        success: false,
-        error: `Selected tables have capacity for ${totalCapacity} people, but you need ${data.partySize} seats. Please select additional tables.`
-      }, { status: 400 })
-    }
+      if (conflictError) {
+        console.error('❌ Error checking conflicts:', conflictError)
+        return NextResponse.json({
+          success: false,
+          error: 'Error checking table availability'
+        }, { status: 500 })
+      }
 
-    console.log('✅ Capacity validation passed')
+      // Check for time conflicts
+      for (const reservation of existingReservations || []) {
+        const resDateTime = new Date(reservation.time)
+        const timeDiff = Math.abs(reservationDateTime.getTime() - resDateTime.getTime())
 
-    // Check for table conflicts
-    console.log('🔍 Checking conflicts for validated tables...')
+        if (timeDiff < (bufferMinutes * 60000)) {
+          // Check if any of our tables conflict
+          const reservedTables = new Set<string>()
 
-    const { data: existingReservations, error: conflictError } = await supabase
-      .schema('restaurante')
-      .from('reservations')
-      .select('id,table_ids,tableId,time,status')
-      .gte('date', `${data.date}T00:00:00`)
-      .lte('date', `${data.date}T23:59:59`)
-      .in('status', ['PENDING', 'CONFIRMED', 'SEATED'])
+          if (reservation.table_ids && Array.isArray(reservation.table_ids)) {
+            reservation.table_ids.forEach((id: string) => reservedTables.add(id))
+          }
+          if (reservation.tableId) {
+            reservedTables.add(reservation.tableId)
+          }
 
-    if (conflictError) {
-      console.error('❌ Error checking conflicts:', conflictError)
-      return NextResponse.json({
-        success: false,
-        error: 'Error checking table availability'
-      }, { status: 500 })
-    }
-
-    // Check for time conflicts
-    for (const reservation of existingReservations || []) {
-      const resDateTime = new Date(reservation.time)
-      const timeDiff = Math.abs(reservationDateTime.getTime() - resDateTime.getTime())
-
-      if (timeDiff < (bufferMinutes * 60000)) {
-        // Check if any of our tables conflict
-        const reservedTables = new Set<string>()
-
-        if (reservation.table_ids && Array.isArray(reservation.table_ids)) {
-          reservation.table_ids.forEach((id: string) => reservedTables.add(id))
-        }
-        if (reservation.tableId) {
-          reservedTables.add(reservation.tableId)
-        }
-
-        const hasConflict = data.tableIds.some(id => reservedTables.has(id))
-        if (hasConflict) {
-          console.error('❌ Table conflict detected:', { conflictingTables: Array.from(reservedTables) })
-          return NextResponse.json({
-            success: false,
-            error: 'One or more selected tables are already reserved for this time slot'
-          }, { status: 400 })
+          const hasConflict = data.tableIds.some(id => reservedTables.has(id))
+          if (hasConflict) {
+            console.error('❌ Table conflict detected:', { conflictingTables: Array.from(reservedTables) })
+            return NextResponse.json({
+              success: false,
+              error: 'One or more selected tables are already reserved for this time slot'
+            }, { status: 400 })
+          }
         }
       }
-    }
 
-    console.log('✅ All tables available - no conflicts detected')
+      console.log('✅ All tables available - no conflicts detected')
+    } else {
+      console.log('ℹ️  Skipping table conflict check - no tables assigned yet')
+    }
 
     // Create/update customer with SMART IDENTIFICATION
     console.log('🔄 Starting customer upsert process...')
@@ -506,7 +518,7 @@ export async function POST(request: NextRequest) {
       specialRequests: data.specialRequests || null,
       hasPreOrder: (data.preOrderItems?.length || 0) > 0,
       table_ids: data.tableIds, // ✅ NEW: Use array
-      tableId: data.tableIds[0], // Legacy compatibility (use first table)
+      tableId: data.tableIds.length > 0 ? data.tableIds[0] : null, // ✅ Legacy compatibility (use first table if available)
       restaurantId: 'rest_enigma_001',
       occasion: data.occasion || null,
       dietaryNotes: data.dietaryNotes || null,
@@ -636,8 +648,8 @@ export async function POST(request: NextRequest) {
               hour12: false
             }),
             partySize: data.partySize,
-            tableNumber: tables.map(t => t.number).join(', '),
-            tableLocation: tables[0]?.location || 'Por asignar',
+            tableNumber: tables.length > 0 ? tables.map(t => t.number).join(', ') : 'Por asignar',
+            tableLocation: tables.length > 0 ? (tables[0]?.location || 'Por asignar') : 'Por asignar',
             specialRequests: data.specialRequests || '',
             preOrderItems: data.preOrderItems || [],
             preOrderTotal: data.preOrderTotal || 0,
@@ -680,8 +692,8 @@ export async function POST(request: NextRequest) {
               }),
               partySize: data.partySize,
               childrenCount: data.childrenCount,
-              tableNumbers: tables.map(t => t.number).join(', '),
-              tableLocation: tables[0]?.location || 'Por asignar',
+              tableNumbers: tables.length > 0 ? tables.map(t => t.number).join(', ') : 'Por asignar',
+              tableLocation: tables.length > 0 ? (tables[0]?.location || 'Por asignar') : 'Por asignar',
               specialRequests: data.specialRequests,
               preOrderItems: data.preOrderItems,
               restaurantEmail: restaurantEmail
