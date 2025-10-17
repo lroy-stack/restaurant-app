@@ -26,14 +26,26 @@ export function LargeGroupRequestEmail({
   partySize,
   preferredLanguage
 }: LargeGroupRequestEmailProps) {
+  // Parsear ISO string manteniendo la hora UTC como local (sin conversión de timezone)
   const date = new Date(dateTime)
-  const dateStr = date.toLocaleDateString('es-ES', {
+
+  // Extraer componentes UTC directamente (que son la hora local guardada)
+  const year = date.getUTCFullYear()
+  const month = date.getUTCMonth()
+  const day = date.getUTCDate()
+  const hours = date.getUTCHours()
+  const minutes = date.getUTCMinutes()
+
+  // Crear fecha local con esos valores (sin conversión de timezone)
+  const localDate = new Date(year, month, day, hours, minutes)
+
+  const dateStr = localDate.toLocaleDateString('es-ES', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
     year: 'numeric'
   })
-  const timeStr = date.toLocaleTimeString('es-ES', {
+  const timeStr = localDate.toLocaleTimeString('es-ES', {
     hour: '2-digit',
     minute: '2-digit'
   })

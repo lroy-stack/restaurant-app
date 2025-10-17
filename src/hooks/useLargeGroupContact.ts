@@ -24,14 +24,26 @@ export function useLargeGroupContact(): UseLargeGroupContactReturn {
    * Formatea mensaje de WhatsApp trilingüe
    */
   const formatWhatsAppMessage = (data: LargeGroupContactData): WhatsAppMessage => {
+    // Parsear ISO string manteniendo la hora UTC como local (sin conversión de timezone)
     const date = new Date(data.dateTime)
-    const dateStr = date.toLocaleDateString(
+
+    // Extraer componentes UTC directamente (que son la hora local guardada)
+    const year = date.getUTCFullYear()
+    const month = date.getUTCMonth()
+    const day = date.getUTCDate()
+    const hours = date.getUTCHours()
+    const minutes = date.getUTCMinutes()
+
+    // Crear fecha local con esos valores (sin conversión de timezone)
+    const localDate = new Date(year, month, day, hours, minutes)
+
+    const dateStr = localDate.toLocaleDateString(
       data.preferredLanguage === 'ES' ? 'es-ES' :
       data.preferredLanguage === 'EN' ? 'en-GB' :
       'de-DE',
       { day: '2-digit', month: '2-digit', year: 'numeric' }
     )
-    const timeStr = date.toLocaleTimeString(
+    const timeStr = localDate.toLocaleTimeString(
       data.preferredLanguage === 'ES' ? 'es-ES' :
       data.preferredLanguage === 'EN' ? 'en-GB' :
       'de-DE',

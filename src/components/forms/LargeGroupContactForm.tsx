@@ -100,13 +100,24 @@ export function LargeGroupContactForm({
     await onSubmit(data)
   }
 
-  // Formatear fecha y hora para mostrar
+  // Formatear fecha y hora para mostrar (sin conversión de timezone)
   const date = new Date(dateTime)
-  const dateStr = date.toLocaleDateString(
+
+  // Extraer componentes UTC directamente (que son la hora local guardada)
+  const year = date.getUTCFullYear()
+  const month = date.getUTCMonth()
+  const day = date.getUTCDate()
+  const hours = date.getUTCHours()
+  const minutes = date.getUTCMinutes()
+
+  // Crear fecha local con esos valores (sin conversión de timezone)
+  const localDate = new Date(year, month, day, hours, minutes)
+
+  const dateStr = localDate.toLocaleDateString(
     language === 'es' ? 'es-ES' : language === 'en' ? 'en-GB' : 'de-DE',
     { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
   )
-  const timeStr = date.toLocaleTimeString(
+  const timeStr = localDate.toLocaleTimeString(
     language === 'es' ? 'es-ES' : language === 'en' ? 'en-GB' : 'de-DE',
     { hour: '2-digit', minute: '2-digit' }
   )
