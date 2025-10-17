@@ -194,11 +194,16 @@ async function checkSlotAvailability(
     const result = await response.json()
     currentPersons = result || 0
   } else {
-    // Fallback: query directa con casting
+    // Fallback: query directa filtrando por fecha exacta
+    const nextDay = new Date(date)
+    nextDay.setDate(nextDay.getDate() + 1)
+    const nextDayStr = nextDay.toISOString().split('T')[0]
+
     const fallbackResponse = await fetch(
       `${SUPABASE_URL}/rest/v1/reservations?` +
-      `select=partySize&` +
-      `date=cs.{${date}}&` +
+      `select=partySize,time&` +
+      `date=gte.${date}T00:00:00&` +
+      `date=lt.${nextDayStr}T00:00:00&` +
       `status=in.(PENDING,CONFIRMED,SEATED)`,
       {
         headers: {
@@ -212,7 +217,7 @@ async function checkSlotAvailability(
 
     if (fallbackResponse.ok) {
       const reservations = await fallbackResponse.json()
-      // Filtrar por hora en el cliente
+      // Filtrar por hora exacta
       const filteredReservations = reservations.filter((r: any) => {
         const resTime = new Date(r.time).toISOString().split('T')[1].substring(0, 5)
         return resTime === time
