@@ -17,6 +17,7 @@ interface CapacityValidationConfig {
   enabled: boolean
   minCapacityBuffer: number  // 1.0 = exacto o mayor
   maxCapacityBuffer: number  // 1.5 = máximo 50% extra
+  enableContiguity: boolean  // Validar que mesas estén en la misma zona
 }
 
 interface ValidationResult {
@@ -25,12 +26,19 @@ interface ValidationResult {
   severity?: 'error' | 'warning' | 'info'
 }
 
+interface ContiguityValidation {
+  valid: boolean
+  reason?: string
+  suggestedTables?: string[]
+}
+
 export function useCapacityValidation() {
-  // Feature flag - ON por defecto (producción)
+  // Feature flags - Defaults para backward compatibility
   const config: CapacityValidationConfig = useMemo(() => ({
     enabled: process.env.NEXT_PUBLIC_ENABLE_CAPACITY_VALIDATION !== 'false',
     minCapacityBuffer: 1.0,
-    maxCapacityBuffer: 1.5
+    maxCapacityBuffer: 1.5,
+    enableContiguity: process.env.NEXT_PUBLIC_ENABLE_CONTIGUITY_CHECK === 'true'  // OFF por defecto
   }), [])
 
   /**
@@ -60,16 +68,16 @@ export function useCapacityValidation() {
     if (currentCapacity >= partySize) {
       return {
         canSelect: false,
-        reason: 'Ya tienes capacidad suficiente para tu grupo',
+        reason: `Ya tienes ${currentCapacity} asientos para ${partySize} personas`,
         severity: 'info'
       }
     }
 
-    // Regla 2: No permitir exceder capacidad máxima permitida
+    // Regla 2: No permitir exceder capacidad máxima permitida (buffer 1.5x)
     if (newCapacity > maxAllowed) {
       return {
         canSelect: false,
-        reason: `Excede capacidad máxima (${maxAllowed} personas para grupo de ${partySize})`,
+        reason: `Excede capacidad máxima (${maxAllowed} asientos para grupo de ${partySize})`,
         severity: 'error'
       }
     }
@@ -94,6 +102,32 @@ export function useCapacityValidation() {
 
     return { canSelect: true }
   }
+
+  /**
+   * Valida que las mesas seleccionadas estén en la misma zona (contigüidad)
+   */
+  const validateContiguity = useCallback((
+    tables: Table[]
+  ): ContiguityValidation => {
+    // Si feature flag OFF o solo una mesa, permitir siempre
+    if (!config.enableContiguity || tables.length <= 1) {
+      return { valid: true }
+    }
+
+    // Regla: Todas las mesas deben estar en la misma ubicación
+    const locations = new Set(tables.map(t => t.location))
+    if (locations.size > 1) {
+      return {
+        valid: false,
+        reason: 'Todas las mesas deben estar en la misma zona'
+      }
+    }
+
+    // TODO Future: Regla 2 - Validar distancia usando coordenadas floor plan
+    // if (tables[0].x !== undefined && tables[0].y !== undefined) { ... }
+
+    return { valid: true }
+  }, [config.enableContiguity])
 
   /**
    * Valida la selección final antes de continuar
@@ -173,6 +207,7 @@ export function useCapacityValidation() {
   return {
     config,
     validateTableSelection,
+    validateContiguity,
     validateFinalSelection,
     getCapacityInfo,
     filterAppropriateTables
