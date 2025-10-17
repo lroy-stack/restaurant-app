@@ -25,7 +25,7 @@ import { isValidPhoneNumber } from 'libphonenumber-js'
 // Validation schema
 const reservationSchema = z.object({
   dateTime: z.string().min(1),
-  tableIds: z.array(z.string()).min(1),
+  tableIds: z.array(z.string()).min(0), // Min 0 para permitir grupos grandes sin mesas
   partySize: z.number().int().min(1).max(20),
   childrenCount: z.number().int().min(0).optional(),
   location: z.string().default(''),
@@ -112,8 +112,10 @@ export default function ReservasPage() {
     if (currentStep === 1) {
       const dateTime = form.getValues('dateTime')
       const tableIds = form.getValues('tableIds')
+      const partySize = form.getValues('partySize')
 
-      if (!dateTime || tableIds.length === 0) {
+      // Para grupos grandes (9+), no requieren mesas (usan flujo de contacto)
+      if (!dateTime || (partySize <= 8 && tableIds.length === 0)) {
         toast.error(
           language === 'es' ? 'Selecciona fecha, hora y mesa' :
           language === 'en' ? 'Select date, time and table' :

@@ -36,6 +36,7 @@ import { MultiTableSelector } from './MultiTableSelector'
 import CompactWeatherWidget from './CompactWeatherWidget'
 import { FloorPlanSelector } from './FloorPlanSelector'
 import { FloorPlanLegend } from './FloorPlanLegend'
+import { LargeGroupSection } from './LargeGroupSection'
 
 // DateTime Helper - Prevents timezone shift bugs
 function createSafeDateTime(date: Date, time: string): string {
@@ -604,8 +605,17 @@ export default function EnhancedDateTimeAndTableStep({
           />
         )}
 
-        {/* Selector de zona (OBLIGATORIO antes de ver mesas) */}
-        {selectedDate && selectedTime && (
+        {/* Sección de Grupos Grandes (9+ personas) */}
+        {partySize >= 9 && selectedDate && selectedTime && (
+          <LargeGroupSection
+            dateTime={createSafeDateTime(selectedDate, selectedTime)}
+            partySize={partySize}
+            language={language}
+          />
+        )}
+
+        {/* Selector de zona (OBLIGATORIO antes de ver mesas) - Solo para grupos <= 8 */}
+        {partySize <= 8 && selectedDate && selectedTime && (
           <Card ref={zoneSelectorRef} className="border-2 border-primary/20 mt-4 md:mt-6">
             <CardHeader className="p-4 md:p-5">
               <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
@@ -658,8 +668,9 @@ export default function EnhancedDateTimeAndTableStep({
           </Card>
         )}
 
-        {/* Selector manual de mesas - Floor Plan + Grid View */}
-        {availabilityResults &&
+        {/* Selector manual de mesas - Floor Plan + Grid View - Solo para grupos <= 8 */}
+        {partySize <= 8 &&
+         availabilityResults &&
          availabilityResults.recommendations &&
          availabilityResults.recommendations.length > 1 && (
           <Card ref={tableSelectorRef} className="mt-4 md:mt-6">
@@ -738,8 +749,8 @@ export default function EnhancedDateTimeAndTableStep({
           </Card>
         )}
 
-        {/* Botones de acción - Solo después de seleccionar mesas */}
-        {availabilityResults && selectedTables.length > 0 && (
+        {/* Botones de acción - Solo después de seleccionar mesas y grupos <= 8 */}
+        {partySize <= 8 && availabilityResults && selectedTables.length > 0 && (
           <div className="flex flex-col sm:flex-row justify-end gap-2 md:gap-3">
             <Button
               variant="outline"
