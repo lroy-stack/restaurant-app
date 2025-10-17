@@ -731,6 +731,7 @@ export default function EnhancedDateTimeAndTableStep({
                     onSelectionChange={handleTableSelectionChange}
                     partySize={partySize}
                     maxSelections={5}
+                    enableContiguityValidation={true}
                   />
                 </TabsContent>
               </Tabs>
