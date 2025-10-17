@@ -25,9 +25,7 @@ interface MultiTableSelectorProps {
   partySize: number
   maxSelections?: number
   className?: string
-  currentTableIds?: string[] // IDs of tables in the original reservation
-  enableContiguityValidation?: boolean // Validate tables are in same zone
-  adminMode?: boolean // Admin mode (more flexible, future use)
+  currentTableIds?: string[] // NEW: IDs of tables in the original reservation
 }
 
 export function MultiTableSelector({
@@ -37,12 +35,10 @@ export function MultiTableSelector({
   partySize,
   maxSelections = 5,
   className,
-  currentTableIds = [],
-  enableContiguityValidation = true,
-  adminMode = false
+  currentTableIds = []
 }: MultiTableSelectorProps) {
-  // Hook de validación de capacidad (ahora incluye validateContiguity)
-  const { validateTableSelection, validateContiguity, getCapacityInfo, config } = useCapacityValidation()
+  // Hook de validación de capacidad
+  const { validateTableSelection, getCapacityInfo, config } = useCapacityValidation()
 
   // Group tables by location for better organization
   const tablesByLocation = useMemo(() => {
@@ -120,17 +116,6 @@ export function MultiTableSelector({
         return
       }
 
-      // Validar contigüidad si está habilitada y hay mesas seleccionadas
-      if (enableContiguityValidation && selectedTableIds.length > 0) {
-        const newTables = [...selectedTables, table]
-        const contiguityCheck = validateContiguity(newTables)
-
-        if (!contiguityCheck.valid) {
-          toast.warning(contiguityCheck.reason || 'Mesas no contiguas')
-          return  // Bloquear selección
-        }
-      }
-
       // Seleccionar mesa
       onSelectionChange([...selectedTableIds, table.id])
 
@@ -139,7 +124,7 @@ export function MultiTableSelector({
         toast.info(validation.reason)
       }
     }
-  }, [selectedTableIds, onSelectionChange, getTableValidation, enableContiguityValidation, selectedTables, validateContiguity])
+  }, [selectedTableIds, onSelectionChange, getTableValidation])
 
   const clearSelection = useCallback(() => {
     onSelectionChange([])
