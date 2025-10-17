@@ -77,12 +77,6 @@ const initialState: FormState = {
   specialRequests: ''
 }
 
-// ✅ ADDED: Funciones utilitarias para mejorar UX
-const getMaxTablesForPartySize = (partySize: number): number => {
-  if (partySize <= 4) return 1 // Grupos pequeños: 1 mesa
-  if (partySize <= 8) return 2 // Grupos medianos: máximo 2 mesas
-  return 3 // Grupos grandes: máximo 3 mesas
-}
 
 const getLocationIcon = (locationKey: string) => {
   switch (locationKey) {
@@ -228,7 +222,6 @@ export function ReservationForm({
 
   // ✅ ADDED: Función para manejar selección de mesas con feedback inteligente
   const handleTableToggle = (table: any) => {
-    const maxTablesAllowed = getMaxTablesForPartySize(formData.partySize)
     const isSelected = selectedTables.find(t => t.id === table.id)
 
     let newSelection: any[]
@@ -236,16 +229,7 @@ export function ReservationForm({
       // Deseleccionar mesa
       newSelection = selectedTables.filter(t => t.id !== table.id)
     } else {
-      // Validar límites antes de seleccionar
-      if (selectedTables.length >= maxTablesAllowed) {
-        const reason = formData.partySize <= 4
-          ? 'Para grupos pequeños (1-4 personas) solo necesitas 1 mesa'
-          : formData.partySize <= 8
-            ? 'Para grupos medianos (5-8 personas) máximo 2 mesas'
-            : 'Máximo 3 mesas por reserva (grupos grandes)'
-        toast.error(reason)
-        return
-      }
+      // ✅ No arbitrary limits - MultiTableSelector + useCapacityValidation handle validation
       newSelection = [...selectedTables, table]
     }
 
@@ -549,7 +533,6 @@ export function ReservationForm({
                       .filter(table => !formData.preferredLocation || table.location === formData.preferredLocation)
                       .map((table) => {
                         const isSelected = selectedTables.find(t => t.id === table.id)
-                        const maxTablesAllowed = getMaxTablesForPartySize(formData.partySize)
 
                         return (
                           <div
@@ -559,15 +542,9 @@ export function ReservationForm({
                               "hover:border-primary/50 active:scale-95 min-h-[60px] sm:min-h-[70px]",
                               isSelected
                                 ? "border-primary bg-primary/5"
-                                : "border-gray-200",
-                              selectedTables.length >= maxTablesAllowed && !isSelected
-                                ? "opacity-50 cursor-not-allowed"
-                                : ""
+                                : "border-gray-200"
                             )}
                             onClick={() => {
-                              if (selectedTables.length >= maxTablesAllowed && !isSelected) {
-                                return // No permitir más selecciones
-                              }
                               handleTableToggle(table)
                             }}
                           >
@@ -577,10 +554,7 @@ export function ReservationForm({
                                 "w-3 h-3 sm:w-4 sm:h-4 rounded border flex items-center justify-center",
                                 isSelected
                                   ? "bg-primary border-primary"
-                                  : "border-gray-300",
-                                selectedTables.length >= maxTablesAllowed && !isSelected
-                                  ? "opacity-50"
-                                  : ""
+                                  : "border-gray-300"
                               )}>
                                 {isSelected && (
                                   <Check className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-white" />
@@ -629,7 +603,7 @@ export function ReservationForm({
                             <Clock className="h-4 w-4" />
                             <strong>⚠️ Capacidad insuficiente:</strong> {totalCapacity} asientos, necesitas {formData.partySize} personas.
                             {totalCapacity < formData.partySize && " Selecciona más mesas."}
-                            <span className="text-xs">({selectedTables.length}/{getMaxTablesForPartySize(formData.partySize)} mesas)</span>
+                            <span className="text-xs">({selectedTables.length} mesa{selectedTables.length !== 1 ? 's' : ''})</span>
                           </p>
                         </div>
                       )}

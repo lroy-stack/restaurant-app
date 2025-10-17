@@ -36,8 +36,9 @@ import {
   Coffee
 } from 'lucide-react'
 import { useTables } from '@/hooks/useTables'
-import { useTableAvailability } from '@/hooks/useTableAvailability'
+import { useReservations } from '@/hooks/useReservations'
 import { getAvailableTimeSlots } from '@/lib/business-hours-client'
+import { MultiTableSelector } from '@/components/reservations/MultiTableSelector'
 
 interface MenuItem {
   id: string
@@ -453,12 +454,6 @@ export function EditReservationModal({ isOpen, onClose, reservation, onSave }: E
   const { tables } = useTables()
   const { maxPartySize } = useBusinessHours()
 
-  // 🔧 NEW: Table selection logic - same as customer modal
-  const getMaxTablesForPartySize = (partySize: number): number => {
-    if (partySize <= 4) return 1    // 1-4 personas: 1 mesa suficiente
-    if (partySize <= 8) return 2    // 5-8 personas: máximo 2 mesas
-    return 3                        // 9-12 personas: máximo 3 mesas
-  }
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<EditFormData>()
 
@@ -468,22 +463,69 @@ export function EditReservationModal({ isOpen, onClose, reservation, onSave }: E
   const watchedPartySize = watch('partySize')
   const watchedTableIds = watch('tableIds')
 
+  // ✅ Manual availability checking with checkAvailability
+  const { checkAvailability } = useReservations()
+  const [availableTables, setAvailableTables] = useState<any[]>([])
+  const [isLoadingAvailability, setIsLoadingAvailability] = useState(false)
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null)
 
-  // 🔧 NEW: Calculate max tables allowed based on party size
-  const maxTablesAllowed = getMaxTablesForPartySize(watchedPartySize || 1)
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      if (!watchedDate || !watchedTime || !watchedPartySize) {
+        setAvailableTables([])
+        return
+      }
 
-  const {
-    tables: availableTables,
-    isLoading: isLoadingAvailability,
-    error: availabilityError,
-    refetch: refetchAvailability
-  } = useTableAvailability(
-    watchedDate || '',
-    watchedTime || '',
-    watchedPartySize || 1,
-    undefined, // 🚀 NO ZONE PARAMETER: Show ALL available tables for admin flexibility
-    true // Admin context - include private tables (S9, S10, S10-B)
-  )
+      // Validate format
+      const hasValidFormat =
+        watchedDate.match(/^\d{4}-\d{2}-\d{2}$/) &&
+        watchedTime.match(/^\d{2}:\d{2}$/)
+
+      if (!hasValidFormat) {
+        setAvailableTables([])
+        return
+      }
+
+      setIsLoadingAvailability(true)
+      setAvailabilityError(null)
+
+      try {
+        // Construct dateTime in ISO format
+        const [year, month, day] = watchedDate.split('-')
+        const [hour, minute] = watchedTime.split(':')
+        const dateTime = new Date(Date.UTC(
+          parseInt(year),
+          parseInt(month) - 1,
+          parseInt(day),
+          parseInt(hour),
+          parseInt(minute)
+        )).toISOString()
+
+        // ⚠️ CRITICAL: includePrivate=true (admin can see all tables including S9-S12)
+        const result = await checkAvailability(
+          dateTime,
+          watchedPartySize,
+          undefined, // No zone filter
+          true // includePrivate=true → All tables including private
+        )
+
+        if (result?.availableTables) {
+          setAvailableTables(result.availableTables)
+        } else {
+          setAvailableTables([])
+        }
+      } catch (error) {
+        console.error('Error checking availability:', error)
+        setAvailabilityError(error instanceof Error ? error.message : 'Unknown error')
+        setAvailableTables([])
+      } finally {
+        setIsLoadingAvailability(false)
+      }
+    }
+
+    fetchAvailability()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedDate, watchedTime, watchedPartySize])
 
   // Load menu items function
   const loadMenuItems = async () => {
@@ -714,15 +756,12 @@ export function EditReservationModal({ isOpen, onClose, reservation, onSave }: E
         return
       }
 
-      // 🔧 Validate table limit based on party size
-      const maxAllowed = getMaxTablesForPartySize(data.partySize)
-      if (data.tableIds.length > maxAllowed) {
-        const reason = data.partySize <= 4
-          ? 'Para grupos pequeños (1-4 personas) solo necesitas 1 mesa'
-          : data.partySize <= 8
-            ? 'Para grupos medianos (5-8 personas) máximo 2 mesas'
-            : 'Máximo 3 mesas por reserva (grupos grandes)'
-        toast.error(reason)
+      // ✅ Capacity validation - ensure selected tables can accommodate party size
+      const selectedTables = tables.filter(t => data.tableIds.includes(t.id))
+      const totalCapacity = selectedTables.reduce((sum, t) => sum + t.capacity, 0)
+
+      if (totalCapacity < data.partySize) {
+        toast.error(`Capacidad insuficiente: ${totalCapacity} asientos para ${data.partySize} personas. Selecciona más mesas.`)
         return
       }
 
@@ -1016,17 +1055,23 @@ export function EditReservationModal({ isOpen, onClose, reservation, onSave }: E
               <CardTitle className="text-base">
                 <Label>
                   Mesas *
-                  {watch('tableIds')?.length > 0 && (
-                    <span className="ml-2 text-sm text-muted-foreground">
-                      ({watch('tableIds').length}/{maxTablesAllowed} mesa{watch('tableIds').length > 1 ? 's' : ''} seleccionada{watch('tableIds').length > 1 ? 's' : ''})
-                    </span>
-                  )}
+                  {watch('tableIds')?.length > 0 && (() => {
+                    const selectedIds = watch('tableIds') || []
+                    const selectedTables = tables.filter(t => selectedIds.includes(t.id))
+                    const totalCapacity = selectedTables.reduce((sum, t) => sum + t.capacity, 0)
+                    const hasEnoughCapacity = totalCapacity >= watchedPartySize
+
+                    return (
+                      <span className={`ml-2 text-sm ${hasEnoughCapacity ? 'text-green-600' : 'text-amber-600'}`}>
+                        ({selectedIds.length} mesa{selectedIds.length > 1 ? 's' : ''} - {totalCapacity} asientos de {watchedPartySize} necesarios)
+                        {!hasEnoughCapacity && ' ⚠️'}
+                      </span>
+                    )
+                  })()}
                 </Label>
               </CardTitle>
               <div className="text-sm text-muted-foreground mb-3">
-                {watchedPartySize <= 4 && <p>👥 Grupos pequeños (1-4 personas): máximo 1 mesa</p>}
-                {watchedPartySize > 4 && watchedPartySize <= 8 && <p>👥 Grupos medianos (5-8 personas): máximo 2 mesas</p>}
-                {watchedPartySize > 8 && <p>👥 Grupos grandes (9+ personas): máximo 3 mesas</p>}
+                <p>👥 Selecciona mesas con capacidad suficiente para {watchedPartySize} personas</p>
               </div>
             </CardHeader>
             <CardContent>
@@ -1035,84 +1080,28 @@ export function EditReservationModal({ isOpen, onClose, reservation, onSave }: E
                   <Loader2 className="h-5 w-5 animate-spin mr-2" />
                   <span className="text-sm text-muted-foreground">Verificando disponibilidad...</span>
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-[300px] overflow-y-auto p-2 border rounded-lg">
-
-
-                  {tableOptions.length === 0 ? (
-                    <div className="col-span-full flex items-center justify-center py-8">
-                      <AlertCircle className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        {hasValidAvailabilityData ? 'Sin mesas disponibles' : 'Complete fecha y hora'}
-                      </span>
-                    </div>
-                  ) : (
-                    tableOptions.map((table) => {
-                      const tableId = table.id || table.tableId
-                      const tableNumber = table.number || table.tableNumber || 'N/A'
-                      const tableCapacity = table.capacity || 0
-                      const tableLocation = table.location || table.zone || 'SIN_ZONA'
-
-                      const currentTableIds = watch('tableIds') || []
-                      const isSelected = currentTableIds.includes(tableId)
-                      const canSelectMore = currentTableIds.length < maxTablesAllowed
-                      const isDisabled = !isSelected && !canSelectMore
-
-                      return (
-                        <Card
-                          key={tableId}
-                          className={`p-3 cursor-pointer transition-all ${
-                            isSelected
-                              ? 'ring-2 ring-primary bg-primary/5'
-                              : isDisabled
-                                ? 'opacity-50 cursor-not-allowed bg-muted/20'
-                                : 'hover:bg-muted/50'
-                          }`}
-                          onClick={() => {
-                            const currentTables = watch('tableIds') || []
-                            if (isSelected) {
-                              setValue('tableIds', currentTables.filter(id => id !== tableId))
-                            } else if (canSelectMore) {
-                              setValue('tableIds', [...currentTables, tableId])
-                            } else {
-                              const watchedPartySize = watch('partySize') || 0
-                              const reason = watchedPartySize <= 4
-                                ? 'Para grupos pequeños (1-4 personas) solo necesitas 1 mesa'
-                                : watchedPartySize <= 8
-                                  ? 'Para grupos medianos (5-8 personas) máximo 2 mesas'
-                                  : 'Máximo 3 mesas por reserva (grupos grandes)'
-                              toast.error(reason)
-                            }
-                          }}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <MapPin className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-medium">Mesa {tableNumber}</span>
-                              <span className="text-xs text-muted-foreground">
-                                ({tableCapacity} pers.)
-                              </span>
-                            </div>
-                            {isSelected ? (
-                              <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
-                                <div className="w-2 h-2 rounded-full bg-white"></div>
-                              </div>
-                            ) : isDisabled ? (
-                              <div className="w-4 h-4 rounded-full bg-muted border-2 border-muted-foreground/30 flex items-center justify-center">
-                                <X className="w-2 h-2 text-muted-foreground/50" />
-                              </div>
-                            ) : null}
-                          </div>
-                          <div className="mt-1">
-                            <Badge variant="outline" className="text-xs">
-                              {locationLabels[tableLocation as keyof typeof locationLabels]}
-                            </Badge>
-                          </div>
-                        </Card>
-                      )
-                    })
-                  )}
+              ) : tableOptions.length === 0 ? (
+                <div className="flex items-center justify-center py-8">
+                  <AlertCircle className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    {hasValidAvailabilityData ? 'Sin mesas disponibles' : 'Complete fecha y hora'}
+                  </span>
                 </div>
+              ) : (
+                <MultiTableSelector
+                  tables={tableOptions.map(t => ({
+                    id: t.id || t.tableId,
+                    number: t.number || t.tableNumber || 'N/A',
+                    capacity: t.capacity || 0,
+                    location: t.location || t.zone || 'SIN_ZONA',
+                    status: 'available',
+                    available: true
+                  }))}
+                  selectedTableIds={watch('tableIds') || []}
+                  onSelectionChange={(ids) => setValue('tableIds', ids)}
+                  partySize={watchedPartySize || 1}
+                  maxSelections={5}
+                />
               )}
               {!watch('tableIds')?.length && (
                 <p className="text-sm text-destructive mt-2">Debe seleccionar al menos una mesa</p>
