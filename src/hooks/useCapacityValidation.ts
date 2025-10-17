@@ -5,7 +5,7 @@
  * Feature flag: NEXT_PUBLIC_ENABLE_CAPACITY_VALIDATION (default: false)
  */
 
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 
 interface Table {
   id: string
@@ -57,7 +57,10 @@ export function useCapacityValidation() {
 
     const currentCapacity = selectedTables.reduce((sum, t) => sum + t.capacity, 0)
     const newCapacity = currentCapacity + table.capacity
-    const maxAllowed = Math.ceil(partySize * config.maxCapacityBuffer)
+
+    // ✅ FIX: Buffer más estricto - máximo +2 personas extra
+    // Ejemplos: 2 PAX → max 4 asientos | 4 PAX → max 6 asientos | 6 PAX → max 8 asientos
+    const maxAllowed = partySize + 2
 
     // Permitir deseleccionar siempre
     if (isAlreadySelected) {
@@ -104,30 +107,52 @@ export function useCapacityValidation() {
   }
 
   /**
+   * Detecta sub-zona de una mesa en Terrace Campanari
+   * T1-T6 → Zona 1 | T7-T10 → Zona 2 | T11-T14 → Zona 3
+   */
+  const getTableSubZone = useCallback((tableNumber: string, location: string): string => {
+    // Solo aplica a Terrace Campanari
+    if (location !== 'TERRACE_CAMPANARI') {
+      return location
+    }
+
+    // Extraer número de mesa (T1 → 1, T10 → 10)
+    const num = parseInt(tableNumber.replace(/\D/g, ''))
+
+    if (num >= 1 && num <= 6) return 'TERRACE_CAMPANARI_ZONA_1'
+    if (num >= 7 && num <= 10) return 'TERRACE_CAMPANARI_ZONA_2'
+    if (num >= 11 && num <= 14) return 'TERRACE_CAMPANARI_ZONA_3'
+
+    // Fallback a location general si no coincide
+    return location
+  }, [])
+
+  /**
    * Valida que las mesas seleccionadas estén en la misma zona (contigüidad)
+   * IMPORTANTE: Para Terrace Campanari valida sub-zonas (T1-T6, T7-T10, T11-T14)
    */
   const validateContiguity = useCallback((
     tables: Table[]
   ): ContiguityValidation => {
-    // Si feature flag OFF o solo una mesa, permitir siempre
-    if (!config.enableContiguity || tables.length <= 1) {
+    // Si solo una mesa, permitir siempre
+    if (tables.length <= 1) {
       return { valid: true }
     }
 
-    // Regla: Todas las mesas deben estar en la misma ubicación
-    const locations = new Set(tables.map(t => t.location))
-    if (locations.size > 1) {
+    // Obtener sub-zonas de todas las mesas
+    const subZones = tables.map(t => getTableSubZone(t.number, t.location))
+    const uniqueZones = new Set(subZones)
+
+    // Todas las mesas deben estar en la misma sub-zona
+    if (uniqueZones.size > 1) {
       return {
         valid: false,
-        reason: 'Todas las mesas deben estar en la misma zona'
+        reason: 'Las mesas deben estar en la misma zona del restaurante'
       }
     }
 
-    // TODO Future: Regla 2 - Validar distancia usando coordenadas floor plan
-    // if (tables[0].x !== undefined && tables[0].y !== undefined) { ... }
-
     return { valid: true }
-  }, [config.enableContiguity])
+  }, [getTableSubZone])
 
   /**
    * Valida la selección final antes de continuar
@@ -150,7 +175,9 @@ export function useCapacityValidation() {
     }
 
     const totalCapacity = selectedTables.reduce((sum, t) => sum + t.capacity, 0)
-    const maxAllowed = Math.ceil(partySize * config.maxCapacityBuffer)
+
+    // ✅ FIX: Mismo buffer que validateTableSelection (+2 máximo)
+    const maxAllowed = partySize + 2
 
     // Validar capacidad mínima
     if (totalCapacity < partySize) {
@@ -165,7 +192,7 @@ export function useCapacityValidation() {
     if (totalCapacity > maxAllowed) {
       return {
         canSelect: false,
-        reason: `Capacidad excesiva. Máximo permitido: ${maxAllowed} personas para tu grupo de ${partySize}`,
+        reason: `Capacidad excesiva. Máximo permitido: ${maxAllowed} asientos para tu grupo de ${partySize}`,
         severity: 'error'
       }
     }
@@ -210,6 +237,7 @@ export function useCapacityValidation() {
     validateContiguity,
     validateFinalSelection,
     getCapacityInfo,
-    filterAppropriateTables
+    filterAppropriateTables,
+    getTableSubZone  // Exportar para usar en otros componentes
   }
 }
