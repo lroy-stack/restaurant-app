@@ -5,8 +5,7 @@ import { isValidPhoneNumber } from 'libphonenumber-js'
  * Schema de validación para solicitud de grupo grande
  */
 export const largeGroupContactSchema = z.object({
-  firstName: z.string().min(2, 'Nombre demasiado corto'),
-  lastName: z.string().min(2, 'Apellido demasiado corto'),
+  fullName: z.string().min(3, 'Nombre completo demasiado corto'),
   email: z.string().email('Email inválido'),
   phone: z.string().refine((value) => {
     return isValidPhoneNumber(value)

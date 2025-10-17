@@ -45,8 +45,7 @@ export async function POST(request: NextRequest) {
 
     const htmlContent = await render(
       LargeGroupRequestEmail({
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
+        fullName: validatedData.fullName,
         email: validatedData.email,
         phone: validatedData.phone,
         notes: validatedData.notes,

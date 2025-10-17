@@ -16,7 +16,8 @@ import {
   Baby,
   Info,
   Map,
-  Grid3x3
+  Grid3x3,
+  MessageCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -492,10 +493,36 @@ export default function EnhancedDateTimeAndTableStep({
                     <Plus className="h-3.5 w-3.5" />
                   </Button>
                 </div>
+
+                {/* Mensaje OBLIGATORIO para grupos mayores de 8 */}
+                {partySize >= 9 && (
+                  <div className="mt-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-500 dark:border-amber-600">
+                    <div className="flex items-start gap-2.5">
+                      <MessageCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1 space-y-1.5">
+                        <p className="text-sm font-bold text-amber-900 dark:text-amber-100">
+                          {language === 'es' && 'Reserva para más de 8 personas'}
+                          {language === 'en' && 'Reservation for more than 8 people'}
+                          {language === 'de' && 'Reservierung für mehr als 8 Personen'}
+                        </p>
+                        <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+                          {language === 'es' && '1. Elige tu fecha y hora abajo'}
+                          {language === 'en' && '1. Choose your date and time below'}
+                          {language === 'de' && '1. Wählen Sie Datum und Uhrzeit unten'}
+                        </p>
+                        <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+                          {language === 'es' && '2. Confirma tu reserva por WhatsApp'}
+                          {language === 'en' && '2. Confirm your reservation via WhatsApp'}
+                          {language === 'de' && '2. Bestätigen Sie Ihre Reservierung über WhatsApp'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Checkbox para indicar si hay niños */}
-              {partySize > 1 && (
+              {partySize > 1 && partySize <= 8 && (
                 <div className="pt-2.5 border-t space-y-2">
                   <div className="flex items-start gap-2">
                     <Checkbox

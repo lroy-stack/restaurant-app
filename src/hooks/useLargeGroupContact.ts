@@ -52,7 +52,7 @@ export function useLargeGroupContact(): UseLargeGroupContactReturn {
 
     const content = {
       ES: {
-        intro: `Hola! Soy ${data.firstName} ${data.lastName} 😊`,
+        intro: `Hola! Soy ${data.fullName} 😊`,
         request: `Me gustaría reservar una mesa para un grupo de *${data.partySize} personas* el *${dateStr}* a las *${timeStr}*.`,
         understand: 'Entiendo que para grupos grandes necesitáis confirmar disponibilidad personalmente.',
         contact: 'Mis datos de contacto son:',
@@ -61,7 +61,7 @@ export function useLargeGroupContact(): UseLargeGroupContactReturn {
         closing: '¿Podríais confirmarme si tenéis disponibilidad? Muchas gracias! 🙏'
       },
       EN: {
-        intro: `Hi! I'm ${data.firstName} ${data.lastName} 😊`,
+        intro: `Hi! I'm ${data.fullName} 😊`,
         request: `I would like to book a table for a group of *${data.partySize} people* on *${dateStr}* at *${timeStr}*.`,
         understand: 'I understand that for large groups you need to confirm availability personally.',
         contact: 'My contact details are:',
@@ -70,7 +70,7 @@ export function useLargeGroupContact(): UseLargeGroupContactReturn {
         closing: 'Could you please confirm if you have availability? Thank you! 🙏'
       },
       DE: {
-        intro: `Hallo! Ich bin ${data.firstName} ${data.lastName} 😊`,
+        intro: `Hallo! Ich bin ${data.fullName} 😊`,
         request: `Ich möchte gerne einen Tisch für eine Gruppe von *${data.partySize} Personen* am *${dateStr}* um *${timeStr}* reservieren.`,
         understand: 'Ich verstehe, dass Sie für große Gruppen die Verfügbarkeit persönlich bestätigen müssen.',
         contact: 'Meine Kontaktdaten sind:',

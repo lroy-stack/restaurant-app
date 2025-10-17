@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { ContactCTACard } from '@/components/ui/contact-cta-card'
 import { LargeGroupContactModal } from '@/components/modals/LargeGroupContactModal'
 import type { Language } from '@/lib/validations/reservation-professional'
@@ -47,7 +47,20 @@ export function LargeGroupSection({
   language
 }: LargeGroupSectionProps) {
   const [modalOpen, setModalOpen] = useState(false)
+  const sectionRef = useRef<HTMLDivElement>(null)
   const t = content[language]
+
+  // Auto-scroll cuando dateTime está disponible
+  useEffect(() => {
+    if (dateTime && sectionRef.current) {
+      setTimeout(() => {
+        sectionRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        })
+      }, 300)
+    }
+  }, [dateTime])
 
   const handleOpenModal = () => {
     if (!dateTime) {
@@ -62,7 +75,7 @@ export function LargeGroupSection({
   const displayDescription = dateTime ? t.description : t.noDateDescription
 
   return (
-    <>
+    <div ref={sectionRef}>
       <ContactCTACard
         title={displayTitle}
         description={displayDescription}
@@ -82,6 +95,6 @@ export function LargeGroupSection({
           language={language}
         />
       )}
-    </>
+    </div>
   )
 }

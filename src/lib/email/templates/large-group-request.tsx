@@ -2,8 +2,7 @@ import * as React from 'react'
 import { EmailBase } from './email-base'
 
 interface LargeGroupRequestEmailProps {
-  firstName: string
-  lastName: string
+  fullName: string
   email: string
   phone: string
   notes?: string
@@ -17,8 +16,7 @@ interface LargeGroupRequestEmailProps {
  * Enviado a admin@enigmaconalma.com
  */
 export function LargeGroupRequestEmail({
-  firstName,
-  lastName,
+  fullName,
   email,
   phone,
   notes,
@@ -220,7 +218,7 @@ export function LargeGroupRequestEmail({
                         borderBottom: '1px solid #E5E7EB'
                       }}
                     >
-                      {firstName} {lastName}
+                      {fullName}
                     </td>
                   </tr>
                   <tr>

@@ -22,8 +22,8 @@ interface LargeGroupContactFormProps {
 
 const content = {
   es: {
-    firstName: 'Nombre',
-    lastName: 'Apellidos',
+    fullName: 'Nombre completo',
+    fullNamePlaceholder: 'Juan García López',
     email: 'Email',
     phone: 'Teléfono',
     phonePlaceholder: '+34 600 000 000',
@@ -38,8 +38,8 @@ const content = {
     people: 'Personas'
   },
   en: {
-    firstName: 'First Name',
-    lastName: 'Last Name',
+    fullName: 'Full Name',
+    fullNamePlaceholder: 'John Smith',
     email: 'Email',
     phone: 'Phone',
     phonePlaceholder: '+44 7700 900000',
@@ -54,8 +54,8 @@ const content = {
     people: 'People'
   },
   de: {
-    firstName: 'Vorname',
-    lastName: 'Nachname',
+    fullName: 'Vollständiger Name',
+    fullNamePlaceholder: 'Hans Müller',
     email: 'E-Mail',
     phone: 'Telefon',
     phonePlaceholder: '+49 151 12345678',
@@ -88,8 +88,7 @@ export function LargeGroupContactForm({
   const form = useForm<LargeGroupContactFormData>({
     resolver: zodResolver(largeGroupContactSchema),
     defaultValues: {
-      firstName: '',
-      lastName: '',
+      fullName: '',
       email: '',
       phone: '',
       notes: ''
@@ -146,40 +145,22 @@ export function LargeGroupContactForm({
       </div>
 
       {/* Formulario de contacto */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Nombre */}
-        <div className="space-y-2">
-          <Label htmlFor="firstName" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
-            {t.firstName}
-          </Label>
-          <Input
-            id="firstName"
-            {...form.register('firstName')}
-            disabled={loading}
-            className="h-10"
-          />
-          {form.formState.errors.firstName && (
-            <p className="text-sm text-destructive">{form.formState.errors.firstName.message}</p>
-          )}
-        </div>
-
-        {/* Apellidos */}
-        <div className="space-y-2">
-          <Label htmlFor="lastName" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
-            {t.lastName}
-          </Label>
-          <Input
-            id="lastName"
-            {...form.register('lastName')}
-            disabled={loading}
-            className="h-10"
-          />
-          {form.formState.errors.lastName && (
-            <p className="text-sm text-destructive">{form.formState.errors.lastName.message}</p>
-          )}
-        </div>
+      {/* Nombre completo */}
+      <div className="space-y-2">
+        <Label htmlFor="fullName" className="flex items-center gap-2">
+          <User className="h-4 w-4" />
+          {t.fullName}
+        </Label>
+        <Input
+          id="fullName"
+          placeholder={t.fullNamePlaceholder}
+          {...form.register('fullName')}
+          disabled={loading}
+          className="h-10"
+        />
+        {form.formState.errors.fullName && (
+          <p className="text-sm text-destructive">{form.formState.errors.fullName.message}</p>
+        )}
       </div>
 
       {/* Email */}
