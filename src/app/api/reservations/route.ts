@@ -615,7 +615,7 @@ export async function POST(request: NextRequest) {
       console.error('⚠️ Token generation error:', tokenError)
     }
 
-    // 📧 SEND EMAILS BEFORE RETURN (same pattern as PATCH confirmation - WORKS)
+    // 📧 SEND EMAILS DIRECTLY (same pattern as confirmation - WORKS)
     const emailData = {
       reservationId: reservation.id,
       customerEmail: data.email,
@@ -643,18 +643,19 @@ export async function POST(request: NextRequest) {
       source: body.source || 'web'
     }
 
-    // 📧 SEND EMAILS (non-blocking but BEFORE return - Vercel serverless compatible)
-    try {
-      console.log('📧 Enviando emails de creación para reserva:', reservation.id)
-      const { sendReservationEmails } = await import('@/lib/email/sendReservationEmails')
-      await sendReservationEmails(emailData)
-      console.log('✅ Emails de creación enviados exitosamente')
-    } catch (emailError) {
-      console.error('❌ Error enviando emails de creación (non-blocking):', emailError)
-      // Continue - don't block reservation creation
-    }
+    // 🚀 BACKGROUND EMAIL SENDING (non-blocking, same as confirmation emails)
+    setImmediate(async () => {
+      try {
+        console.log('📧 Enviando emails de creación para reserva:', reservation.id)
+        const { sendReservationEmails } = await import('@/lib/email/sendReservationEmails')
+        await sendReservationEmails(emailData)
+        console.log('✅ Emails de creación enviados exitosamente')
+      } catch (emailError) {
+        console.error('❌ Error enviando emails de creación:', emailError)
+      }
+    })
 
-    // ⚡ RESPUESTA (emails ya enviados)
+    // ⚡ RESPUESTA INMEDIATA (emails se envían en background)
     return NextResponse.json({
       success: true,
       reservation: {
