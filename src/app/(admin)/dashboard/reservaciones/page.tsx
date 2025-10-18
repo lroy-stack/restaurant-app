@@ -28,6 +28,7 @@ import { QuickCreateModal } from './components/quick-create-modal'
 import { ReservationDetailModal } from './components/reservation-detail-modal'
 import { ExportModal } from '@/components/reservations/export-modal'
 import { NotificationSettings } from '@/components/dashboard/notification-settings'
+import { InboxButton } from '@/components/dashboard/inbox-button'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 
@@ -186,6 +187,7 @@ export default function ReservacionesPage() {
           </p>
         </div>
         <div className="flex gap-2 sm:gap-3 w-full sm:w-auto shrink-0">
+          <InboxButton onReservationClick={handleEventClick} />
           <NotificationSettings />
           <Button onClick={handleRefresh} variant="outline" size="sm" disabled={loading} className="flex-1 sm:flex-initial">
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
