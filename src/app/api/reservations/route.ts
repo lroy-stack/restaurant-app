@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createDirectAdminClient } from '@/lib/supabase/server'
 import { buildTokenUrl } from '@/lib/email/config/emailConfig'
+import { waitUntil } from '@vercel/functions'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -598,9 +599,10 @@ export async function POST(request: NextRequest) {
       message: 'Reserva creada exitosamente'
     }, { status: 201 })
 
-    // 🚀 BACKGROUND: Token + Emails (mantiene TODA la lógica original)
-    setImmediate(async () => {
-      try {
+    // 🚀 BACKGROUND: Token + Emails (FIXED: waitUntil para producción Vercel)
+    waitUntil(
+      (async () => {
+        try {
         // ✅ Token generation
         let reservationToken = null
         try {
@@ -711,10 +713,11 @@ export async function POST(request: NextRequest) {
             console.error('⚠️ Restaurant notification error:', notificationError)
           }
         }
-      } catch (error) {
-        console.error('⚠️ Background tasks error:', error)
-      }
-    })
+        } catch (error) {
+          console.error('⚠️ Background tasks error:', error)
+        }
+      })()
+    )
 
     return response
 
