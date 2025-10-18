@@ -403,62 +403,76 @@ export async function POST(request: NextRequest) {
     // ============ SERVICIO ALMUERZO ============
     if (config.lunchEnabled && config.lunchOpenTime && config.lunchLastReservationTime) {
       // INCLUIR TODOS los slots de almuerzo (disponibles Y bloqueados)
-      const allLunchSlots = validSlots
-        .filter(s => s.shiftType === 'lunch')
-        .map(s => s.time)
+      const allLunchSlots = validSlots.filter(s => s.shiftType === 'lunch')
+      const allLunchSlotTimes = allLunchSlots.map(s => s.time)
 
       // Para almuerzo: Turno 1 hasta 14:00, Turno 2 de 14:15 en adelante (sin gap)
       const turn1Count = 5 // 13:00, 13:15, 13:30, 13:45, 14:00
 
-      const turn1Slots = allLunchSlots.slice(0, turn1Count)
-      const turn2Slots = allLunchSlots.slice(turn1Count) // El resto: 14:15, 14:30, 14:45, 15:00
+      const turn1SlotTimes = allLunchSlotTimes.slice(0, turn1Count)
+      const turn2SlotTimes = allLunchSlotTimes.slice(turn1Count) // El resto: 14:15, 14:30, 14:45, 15:00
 
-      const turn1MaxPerSlot = turn1Slots.length > 0 ? Math.ceil(targetCapacity / turn1Slots.length) : 0
-      const turn2MaxPerSlot = turn2Slots.length > 0 ? Math.ceil(targetCapacity / turn2Slots.length) : 0
+      const turn1MaxPerSlot = turn1SlotTimes.length > 0 ? Math.ceil(targetCapacity / turn1SlotTimes.length) : 0
+      const turn2MaxPerSlot = turn2SlotTimes.length > 0 ? Math.ceil(targetCapacity / turn2SlotTimes.length) : 0
 
+      // Verificar disponibilidad de capacidad Y preservar estado de anticipación mínima
       const turn1Availability = await Promise.all(
-        turn1Slots.map(time => checkSlotAvailability(date, time, partySize, turn1MaxPerSlot))
+        turn1SlotTimes.map(async (time) => {
+          const originalSlot = allLunchSlots.find(s => s.time === time)
+          const capacityCheck = await checkSlotAvailability(date, time, partySize, turn1MaxPerSlot)
+          return {
+            ...capacityCheck,
+            available: originalSlot?.available && capacityCheck.available
+          }
+        })
       )
 
       const turn2Availability = await Promise.all(
-        turn2Slots.map(time => checkSlotAvailability(date, time, partySize, turn2MaxPerSlot))
+        turn2SlotTimes.map(async (time) => {
+          const originalSlot = allLunchSlots.find(s => s.time === time)
+          const capacityCheck = await checkSlotAvailability(date, time, partySize, turn2MaxPerSlot)
+          return {
+            ...capacityCheck,
+            available: originalSlot?.available && capacityCheck.available
+          }
+        })
       )
 
       const lunchTurns: Turn[] = []
 
-      if (turn1Slots.length > 0) {
+      if (turn1SlotTimes.length > 0) {
         lunchTurns.push({
           name: {
             es: 'Servicio Temprano',
             en: 'Early Service',
             de: 'Früher Service'
           },
-          period: `${turn1Slots[0]} - ${turn1Slots[turn1Slots.length - 1]}`,
-          start: turn1Slots[0],
-          end: turn1Slots[turn1Slots.length - 1],
+          period: `${turn1SlotTimes[0]} - ${turn1SlotTimes[turn1SlotTimes.length - 1]}`,
+          start: turn1SlotTimes[0],
+          end: turn1SlotTimes[turn1SlotTimes.length - 1],
           maxPerSlot: turn1MaxPerSlot,
-          totalSlots: turn1Slots.length,
+          totalSlots: turn1SlotTimes.length,
           slots: turn1Availability,
           availableCount: turn1Availability.filter(s => s.available).length,
-          totalCapacity: turn1MaxPerSlot * turn1Slots.length
+          totalCapacity: turn1MaxPerSlot * turn1SlotTimes.length
         })
       }
 
-      if (turn2Slots.length > 0) {
+      if (turn2SlotTimes.length > 0) {
         lunchTurns.push({
           name: {
             es: 'Servicio Tardío',
             en: 'Late Service',
             de: 'Später Service'
           },
-          period: `${turn2Slots[0]} - ${turn2Slots[turn2Slots.length - 1]}`,
-          start: turn2Slots[0],
-          end: turn2Slots[turn2Slots.length - 1],
+          period: `${turn2SlotTimes[0]} - ${turn2SlotTimes[turn2SlotTimes.length - 1]}`,
+          start: turn2SlotTimes[0],
+          end: turn2SlotTimes[turn2SlotTimes.length - 1],
           maxPerSlot: turn2MaxPerSlot,
-          totalSlots: turn2Slots.length,
+          totalSlots: turn2SlotTimes.length,
           slots: turn2Availability,
           availableCount: turn2Availability.filter(s => s.available).length,
-          totalCapacity: turn2MaxPerSlot * turn2Slots.length
+          totalCapacity: turn2MaxPerSlot * turn2SlotTimes.length
         })
       }
 
@@ -476,61 +490,75 @@ export async function POST(request: NextRequest) {
 
     // ============ SERVICIO CENA ============
     // INCLUIR TODOS los slots de cena (disponibles Y bloqueados)
-    const allDinnerSlots = validSlots
-      .filter(s => s.shiftType === 'dinner')
-      .map(s => s.time)
+    const allDinnerSlots = validSlots.filter(s => s.shiftType === 'dinner')
+    const allDinnerSlotTimes = allDinnerSlots.map(s => s.time)
 
     // Dividir en 2 turnos FIJOS (no dinámico basado en disponibilidad)
-    const { turn1Slots: dinnerTurn1Slots, turn2Slots: dinnerTurn2Slots } = divideSlotsIntoTurns(allDinnerSlots)
+    const { turn1Slots: dinnerTurn1SlotTimes, turn2Slots: dinnerTurn2SlotTimes } = divideSlotsIntoTurns(allDinnerSlotTimes)
 
     // Calcular capacidad por slot para cada turno
-    const dinnerTurn1MaxPerSlot = dinnerTurn1Slots.length > 0 ? Math.ceil(targetCapacity / dinnerTurn1Slots.length) : 0
-    const dinnerTurn2MaxPerSlot = dinnerTurn2Slots.length > 0 ? Math.ceil(targetCapacity / dinnerTurn2Slots.length) : 0
+    const dinnerTurn1MaxPerSlot = dinnerTurn1SlotTimes.length > 0 ? Math.ceil(targetCapacity / dinnerTurn1SlotTimes.length) : 0
+    const dinnerTurn2MaxPerSlot = dinnerTurn2SlotTimes.length > 0 ? Math.ceil(targetCapacity / dinnerTurn2SlotTimes.length) : 0
 
-    // Verificar disponibilidad
+    // Verificar disponibilidad de capacidad Y preservar estado de anticipación mínima
     const dinnerTurn1Availability = await Promise.all(
-      dinnerTurn1Slots.map(time => checkSlotAvailability(date, time, partySize, dinnerTurn1MaxPerSlot))
+      dinnerTurn1SlotTimes.map(async (time) => {
+        const originalSlot = allDinnerSlots.find(s => s.time === time)
+        const capacityCheck = await checkSlotAvailability(date, time, partySize, dinnerTurn1MaxPerSlot)
+        // Combinar: Solo disponible si AMBOS (anticipación Y capacidad) permiten
+        return {
+          ...capacityCheck,
+          available: originalSlot?.available && capacityCheck.available
+        }
+      })
     )
 
     const dinnerTurn2Availability = await Promise.all(
-      dinnerTurn2Slots.map(time => checkSlotAvailability(date, time, partySize, dinnerTurn2MaxPerSlot))
+      dinnerTurn2SlotTimes.map(async (time) => {
+        const originalSlot = allDinnerSlots.find(s => s.time === time)
+        const capacityCheck = await checkSlotAvailability(date, time, partySize, dinnerTurn2MaxPerSlot)
+        return {
+          ...capacityCheck,
+          available: originalSlot?.available && capacityCheck.available
+        }
+      })
     )
 
     const dinnerTurns: Turn[] = []
 
-    if (dinnerTurn1Slots.length > 0) {
+    if (dinnerTurn1SlotTimes.length > 0) {
       dinnerTurns.push({
         name: {
           es: 'Servicio Temprano',
           en: 'Early Service',
           de: 'Früher Service'
         },
-        period: `${dinnerTurn1Slots[0]} - ${dinnerTurn1Slots[dinnerTurn1Slots.length - 1]}`,
-        start: dinnerTurn1Slots[0],
-        end: dinnerTurn1Slots[dinnerTurn1Slots.length - 1],
+        period: `${dinnerTurn1SlotTimes[0]} - ${dinnerTurn1SlotTimes[dinnerTurn1SlotTimes.length - 1]}`,
+        start: dinnerTurn1SlotTimes[0],
+        end: dinnerTurn1SlotTimes[dinnerTurn1SlotTimes.length - 1],
         maxPerSlot: dinnerTurn1MaxPerSlot,
-        totalSlots: dinnerTurn1Slots.length,
+        totalSlots: dinnerTurn1SlotTimes.length,
         slots: dinnerTurn1Availability,
         availableCount: dinnerTurn1Availability.filter(s => s.available).length,
-        totalCapacity: dinnerTurn1MaxPerSlot * dinnerTurn1Slots.length
+        totalCapacity: dinnerTurn1MaxPerSlot * dinnerTurn1SlotTimes.length
       })
     }
 
-    if (dinnerTurn2Slots.length > 0) {
+    if (dinnerTurn2SlotTimes.length > 0) {
       dinnerTurns.push({
         name: {
           es: 'Servicio Tardío',
           en: 'Late Service',
           de: 'Später Service'
         },
-        period: `${dinnerTurn2Slots[0]} - ${dinnerTurn2Slots[dinnerTurn2Slots.length - 1]}`,
-        start: dinnerTurn2Slots[0],
-        end: dinnerTurn2Slots[dinnerTurn2Slots.length - 1],
+        period: `${dinnerTurn2SlotTimes[0]} - ${dinnerTurn2SlotTimes[dinnerTurn2SlotTimes.length - 1]}`,
+        start: dinnerTurn2SlotTimes[0],
+        end: dinnerTurn2SlotTimes[dinnerTurn2SlotTimes.length - 1],
         maxPerSlot: dinnerTurn2MaxPerSlot,
-        totalSlots: dinnerTurn2Slots.length,
+        totalSlots: dinnerTurn2SlotTimes.length,
         slots: dinnerTurn2Availability,
         availableCount: dinnerTurn2Availability.filter(s => s.available).length,
-        totalCapacity: dinnerTurn2MaxPerSlot * dinnerTurn2Slots.length
+        totalCapacity: dinnerTurn2MaxPerSlot * dinnerTurn2SlotTimes.length
       })
     }
 
