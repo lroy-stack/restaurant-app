@@ -76,10 +76,10 @@ export function ReservationFilters({
     minAdvanceMinutes
   } = useBusinessHours()
 
-  // Custom date validation for filters (allows past dates, only blocks closed days)
+  // Custom date validation for filters (allows ALL dates including past and closed days)
   const isDateDisabledForFilter = (date: Date): boolean => {
-    // Only block closed days, allow past dates for filtering historical reservations
-    return closedDays.includes(date.getDay())
+    // Allow ALL dates for filtering - no restrictions for historical view
+    return false
   }
 
   const getDisabledReasonForFilter = (date: Date): string => {
@@ -187,10 +187,9 @@ export function ReservationFilters({
             onChange={(dateString) => handleDateChange(dateString ? new Date(dateString) : undefined)}
             placeholder="Seleccionar fecha"
             className="h-9"
-            closedDays={closedDays}
+            closedDays={[]}
             minAdvanceMinutes={0}
-            isDateDisabled={isDateDisabledForFilter}
-            getDisabledReason={getDisabledReasonForFilter}
+            isDateDisabled={() => false}
             allowPastDates={true}
           />
         </div>

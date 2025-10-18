@@ -126,6 +126,17 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     const date = searchParams.get('date')
+    const search = searchParams.get('search')
+    const tableId = searchParams.get('tableId')
+
+    // Pagination parameters
+    const cursor = searchParams.get('cursor')
+    const limit = parseInt(searchParams.get('limit') || '50')
+    const direction = searchParams.get('direction') || 'forward'
+
+    // Date range (for timeline/calendar views)
+    const startDate = searchParams.get('startDate')
+    const endDate = searchParams.get('endDate')
 
     let query = `${SUPABASE_URL}/rest/v1/reservations?select=*,customers(*),reservation_items(*,menu_items(*,menu_categories(*)))`
 
@@ -133,12 +144,24 @@ export async function GET(request: NextRequest) {
       query += `&status=eq.${status}`
     }
 
-    // Date filtering logic: by default show from today + next 30 days
-    if (date) {
-      // Explicit date filter - show only that specific date
+    // Cursor pagination
+    if (cursor) {
+      if (direction === 'forward') {
+        query += `&date=gt.${cursor}`
+      } else {
+        query += `&date=lt.${cursor}`
+      }
+    }
+
+    // Date filtering logic
+    if (startDate && endDate) {
+      // Date range filter (for timeline/calendar)
+      query += `&date=gte.${startDate}T00:00:00&date=lte.${endDate}T23:59:59`
+    } else if (date) {
+      // Explicit single date filter
       query += `&date=gte.${date}T00:00:00&date=lte.${date}T23:59:59`
-    } else {
-      // ✅ FIX: Default filter shows next 30 days (not just until Sunday)
+    } else if (!cursor) {
+      // Default: next 30 days (only if no cursor pagination)
       const today = new Date()
       const next30Days = new Date(today)
       next30Days.setDate(today.getDate() + 30)
@@ -149,7 +172,19 @@ export async function GET(request: NextRequest) {
       query += `&date=gte.${todayStr}T00:00:00&date=lte.${next30DaysStr}T23:59:59`
     }
 
-    query += '&order=date.asc,time.asc'
+    // Search filter
+    if (search) {
+      query += `&or=(customerName.ilike.*${search}*,customerEmail.ilike.*${search}*,customerPhone.ilike.*${search}*)`
+    }
+
+    // Table filter
+    if (tableId) {
+      query += `&or=(tableId.eq.${tableId},table_ids.cs.{${tableId}})`
+    }
+
+    // Order and limit
+    query += `&order=date.${direction === 'forward' ? 'asc' : 'desc'},time.asc`
+    query += `&limit=${limit + 1}` // +1 to detect hasMore
 
     const response = await fetch(query, {
       headers: {
@@ -165,6 +200,15 @@ export async function GET(request: NextRequest) {
     }
 
     const reservations = await response.json()
+
+    // Detect if there are more pages
+    const hasMore = reservations.length > limit
+    if (hasMore) reservations.pop()
+
+    // Calculate next cursor
+    const nextCursor = reservations.length > 0
+      ? reservations[reservations.length - 1].date
+      : null
 
     // 🚀 LOOKUP DE MESAS: Resolver table_ids[] → información completa de mesas
     if (reservations && reservations.length > 0) {
@@ -238,7 +282,12 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      reservations: reservations || []
+      reservations: reservations || [],
+      pagination: {
+        cursor: nextCursor,
+        hasMore,
+        limit
+      }
     })
 
   } catch (error) {

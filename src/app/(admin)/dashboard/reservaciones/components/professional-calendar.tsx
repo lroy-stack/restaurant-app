@@ -11,9 +11,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { 
-  ChevronLeft, 
-  ChevronRight, 
+import { useBusinessHours } from '@/hooks/useBusinessHours'
+import {
+  ChevronLeft,
+  ChevronRight,
   Calendar as CalendarIcon,
   Users,
   Clock,
@@ -59,18 +60,25 @@ interface ProfessionalCalendarProps {
   currentDate?: Date
   onDateChange?: (date: Date) => void
   onReservationClick?: (reservation: Reservation) => void
+  onSlotClick?: (slotInfo: { start: Date; end: Date }) => void
   onReservationMove?: (eventId: string, start: Date, end: Date) => void
   onReservationResize?: (eventId: string, start: Date, end: Date) => void
 }
 
-// Configuración de colores por estado
-const statusColors = {
-  PENDING: { bg: 'rgb(254 249 195)', border: 'rgb(202 138 4)', text: 'rgb(133 77 14)' },
-  CONFIRMED: { bg: 'rgb(220 252 231)', border: 'rgb(34 197 94)', text: 'rgb(21 128 61)' },
-  SEATED: { bg: 'rgb(219 234 254)', border: 'rgb(59 130 246)', text: 'rgb(30 64 175)' },
-  COMPLETED: { bg: 'rgb(243 244 246)', border: 'rgb(107 114 128)', text: 'rgb(55 65 81)' },
-  CANCELLED: { bg: 'rgb(254 226 226)', border: 'rgb(239 68 68)', text: 'rgb(185 28 28)' },
-  NO_SHOW: { bg: 'rgb(254 226 226)', border: 'rgb(239 68 68)', text: 'rgb(185 28 28)' }
+// Map de clases CSS por estado (reactivo a cambios de tema)
+const getStatusClasses = (status: string) => {
+  const baseClasses = "border-l-2 transition-colors duration-200"
+
+  const statusMap = {
+    PENDING: "bg-yellow-100 dark:bg-yellow-900/30 border-yellow-500 text-yellow-900 dark:text-yellow-100",
+    CONFIRMED: "bg-green-100 dark:bg-green-900/30 border-green-500 text-green-900 dark:text-green-100",
+    SEATED: "bg-blue-100 dark:bg-blue-900/30 border-blue-500 text-blue-900 dark:text-blue-100",
+    COMPLETED: "bg-gray-100 dark:bg-gray-700 border-gray-400 dark:border-gray-500 text-gray-900 dark:text-gray-100",
+    CANCELLED: "bg-red-100 dark:bg-red-900/30 border-red-500 text-red-900 dark:text-red-100",
+    NO_SHOW: "bg-red-100 dark:bg-red-900/30 border-red-500 text-red-900 dark:text-red-100"
+  }
+
+  return `${baseClasses} ${statusMap[status as keyof typeof statusMap] || statusMap.PENDING}`
 }
 
 // Mensajes en español
@@ -105,23 +113,28 @@ const formats = {
     `${moment(start).format('HH:mm')} - ${moment(end).format('HH:mm')}`
 }
 
-export function ProfessionalCalendar({ 
-  reservations, 
-  loading = false, 
+export function ProfessionalCalendar({
+  reservations,
+  loading = false,
   currentDate = new Date(),
   onDateChange,
   onReservationClick,
+  onSlotClick,
   onReservationMove,
   onReservationResize
 }: ProfessionalCalendarProps) {
   const [view, setView] = useState<View>('week')
   const [date, setDate] = useState(currentDate)
 
+  // Get dynamic buffer from business hours
+  const { bufferMinutes } = useBusinessHours()
+
   // Convertir reservas a eventos del calendario
   const events = useMemo((): CalendarEvent[] => {
     return reservations.map(reservation => {
       const startTime = moment(reservation.time)
-      const endTime = startTime.clone().add(2, 'hours') // Duración por defecto 2 horas
+      // Use dynamic buffer from DB (135, 150, etc. minutes)
+      const endTime = startTime.clone().add(bufferMinutes, 'minutes')
 
       // 🚀 FIX: Si la reserva cruza medianoche, limitar visualización a 23:59 del día de inicio
       const dayEnd = startTime.clone().endOf('day')
@@ -138,27 +151,22 @@ export function ProfessionalCalendar({
         resource: reservation
       }
     })
-  }, [reservations])
+  }, [reservations, bufferMinutes])
 
   // Componente personalizado para eventos
   const EventComponent = useCallback(({ event }: { event: CalendarEvent }) => {
     const reservation = event.resource
-    const colors = statusColors[reservation.status]
-    const isVip = reservation.customerEmail.includes('vip') || 
+    const isVip = reservation.customerEmail.includes('vip') ||
                   reservation.specialRequests?.toLowerCase().includes('vip')
-    
+
     return (
-      <div 
+      <div
         className={cn(
           "p-1 rounded text-xs font-medium cursor-pointer",
-          "hover:shadow-md transition-all duration-200",
-          "border-l-2 flex items-center justify-between"
+          "hover:shadow-md hover:scale-[1.02] transition-all duration-200",
+          "flex items-center justify-between",
+          getStatusClasses(reservation.status)
         )}
-        style={{
-          backgroundColor: colors.bg,
-          borderLeftColor: colors.border,
-          color: colors.text
-        }}
         onClick={() => onReservationClick?.(reservation)}
       >
         <div className="flex-1 min-w-0">
@@ -184,10 +192,9 @@ export function ProfessionalCalendar({
           </div>
         </div>
         
-        <Badge 
-          variant="outline" 
-          className="text-xs px-1 py-0 ml-1"
-          style={{ borderColor: colors.border, color: colors.text }}
+        <Badge
+          variant="outline"
+          className="text-xs px-1 py-0 ml-1 border-current"
         >
           {reservation.status === 'PENDING' && '⏳'}
           {reservation.status === 'CONFIRMED' && '✅'}
@@ -243,10 +250,7 @@ export function ProfessionalCalendar({
               key={viewName}
               variant={view === viewName ? "default" : "outline"}
               size="sm"
-              onClick={() => {
-                setView(viewName)
-                onView(viewName)
-              }}
+              onClick={() => onView(viewName)}
               className="h-8 text-xs sm:text-sm px-2 sm:px-3"
             >
               <span className="hidden sm:inline">
@@ -277,9 +281,35 @@ export function ProfessionalCalendar({
     onReservationClick?.(event.resource)
   }, [onReservationClick])
 
-  const handleSelectSlot = useCallback(({ start }: { start: Date }) => {
-    // Navegar a crear nueva reserva en esa fecha/hora
-    console.log('Nueva reserva para:', start)
+  const handleSelectSlot = useCallback(({ start, end }: { start: Date; end: Date }) => {
+    // Prevent selecting past dates
+    const now = new Date()
+    if (start < now) {
+      return // Don't allow creating reservations in the past
+    }
+
+    // Llamar al callback para abrir modal de crear reserva
+    if (onSlotClick) {
+      onSlotClick({ start, end })
+    }
+  }, [onSlotClick])
+
+  // Style past dates in month view
+  const dayPropGetter = useCallback((date: Date) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0) // Reset time to start of day
+    const compareDate = new Date(date)
+    compareDate.setHours(0, 0, 0, 0)
+
+    // If date is before today, apply past date styling
+    if (compareDate < today) {
+      return {
+        className: 'rbc-past-date',
+        style: {}
+      }
+    }
+
+    return {}
   }, [])
 
   // Handlers para drag & drop
@@ -353,6 +383,7 @@ export function ProfessionalCalendar({
             onSelectSlot={handleSelectSlot}
             onEventDrop={handleEventDrop}
             onEventResize={handleEventResize}
+            dayPropGetter={dayPropGetter}
             resizable
             selectable
             dragFromOutsideItem={null}
@@ -376,12 +407,19 @@ export function ProfessionalCalendar({
       <style jsx global>{`
         .professional-calendar .rbc-calendar {
           font-family: inherit;
+          background-color: hsl(var(--background));
+          color: hsl(var(--foreground));
         }
         .professional-calendar .rbc-header {
           padding: 6px 4px;
           font-weight: 600;
           font-size: 0.75rem;
-          border-bottom: 1px solid rgb(229 231 235);
+          border-bottom: 2px solid #cbd5e1 !important;
+          background-color: hsl(var(--muted));
+          color: hsl(var(--foreground));
+        }
+        .dark .professional-calendar .rbc-header {
+          border-bottom: 2px solid #475569 !important;
         }
         @media (min-width: 640px) {
           .professional-calendar .rbc-header {
@@ -390,16 +428,28 @@ export function ProfessionalCalendar({
           }
         }
         .professional-calendar .rbc-time-slot {
-          border-top: 1px solid rgb(243 244 246);
+          border-top: 1px solid #e2e8f0 !important;
+        }
+        .dark .professional-calendar .rbc-time-slot {
+          border-top: 1px solid #334155 !important;
         }
         .professional-calendar .rbc-timeslot-group {
-          border-bottom: 1px solid rgb(229 231 235);
+          border-bottom: 1px solid #e2e8f0 !important;
+        }
+        .dark .professional-calendar .rbc-timeslot-group {
+          border-bottom: 1px solid #334155 !important;
+        }
+        .professional-calendar .rbc-day-slot .rbc-time-slot {
+          border-top: 1px solid #e2e8f0 !important;
+        }
+        .dark .professional-calendar .rbc-day-slot .rbc-time-slot {
+          border-top: 1px solid #334155 !important;
         }
         .professional-calendar .rbc-today {
-          background-color: rgb(248 250 252);
+          background-color: hsl(var(--accent) / 0.1);
         }
         .professional-calendar .rbc-current-time-indicator {
-          background-color: rgb(239 68 68);
+          background-color: hsl(var(--destructive));
           height: 2px;
         }
         .professional-calendar .rbc-event {
@@ -409,6 +459,97 @@ export function ProfessionalCalendar({
         }
         .professional-calendar .rbc-day-slot .rbc-time-slot {
           height: 30px;
+        }
+        .professional-calendar .rbc-time-content,
+        .professional-calendar .rbc-agenda-view {
+          background-color: hsl(var(--background));
+          color: hsl(var(--foreground));
+        }
+        .professional-calendar .rbc-month-view {
+          background-color: hsl(var(--background));
+        }
+        /* === VISTA MES === */
+        .professional-calendar .rbc-month-view .rbc-day-bg {
+          border: 1px solid #cbd5e1 !important;
+          background-color: hsl(var(--card));
+        }
+        .dark .professional-calendar .rbc-month-view .rbc-day-bg {
+          border: 1px solid #475569 !important;
+        }
+        .professional-calendar .rbc-month-row {
+          border-bottom: 1px solid #cbd5e1 !important;
+        }
+        .dark .professional-calendar .rbc-month-row {
+          border-bottom: 1px solid #475569 !important;
+        }
+        .professional-calendar .rbc-date-cell {
+          padding: 4px;
+        }
+
+        /* === VISTA SEMANA/DIA === */
+        /* Fondo de columnas */
+        .professional-calendar .rbc-day-bg {
+          background-color: hsl(var(--card));
+        }
+
+        /* Bordes VERTICALES entre días - MÁS VISIBLES */
+        .professional-calendar .rbc-time-content > * + * > * {
+          border-left: 2px solid #cbd5e1 !important;
+        }
+        .dark .professional-calendar .rbc-time-content > * + * > * {
+          border-left: 2px solid #475569 !important;
+        }
+        .professional-calendar .rbc-day-slot {
+          border-left: 2px solid #cbd5e1 !important;
+        }
+        .dark .professional-calendar .rbc-day-slot {
+          border-left: 2px solid #475569 !important;
+        }
+        .professional-calendar .rbc-day-slot:first-child {
+          border-left: none;
+        }
+
+        /* Headers de días */
+        .professional-calendar .rbc-time-header-content {
+          border-left: 2px solid #cbd5e1 !important;
+        }
+        .dark .professional-calendar .rbc-time-header-content {
+          border-left: 2px solid #475569 !important;
+        }
+        .professional-calendar .rbc-time-header > .rbc-row:first-child {
+          border-bottom: 2px solid #cbd5e1 !important;
+        }
+        .dark .professional-calendar .rbc-time-header > .rbc-row:first-child {
+          border-bottom: 2px solid #475569 !important;
+        }
+
+        /* === AGENDA === */
+        .professional-calendar .rbc-agenda-view table {
+          border: 1px solid hsl(var(--border));
+        }
+        .professional-calendar .rbc-agenda-view table tbody > tr > td {
+          border-top: 1px solid hsl(var(--border));
+        }
+
+        .professional-calendar .rbc-off-range-bg {
+          background: repeating-linear-gradient(
+            45deg,
+            #f1f5f9,
+            #f1f5f9 10px,
+            #e2e8f0 10px,
+            #e2e8f0 20px
+          ) !important;
+          opacity: 0.9 !important;
+        }
+        .dark .professional-calendar .rbc-off-range-bg {
+          background: repeating-linear-gradient(
+            45deg,
+            #1e293b,
+            #1e293b 10px,
+            #0f172a 10px,
+            #0f172a 20px
+          ) !important;
+          opacity: 0.9 !important;
         }
         /* Móvil: Hacer los labels de hora más compactos */
         @media (max-width: 640px) {
@@ -426,23 +567,44 @@ export function ProfessionalCalendar({
           }
         }
 
-        /* Dark theme support - Obsidian */
-        .theme-obsidian .professional-calendar .rbc-header, .dark .professional-calendar .rbc-header {
-          background-color: rgb(30 41 59);
-          border-bottom: 1px solid rgb(51 65 85);
-          color: rgb(226 232 240);
+        /* PAST DATES STYLING - Only for month view */
+        .professional-calendar .rbc-past-date {
+          position: relative;
+          background: repeating-linear-gradient(
+            135deg,
+            #f8fafc,
+            #f8fafc 8px,
+            #e2e8f0 8px,
+            #e2e8f0 16px
+          ) !important;
+          pointer-events: auto;
+          cursor: not-allowed;
         }
-        .theme-obsidian .professional-calendar .rbc-time-slot, .dark .professional-calendar .rbc-time-slot {
-          border-top: 1px solid rgb(51 65 85);
+        .dark .professional-calendar .rbc-past-date {
+          background: repeating-linear-gradient(
+            135deg,
+            #1e293b,
+            #1e293b 8px,
+            #0f172a 8px,
+            #0f172a 16px
+          ) !important;
         }
-        .theme-obsidian .professional-calendar .rbc-timeslot-group, .dark .professional-calendar .rbc-timeslot-group {
-          border-bottom: 1px solid rgb(51 65 85);
+
+        .professional-calendar .rbc-past-date .rbc-date-cell {
+          color: #94a3b8;
+          font-weight: 400;
         }
-        .theme-obsidian .professional-calendar .rbc-today, .dark .professional-calendar .rbc-today {
-          background-color: rgb(30 41 59);
+        .dark .professional-calendar .rbc-past-date .rbc-date-cell {
+          color: #64748b;
         }
-        .theme-obsidian .professional-calendar .rbc-current-time-indicator, .dark .professional-calendar .rbc-current-time-indicator {
-          background-color: rgb(248 113 113);
+
+        .professional-calendar .rbc-past-date .rbc-event {
+          opacity: 0.6;
+          filter: saturate(0.5) brightness(0.85);
+        }
+
+        .professional-calendar .rbc-past-date:hover {
+          opacity: 0.9;
         }
       `}</style>
     </Card>

@@ -3,6 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { useBusinessHours } from '@/hooks/useBusinessHours'
 import {
   Eye,
   Calendar,
@@ -189,9 +190,18 @@ function formatDateTime(date: string, time: string) {
 export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }: ReservationDetailModalProps) {
   if (!reservation) return null
 
+  // Get dynamic buffer from business hours
+  const { bufferMinutes } = useBusinessHours()
+
   const { dateLabel, timeLabel } = formatDateTime(reservation.date, reservation.time)
   const statusInfo = statusStyles[reservation.status]
   const isVipCustomer = reservation.customerEmail.includes('vip')
+
+  // Calculate duration dynamically
+  const durationHours = (bufferMinutes / 60).toFixed(1)
+  const durationText = bufferMinutes % 60 === 0
+    ? `${bufferMinutes / 60} hora${bufferMinutes / 60 > 1 ? 's' : ''}`
+    : `${durationHours} horas`
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose} modal>
@@ -241,7 +251,7 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
               <Clock className="w-5 h-5 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium text-foreground">{timeLabel}</p>
-                <p className="text-xs text-muted-foreground">Duración: 2.5 horas</p>
+                <p className="text-xs text-muted-foreground">Duración: {durationText}</p>
               </div>
             </div>
           </div>

@@ -24,17 +24,22 @@ interface ReservationCalendarProps {
   loading?: boolean
   currentDate?: Date
   onDateChange?: (date: Date) => void
+  onReservationClick?: (reservationId: string) => void
+  onSlotClick?: (slotInfo: any) => void
 }
 
-export function ReservationCalendar({ 
-  reservations, 
+export function ReservationCalendar({
+  reservations,
   loading = false,
   currentDate = new Date(),
-  onDateChange
+  onDateChange,
+  onReservationClick,
+  onSlotClick
 }: ReservationCalendarProps) {
   const handleReservationClick = (reservation: Reservation) => {
-    console.log('Clicked reservation:', reservation)
-    // TODO: Open reservation details modal
+    if (onReservationClick) {
+      onReservationClick(reservation.id)
+    }
   }
 
   return (
@@ -44,6 +49,7 @@ export function ReservationCalendar({
       currentDate={currentDate}
       onDateChange={onDateChange}
       onReservationClick={handleReservationClick}
+      onSlotClick={onSlotClick}
     />
   )
 }

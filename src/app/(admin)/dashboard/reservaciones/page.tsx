@@ -4,35 +4,52 @@ import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { 
-  CalendarDays, 
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import {
+  CalendarDays,
   RefreshCw,
   CheckCircle,
   AlertCircle,
   Users,
-  XCircle
+  XCircle,
+  List,
+  Calendar,
+  BarChart3
 } from 'lucide-react'
 import { useRealtimeReservations } from '@/hooks/useRealtimeReservations'
 import { useTables } from '@/hooks/useTables'
 import { ReservationFilters } from './components/reservation-filters'
-import { ReservationList } from './components/reservation-list'
 import { CompactReservationList } from './components/compact-reservation-list'
+import { InfiniteReservationList } from './components/infinite-reservation-list'
 import { QuickStats } from './components/quick-stats'
-import { ViewToggle, useViewMode } from './components/view-toggle'
 import { ReservationCalendar } from './components/reservation-calendar'
+import { OccupancyHeatmap } from './components/occupancy-heatmap'
+import { QuickCreateModal } from './components/quick-create-modal'
+import { ReservationDetailModal } from './components/reservation-detail-modal'
 import { ExportModal } from '@/components/reservations/export-modal'
 import { NotificationSettings } from '@/components/dashboard/notification-settings'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
 
 export default function ReservacionesPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { currentView } = useViewMode()
   const [showExportModal, setShowExportModal] = useState(false)
-  
+  const [createModalOpen, setCreateModalOpen] = useState(false)
+  const [createModalData, setCreateModalData] = useState<any>(null)
+  const [detailModalOpen, setDetailModalOpen] = useState(false)
+  const [detailReservationId, setDetailReservationId] = useState<string | null>(null)
+
+  // View mode from URL
+  const currentView = searchParams.get('view') || 'list'
+
   // Extract filters from URL params
-  const filters = {
+  const filters: {
+    status?: string
+    date?: string
+    search?: string
+    tableId?: string
+  } = {
     status: searchParams.get('status') || undefined,
     date: searchParams.get('date') || undefined,
     search: searchParams.get('search') || undefined,
@@ -58,7 +75,7 @@ export default function ReservacionesPage() {
     error: tablesError
   } = useTables()
 
-  const handleStatusUpdate = async (id: string, status: string, additionalData?: any) => {
+  const handleStatusUpdate = async (id: string, status: string, additionalData?: any): Promise<void> => {
     const success = await updateReservationStatus(id, status, additionalData)
     if (success) {
       toast.success(`Reservación ${status.toLowerCase()} exitosamente`)
@@ -91,6 +108,38 @@ export default function ReservacionesPage() {
       toast.error('Error al eliminar la reserva')
       throw error
     }
+  }
+
+  const handleViewChange = (view: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('view', view)
+    router.push(`/dashboard/reservaciones?${params.toString()}`)
+  }
+
+  const handleEventClick = (reservationId: string) => {
+    setDetailReservationId(reservationId)
+    setDetailModalOpen(true)
+  }
+
+  const handleCalendarSlotClick = (slotInfo: any) => {
+    // Si es vista de día/semana, slotInfo.start ya tiene la hora del slot
+    // Si es vista de mes, slotInfo.start es medianoche (00:00)
+    const selectedDate = slotInfo.start
+    const isTimeSlot = selectedDate.getHours() !== 0 || selectedDate.getMinutes() !== 0
+
+    setCreateModalData({
+      dateTime: selectedDate,
+      partySize: 2,
+      // El modal manejará el default de 20:00 si es 00:00
+    })
+    setCreateModalOpen(true)
+  }
+
+  const handleHeatmapDateClick = (date: Date) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('date', format(date, 'yyyy-MM-dd'))
+    params.set('view', 'calendar')
+    router.push(`/dashboard/reservaciones?${params.toString()}`)
   }
 
   if (error) {
@@ -148,45 +197,46 @@ export default function ReservacionesPage() {
 
       {/* QuickStats Dashboard Widgets - Hidden on mobile */}
       <div className="hidden lg:block">
-        <QuickStats
-          reservations={reservations}
-          // TODO: Add previousPeriodData for trends
-          // previousPeriodData={previousPeriodData}
-        />
+        <QuickStats reservations={reservations} />
       </div>
 
-      {/* View Toggle & Actions - RESPONSIVE EXCELLENCE */}
-      <ViewToggle
-        currentView={currentView}
-        totalCount={reservations.length}
-        loading={loading}
-        onNewReservation={() => {
-          router.push('/dashboard/reservaciones/nueva')
-        }}
-        onExport={() => setShowExportModal(true)}
-      />
+      {/* Tabs Navigation */}
+      <Tabs value={currentView} onValueChange={handleViewChange} className="space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <TabsList className="grid w-full sm:w-auto grid-cols-3">
+            <TabsTrigger value="list" className="text-xs sm:text-sm">
+              <List className="h-4 w-4 mr-2" />
+              Lista
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="text-xs sm:text-sm">
+              <Calendar className="h-4 w-4 mr-2" />
+              Calendario
+            </TabsTrigger>
+            <TabsTrigger value="heatmap" className="text-xs sm:text-sm">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Heatmap
+            </TabsTrigger>
+          </TabsList>
 
-      {/* Filters - RESPONSIVE CARD - MANTENER DISEÑO PERFECTO */}
-      <Card className="transition-all duration-200">
-        <CardContent className="p-4">
-          <ReservationFilters 
-            tables={tables}
-            loading={tablesLoading}
-            error={tablesError}
-            currentFilters={filters}
-          />
-        </CardContent>
-      </Card>
+          <Button onClick={() => setCreateModalOpen(true)} size="sm">
+            Nueva Reserva
+          </Button>
+        </div>
 
-      {/* CONDITIONAL RENDERING: Calendar vs Compact List - ZERO REDUNDANCY */}
-      {currentView === 'calendar' ? (
-        <ReservationCalendar
-          reservations={reservations}
-          loading={loading}
-          currentDate={new Date()}
-        />
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:gap-6">
+        {/* Filters - Common for all views */}
+        <Card>
+          <CardContent className="p-4">
+            <ReservationFilters
+              tables={tables}
+              loading={tablesLoading}
+              error={tablesError}
+              currentFilters={filters}
+            />
+          </CardContent>
+        </Card>
+
+        {/* List View */}
+        <TabsContent value="list" className="mt-0">
           <CompactReservationList
             reservations={reservations}
             loading={loading}
@@ -194,14 +244,56 @@ export default function ReservacionesPage() {
             onReservationUpdate={updateReservation}
             onReservationDelete={handleReservationDelete}
             bulkMode={false}
-            // TODO: Add bulk selection state management
-            // selectedIds={selectedIds}
-            // onSelectionChange={handleSelectionChange}
           />
-        </div>
+        </TabsContent>
+
+        {/* Calendar View */}
+        <TabsContent value="calendar" className="mt-0">
+          <ReservationCalendar
+            reservations={reservations}
+            loading={loading}
+            currentDate={new Date()}
+            onReservationClick={handleEventClick}
+            onSlotClick={handleCalendarSlotClick}
+          />
+        </TabsContent>
+
+        {/* Heatmap View */}
+        <TabsContent value="heatmap" className="mt-0">
+          <OccupancyHeatmap
+            startDate={new Date(Date.now() - 180 * 24 * 60 * 60 * 1000)}
+            endDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
+            onDateClick={handleHeatmapDateClick}
+          />
+        </TabsContent>
+      </Tabs>
+
+      {/* Modals */}
+      <QuickCreateModal
+        isOpen={createModalOpen}
+        onClose={() => {
+          setCreateModalOpen(false)
+          setCreateModalData(null)
+        }}
+        initialData={createModalData}
+        onSuccess={() => {
+          refetch()
+          toast.success('Reserva creada exitosamente')
+        }}
+      />
+
+      {detailReservationId && (
+        <ReservationDetailModal
+          isOpen={detailModalOpen}
+          onClose={() => {
+            setDetailModalOpen(false)
+            setDetailReservationId(null)
+          }}
+          reservation={reservations.find(r => r.id === detailReservationId)!}
+          onUpdate={updateReservation}
+        />
       )}
 
-      {/* Export Modal */}
       <ExportModal
         isOpen={showExportModal}
         onClose={() => setShowExportModal(false)}
