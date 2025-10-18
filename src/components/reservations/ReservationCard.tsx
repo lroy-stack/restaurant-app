@@ -168,6 +168,27 @@ function formatTableDisplay(reservation: Reservation): string {
   return 'N/A'
 }
 
+// 🎯 EXTRACT PREFERRED ZONE from specialRequests text
+function extractPreferredZone(specialRequests?: string): { zone: string | null; cleanRequests: string | null } {
+  if (!specialRequests) return { zone: null, cleanRequests: null }
+
+  const match = specialRequests.match(/Zona preferida:\s*(.+?)(?:\n|$)/i)
+
+  if (match) {
+    const zone = match[1].trim() // "Terraza Campanari" o "Sala Principal"
+    const cleanRequests = specialRequests
+      .replace(/Zona preferida:\s*.+?(?:\n\n?|$)/i, '')
+      .trim()
+
+    return {
+      zone,
+      cleanRequests: cleanRequests || null
+    }
+  }
+
+  return { zone: null, cleanRequests: specialRequests }
+}
+
 function getUrgencyBadge(reservation: Reservation, bufferMinutes: number) {
   try {
     const now = new Date()
@@ -321,12 +342,28 @@ export function ReservationCard({
                 </div>
               </div>
             )}
-            {reservation.specialRequests && (
-              <div className="w-full flex items-start gap-1.5 text-xs bg-accent/20 rounded p-1.5">
-                <MessageSquare className="h-3 w-3 flex-shrink-0 mt-0.5" />
-                <span className="font-medium">{reservation.specialRequests}</span>
-              </div>
-            )}
+            {(() => {
+              const { zone, cleanRequests } = extractPreferredZone(reservation.specialRequests)
+              return (
+                <>
+                  {zone && (
+                    <Badge
+                      variant="outline"
+                      className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800"
+                    >
+                      <MapPin className="h-3 w-3 mr-1" />
+                      {zone}
+                    </Badge>
+                  )}
+                  {cleanRequests && (
+                    <div className="w-full flex items-start gap-1.5 text-xs bg-accent/20 rounded p-1.5">
+                      <MessageSquare className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                      <span className="font-medium">{cleanRequests}</span>
+                    </div>
+                  )}
+                </>
+              )
+            })()}
             {reservation.dietaryNotes && (
               <div className="w-full flex items-start gap-1.5 text-xs bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded p-1.5">
                 <AlertCircle className="h-3 w-3 flex-shrink-0 mt-0.5 text-amber-600" />

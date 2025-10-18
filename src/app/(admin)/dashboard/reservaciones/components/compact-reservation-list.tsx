@@ -245,6 +245,27 @@ function formatTableDisplay(reservation: Reservation): string {
   return 'N/A'
 }
 
+// 🎯 EXTRACT PREFERRED ZONE from specialRequests text
+function extractPreferredZone(specialRequests?: string): { zone: string | null; cleanRequests: string | null } {
+  if (!specialRequests) return { zone: null, cleanRequests: null }
+
+  const match = specialRequests.match(/Zona preferida:\s*(.+?)(?:\n|$)/i)
+
+  if (match) {
+    const zone = match[1].trim() // "Terraza Campanari" o "Sala Principal"
+    const cleanRequests = specialRequests
+      .replace(/Zona preferida:\s*.+?(?:\n\n?|$)/i, '')
+      .trim()
+
+    return {
+      zone,
+      cleanRequests: cleanRequests || null
+    }
+  }
+
+  return { zone: null, cleanRequests: specialRequests }
+}
+
 // Group reservations by urgency - Using established patterns
 function groupReservationsByUrgency(reservations: Reservation[]) {
   try {
@@ -966,13 +987,29 @@ export function CompactReservationList({
                                     </div>
                                   )}
 
-                                  {/* Special Requests - Texto completo */}
-                                  {reservation.specialRequests && (
-                                    <div className="flex items-start gap-1 text-xs text-amber-700 dark:text-amber-300 w-full">
-                                      <MessageSquare className="h-3 w-3 flex-shrink-0 mt-0.5" />
-                                      <span className="font-medium">{reservation.specialRequests}</span>
-                                    </div>
-                                  )}
+                                  {/* Preferred Zone Badge + Clean Special Requests */}
+                                  {(() => {
+                                    const { zone, cleanRequests } = extractPreferredZone(reservation.specialRequests)
+                                    return (
+                                      <>
+                                        {zone && (
+                                          <Badge
+                                            variant="outline"
+                                            className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800"
+                                          >
+                                            <MapPin className="h-3 w-3 mr-1" />
+                                            {zone}
+                                          </Badge>
+                                        )}
+                                        {cleanRequests && (
+                                          <div className="flex items-start gap-1 text-xs text-amber-700 dark:text-amber-300 w-full">
+                                            <MessageSquare className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                                            <span className="font-medium">{cleanRequests}</span>
+                                          </div>
+                                        )}
+                                      </>
+                                    )
+                                  })()}
 
                                   {/* Dietary Notes Badge */}
                                   {reservation.dietaryNotes && (
