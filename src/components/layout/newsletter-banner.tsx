@@ -83,32 +83,35 @@ export function NewsletterBanner() {
           </p>
 
           {/* Form */}
-          <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-2 max-w-xl mx-auto">
+          <form onSubmit={handleNewsletterSubmit} className="flex gap-2 max-w-xl mx-auto">
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
+              placeholder="Tu email"
               required
-              className="flex-1 h-10 sm:h-11 px-4 border-2 border-white/30 bg-white/10 backdrop-blur-md rounded-lg text-sm sm:text-base text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+              className="flex-1 h-12 sm:h-11 px-4 border-2 border-white/30 bg-white/10 backdrop-blur-md rounded-lg text-base sm:text-base text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
             />
             <Button
               type="submit"
               disabled={isButtonDisabled}
-              className="h-10 sm:h-11 px-6 sm:px-8 bg-white text-primary hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base"
+              className="h-12 sm:h-11 px-4 sm:px-6 bg-white text-primary hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base whitespace-nowrap"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  <span className="hidden sm:inline">Enviando...</span>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="hidden sm:inline sm:ml-2">Enviando...</span>
                 </>
               ) : isSuccess ? (
                 <>
-                  <Check className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">¡Listo!</span>
+                  <Check className="h-4 w-4" />
+                  <span className="hidden sm:inline sm:ml-2">¡Listo!</span>
                 </>
               ) : (
-                'Suscribirse'
+                <>
+                  <span className="sm:hidden">OK</span>
+                  <span className="hidden sm:inline">Suscribirse</span>
+                </>
               )}
             </Button>
           </form>
