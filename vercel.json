@@ -6,11 +6,5 @@
     "deploymentEnabled": {
       "main": true
     }
-  },
-  "crons": [
-    {
-      "path": "/api/cron/send-emails",
-      "schedule": "*/5 * * * *"
-    }
-  ]
+  }
 }
