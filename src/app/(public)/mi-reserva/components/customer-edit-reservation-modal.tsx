@@ -828,6 +828,7 @@ export function CustomerEditReservationModal({ isOpen, onClose, reservation, onS
                       setValue('time', time)
                     }}
                     language="es"
+                    selectedDate={watchedDate ? new Date(watchedDate + 'T00:00:00') : null}
                   />
                 ) : (
                   <div className="flex items-center justify-center p-4 border border-dashed rounded-lg">

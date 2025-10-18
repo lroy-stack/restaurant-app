@@ -402,15 +402,16 @@ export async function POST(request: NextRequest) {
 
     // ============ SERVICIO ALMUERZO ============
     if (config.lunchEnabled && config.lunchOpenTime && config.lunchLastReservationTime) {
-      const lunchSlotsAvailable = validSlots
-        .filter(s => s.shiftType === 'lunch' && s.available)
+      // INCLUIR TODOS los slots de almuerzo (disponibles Y bloqueados)
+      const allLunchSlots = validSlots
+        .filter(s => s.shiftType === 'lunch')
         .map(s => s.time)
 
       // Para almuerzo: Turno 1 hasta 14:00, Turno 2 de 14:15 en adelante (sin gap)
       const turn1Count = 5 // 13:00, 13:15, 13:30, 13:45, 14:00
 
-      const turn1Slots = lunchSlotsAvailable.slice(0, turn1Count)
-      const turn2Slots = lunchSlotsAvailable.slice(turn1Count) // El resto: 14:15, 14:30, 14:45, 15:00
+      const turn1Slots = allLunchSlots.slice(0, turn1Count)
+      const turn2Slots = allLunchSlots.slice(turn1Count) // El resto: 14:15, 14:30, 14:45, 15:00
 
       const turn1MaxPerSlot = turn1Slots.length > 0 ? Math.ceil(targetCapacity / turn1Slots.length) : 0
       const turn2MaxPerSlot = turn2Slots.length > 0 ? Math.ceil(targetCapacity / turn2Slots.length) : 0
@@ -474,12 +475,13 @@ export async function POST(request: NextRequest) {
     }
 
     // ============ SERVICIO CENA ============
-    const dinnerSlotsAvailable = validSlots
-      .filter(s => s.shiftType === 'dinner' && s.available)
+    // INCLUIR TODOS los slots de cena (disponibles Y bloqueados)
+    const allDinnerSlots = validSlots
+      .filter(s => s.shiftType === 'dinner')
       .map(s => s.time)
 
-    // Dividir en 2 turnos
-    const { turn1Slots: dinnerTurn1Slots, turn2Slots: dinnerTurn2Slots } = divideSlotsIntoTurns(dinnerSlotsAvailable)
+    // Dividir en 2 turnos FIJOS (no dinámico basado en disponibilidad)
+    const { turn1Slots: dinnerTurn1Slots, turn2Slots: dinnerTurn2Slots } = divideSlotsIntoTurns(allDinnerSlots)
 
     // Calcular capacidad por slot para cada turno
     const dinnerTurn1MaxPerSlot = dinnerTurn1Slots.length > 0 ? Math.ceil(targetCapacity / dinnerTurn1Slots.length) : 0

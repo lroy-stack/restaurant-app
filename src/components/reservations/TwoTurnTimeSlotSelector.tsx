@@ -37,13 +37,15 @@ interface TwoTurnTimeSlotSelectorProps {
   selectedTime: string | null
   onSelectTime: (time: string) => void
   language?: 'es' | 'en' | 'de'
+  selectedDate: Date | null
 }
 
 export function TwoTurnTimeSlotSelector({
   services,
   selectedTime,
   onSelectTime,
-  language = 'es'
+  language = 'es',
+  selectedDate
 }: TwoTurnTimeSlotSelectorProps) {
 
   const t = {
@@ -77,25 +79,45 @@ export function TwoTurnTimeSlotSelector({
     // If no available slots, hide service
     if (!hasAvailableSlots) return true
 
-    const now = new Date()
+    // Si no hay fecha seleccionada, no filtrar por tiempo
+    if (!selectedDate) return false
 
-    // Get last slot of last turn
+    const now = new Date()
+    const isToday = selectedDate.toDateString() === now.toDateString()
+
+    // Si es fecha futura, NUNCA ocultar el servicio
+    if (!isToday) return false
+
+    // Solo para HOY: verificar si el servicio ya pasó
     const lastTurn = service.turns[service.turns.length - 1]
     if (!lastTurn || !lastTurn.slots || lastTurn.slots.length === 0) return false
 
     const lastSlot = lastTurn.slots[lastTurn.slots.length - 1]
     if (!lastSlot) return false
 
-    // Parse last slot time
+    // Parse last slot time usando fecha seleccionada
     const [hours, minutes] = lastSlot.time.split(':').map(Number)
-    const lastSlotTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes)
+    const lastSlotTime = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      selectedDate.getDate(),
+      hours,
+      minutes
+    )
 
     return now > lastSlotTime
   }
 
   // Check if service is ending soon (within 2 hours)
   const isServiceEndingSoon = (service: Service): boolean => {
+    // Solo aplica para HOY
+    if (!selectedDate) return false
+
     const now = new Date()
+    const isToday = selectedDate.toDateString() === now.toDateString()
+
+    // Si no es hoy, no mostrar advertencia
+    if (!isToday) return false
 
     const lastTurn = service.turns[service.turns.length - 1]
     if (!lastTurn || !lastTurn.slots || lastTurn.slots.length === 0) return false
@@ -104,7 +126,13 @@ export function TwoTurnTimeSlotSelector({
     if (!lastSlot) return false
 
     const [hours, minutes] = lastSlot.time.split(':').map(Number)
-    const lastSlotTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes)
+    const lastSlotTime = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      selectedDate.getDate(),
+      hours,
+      minutes
+    )
 
     const twoHoursFromNow = new Date(now.getTime() + (2 * 60 * 60 * 1000))
 

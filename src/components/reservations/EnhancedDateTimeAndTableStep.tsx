@@ -525,6 +525,7 @@ export default function EnhancedDateTimeAndTableStep({
             selectedTime={selectedTime}
             onSelectTime={setSelectedTime}
             language={language}
+            selectedDate={selectedDate}
           />
         )}
 
