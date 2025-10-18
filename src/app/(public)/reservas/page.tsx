@@ -155,6 +155,30 @@ export default function ReservasPage() {
         type: item.type as 'dish' | 'wine'
       }))
 
+      // Preparar texto de zona preferida para comentarios
+      const locationLabels = {
+        TERRACE_CAMPANARI: {
+          es: 'Zona preferida: Terraza Campanari',
+          en: 'Preferred zone: Campanari Terrace',
+          de: 'Bevorzugter Bereich: Campanari Terrasse'
+        },
+        SALA_PRINCIPAL: {
+          es: 'Zona preferida: Sala Principal',
+          en: 'Preferred zone: Main Dining Room',
+          de: 'Bevorzugter Bereich: Hauptsaal'
+        }
+      }
+
+      const locationText = data.location && locationLabels[data.location as keyof typeof locationLabels]
+        ? locationLabels[data.location as keyof typeof locationLabels][language]
+        : ''
+
+      // Combinar zona preferida con peticiones especiales
+      const specialRequestsWithZone = [
+        locationText,
+        data.stepThree.specialRequests || ''
+      ].filter(Boolean).join('\n\n')
+
       const reservationData = {
         dateTime: data.dateTime,
         tableIds: data.tableIds,
@@ -166,7 +190,8 @@ export default function ReservasPage() {
         phone: data.stepThree.phone,
         occasion: data.stepThree.occasion || '',
         dietaryNotes: data.stepThree.dietaryNotes || '',
-        specialRequests: data.stepThree.specialRequests || '',
+        specialRequests: specialRequestsWithZone,
+        location: data.location || '',
         preOrderItems: preOrderItems,
         preOrderTotal: cartTotal,
         hasPreOrder: (cartItems || []).length > 0,
