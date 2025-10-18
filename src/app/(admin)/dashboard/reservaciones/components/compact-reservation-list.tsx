@@ -111,14 +111,32 @@ interface CompactReservationListProps {
   bulkMode?: boolean
 }
 
-// Status indicators with proper Enigma brand colors
+// Status indicators with proper Enigma brand colors (Light + Dark mode)
 const statusStyles = {
-  PENDING: { emoji: '🟡', color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
-  CONFIRMED: { emoji: '🟢', color: 'bg-green-50 text-green-700 border-green-200' },
-  SEATED: { emoji: '🔵', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-  COMPLETED: { emoji: '⚪', color: 'bg-gray-50 text-gray-700 border-gray-200' },
-  CANCELLED: { emoji: '🔴', color: 'bg-red-50 text-red-700 border-red-200' },
-  NO_SHOW: { emoji: '🟠', color: 'bg-orange-50 text-orange-700 border-orange-200' }
+  PENDING: {
+    emoji: '🟡',
+    color: 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300 dark:border-yellow-800'
+  },
+  CONFIRMED: {
+    emoji: '🟢',
+    color: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800'
+  },
+  SEATED: {
+    emoji: '🔵',
+    color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800'
+  },
+  COMPLETED: {
+    emoji: '⚪',
+    color: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700'
+  },
+  CANCELLED: {
+    emoji: '🔴',
+    color: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800'
+  },
+  NO_SHOW: {
+    emoji: '🟠',
+    color: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-800'
+  }
 }
 
 const statusLabels = {
