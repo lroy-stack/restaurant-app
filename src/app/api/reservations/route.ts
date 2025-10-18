@@ -615,7 +615,8 @@ export async function POST(request: NextRequest) {
       console.error('⚠️ Token generation error:', tokenError)
     }
 
-    // 📧 QUEUE EMAIL JOBS (DB-first approach - 100% reliable)
+    // 📧 QUEUE EMAIL JOB (DB-first approach - 100% reliable)
+    // UN SOLO registro que envía todos los emails (cliente + restaurante + admin)
     const emailData = {
       reservationId: reservation.id,
       customerEmail: data.email,
@@ -643,70 +644,23 @@ export async function POST(request: NextRequest) {
       source: body.source || 'web'
     }
 
-    // 1. Queue customer email
+    // Queue SINGLE email job that sends all emails (customer + restaurant + admin)
     try {
       await supabase
         .schema('restaurante')
         .from('email_logs')
         .insert({
           reservation_id: reservation.id,
-          recipient_email: data.email,
+          recipient_email: data.email, // Primary recipient for tracking
           subject: '¡Reserva confirmada! - Enigma Cocina Con Alma',
-          email_type: body.source === 'admin' ? 'reservation_confirmed' : 'reservation_confirmation',
+          email_type: 'reservation_batch', // Indicates this sends all emails
           status: 'pending',
           template_id: body.source === 'admin' ? 'admin_confirmation' : 'customer_confirmation',
-          error_message: JSON.stringify(emailData) // Store email data for processing
+          error_message: JSON.stringify(emailData) // Store complete email data
         })
-      console.log('✅ Customer email queued for:', data.email)
+      console.log('✅ Email job queued for reservation:', reservation.id)
     } catch (queueError) {
-      console.error('❌ Failed to queue customer email:', queueError)
-    }
-
-    // 2. Queue restaurant notification (only for web reservations)
-    if (emailData.source === 'web') {
-      try {
-        const { data: restaurantData } = await supabase
-          .schema('restaurante')
-          .from('restaurants')
-          .select('mailing')
-          .eq('id', 'rest_enigma_001')
-          .single()
-
-        const restaurantEmail = restaurantData?.mailing || 'adminenigmaconalma@gmail.com'
-
-        await supabase
-          .schema('restaurante')
-          .from('email_logs')
-          .insert({
-            reservation_id: reservation.id,
-            recipient_email: restaurantEmail,
-            subject: `Nueva reserva - ${emailData.reservationDate}`,
-            email_type: 'reservation_created',
-            status: 'pending',
-            template_id: 'restaurant_notification',
-            error_message: JSON.stringify(emailData)
-          })
-        console.log('✅ Restaurant email queued for:', restaurantEmail)
-
-        // 3. Queue admin copy if different
-        if (restaurantEmail !== 'adminenigmaconalma@gmail.com') {
-          await supabase
-            .schema('restaurante')
-            .from('email_logs')
-            .insert({
-              reservation_id: reservation.id,
-              recipient_email: 'adminenigmaconalma@gmail.com',
-              subject: `Nueva reserva - ${emailData.reservationDate}`,
-              email_type: 'reservation_created',
-              status: 'pending',
-              template_id: 'restaurant_notification',
-              error_message: JSON.stringify(emailData)
-            })
-          console.log('✅ Admin copy email queued')
-        }
-      } catch (queueError) {
-        console.error('❌ Failed to queue restaurant emails:', queueError)
-      }
+      console.error('❌ Failed to queue email job:', queueError)
     }
 
     // ⚡ RESPUESTA INMEDIATA (emails se envían por cron job)
