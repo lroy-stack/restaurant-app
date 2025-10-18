@@ -16,6 +16,7 @@ import { toast } from 'sonner'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { useReservations } from '@/hooks/useReservations'
 import { MultiTableSelector } from '@/components/reservations/MultiTableSelector'
+import { TwoTurnTimeSlotSelector } from '@/components/reservations/TwoTurnTimeSlotSelector'
 import {
   Save,
   X,
@@ -422,74 +423,44 @@ export function CustomerEditReservationModal({ isOpen, onClose, reservation, onS
   const availabilityTime = watch('time')
   const availabilityPartySize = watch('partySize')
 
-  // ✅ Manual availability checking with checkAvailability
-  const { checkAvailability } = useReservations()
-  const [availableTables, setAvailableTables] = useState<any[]>([])
+  // ✅ NEW: Turn-based availability system
+  const [availabilityResults, setAvailabilityResults] = useState<any | null>(null)
+  const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false)
-  const [availabilityError, setAvailabilityError] = useState<string | null>(null)
-
-  const hasValidFormData = availabilityDate &&
-    availabilityTime &&
-    availabilityPartySize &&
-    availabilityDate.match(/^\d{4}-\d{2}-\d{2}$/) &&
-    availabilityTime.match(/^\d{2}:\d{2}$/)
 
   useEffect(() => {
     const fetchAvailability = async () => {
-      if (!hasValidFormData) {
-        setAvailableTables([])
+      if (!availabilityDate || !availabilityPartySize) {
+        setAvailabilityResults(null)
         return
       }
 
       setIsLoadingAvailability(true)
-      setAvailabilityError(null)
-
       try {
-        const [year, month, day] = availabilityDate.split('-')
-        const [hour, minute] = availabilityTime.split(':')
-        const dateTime = new Date(Date.UTC(
-          parseInt(year),
-          parseInt(month) - 1,
-          parseInt(day),
-          parseInt(hour),
-          parseInt(minute)
-        )).toISOString()
+        const response = await fetch('/api/tables/availability', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            date: availabilityDate,
+            partySize: availabilityPartySize
+          })
+        })
 
-        // ⚠️ CRITICAL: includePrivate=false (customer context - no private tables)
-        const result = await checkAvailability(
-          dateTime,
-          availabilityPartySize,
-          undefined,
-          false // includePrivate=false → Only public tables
-        )
-
-        if (result?.availableTables) {
-          setAvailableTables(result.availableTables)
-        } else {
-          setAvailableTables([])
+        const data = await response.json()
+        if (data.success && data.data) {
+          setAvailabilityResults(data.data)
+          setSelectedTime(null)
         }
       } catch (error) {
         console.error('Error checking availability:', error)
-        setAvailabilityError(error instanceof Error ? error.message : 'Unknown error')
-        setAvailableTables([])
+        toast.error('Error al verificar disponibilidad')
       } finally {
         setIsLoadingAvailability(false)
       }
     }
 
     fetchAvailability()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availabilityDate, availabilityTime, availabilityPartySize, hasValidFormData])
-
-  // Use table availability from API instead of basic capacity filtering
-  const tableOptions = hasValidFormData && availableTables?.length > 0 ?
-    availableTables
-      .filter(table => table.status === 'available')
-      .sort((a, b) => {
-        const aNum = parseInt((a.number || a.tableNumber).replace(/[^0-9]/g, ''))
-        const bNum = parseInt((b.number || b.tableNumber).replace(/[^0-9]/g, ''))
-        return aNum - bNum
-      }) : []
+  }, [availabilityDate, availabilityPartySize])
 
   // Load menu items function
   const loadMenuItems = async () => {
@@ -664,30 +635,22 @@ export function CustomerEditReservationModal({ isOpen, onClose, reservation, onS
 
     setIsLoading(true)
     try {
+      // ✅ Validar tiempo seleccionado
+      if (!selectedTime) {
+        toast.error('Selecciona un horario')
+        setIsLoading(false)
+        return
+      }
+
+      // ⚠️ TEMPORAL: Asignación de mesas manual - staff confirmará
+      // Sistema de mesas por turno en desarrollo
+
       // 🚀 FIXED: Create datetime with Madrid timezone
-      const madridDateTime = createReservationMadridDate(data.date, data.time)
+      const madridDateTime = createReservationMadridDate(data.date, selectedTime)
       const dateTime = madridDateTime.toISOString()
 
-      // Get current items directly from PreOrderEditor (bypasses async setState)
+      // Get current items directly from PreOrderEditor
       const currentPreOrderItems = preOrderEditorRef.current?.getCurrentItems() || []
-
-      // 🔧 FIXED: Validate table selection with business rules
-      if (!data.tableIds || data.tableIds.length === 0) {
-        toast.error('Debe seleccionar al menos una mesa')
-        return
-      }
-
-      // ✅ Capacity validation - ensure selected tables can accommodate party size
-      const selectedTableCapacities = data.tableIds.map(tableId => {
-        const table = availableTables.find(t => t.id === tableId)
-        return table?.capacity || 0
-      })
-      const totalCapacity = selectedTableCapacities.reduce((sum, cap) => sum + cap, 0)
-
-      if (totalCapacity < data.partySize) {
-        toast.error(`Capacidad insuficiente: ${totalCapacity} asientos para ${data.partySize} personas. Selecciona más mesas.`)
-        return
-      }
 
       const updateData = {
         customerName: data.customerName,
@@ -696,11 +659,10 @@ export function CustomerEditReservationModal({ isOpen, onClose, reservation, onS
         partySize: data.partySize,
         date: dateTime,
         time: dateTime,
-        tableIds: data.tableIds, // 🔧 FIXED: Send multiple table IDs
+        tableIds: data.tableIds || [], // Staff asignará mesas según turno
         specialRequests: data.specialRequests || null,
         preOrderItems: currentPreOrderItems,
-        // Customer modifications always set status to PENDING for restaurant confirmation
-        status: 'PENDING'
+        status: 'PENDING' // Customer mods → staff confirmation
       }
 
       const success = await onSave(updateData)
@@ -715,6 +677,21 @@ export function CustomerEditReservationModal({ isOpen, onClose, reservation, onS
       setIsLoading(false)
     }
   }
+
+  // Helper: Get current turn for selected time
+  const getCurrentTurn = (time: string | null) => {
+    if (!time || !availabilityResults?.services) return null
+
+    for (const service of availabilityResults.services) {
+      for (const turn of service.turns) {
+        const slotExists = turn.slots.some((slot: any) => slot.time === time)
+        if (slotExists) return turn
+      }
+    }
+    return null
+  }
+
+  const currentTurn = getCurrentTurn(selectedTime)
 
   if (!reservation) return null
 
@@ -834,48 +811,29 @@ export function CustomerEditReservationModal({ isOpen, onClose, reservation, onS
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="time">Hora *</Label>
-                <Select
-                  value={watch('time')}
-                  onValueChange={(value) => setValue('time', value)}
-                  disabled={loadingTimeSlots || timeSlots.length === 0}
-                >
-                  <SelectTrigger className={errors.time ? 'border-red-300' : ''}>
-                    <SelectValue placeholder={loadingTimeSlots ? 'Cargando horarios...' : 'Seleccionar hora'} />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[200px] overflow-y-auto">
-                    {loadingTimeSlots ? (
-                      <SelectItem value="loading" disabled>
-                        <div className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Cargando horarios disponibles...
-                        </div>
-                      </SelectItem>
-                    ) : timeSlots.length === 0 ? (
-                      <SelectItem value="no-slots" disabled>
-                        <div className="flex items-center gap-2">
-                          <AlertCircle className="h-4 w-4 text-orange-500" />
-                          No hay horarios disponibles
-                        </div>
-                      </SelectItem>
-                    ) : (
-                      timeSlots.map((timeSlot) => (
-                        <SelectItem key={timeSlot} value={timeSlot}>
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            {timeSlot}
-                          </div>
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-                {errors.time && (
-                  <span className="text-sm text-red-600">La hora es requerida</span>
-                )}
-                {!loadingTimeSlots && timeSlots.length === 0 && (
-                  <p className="text-sm text-orange-600">No hay horarios disponibles para esta fecha</p>
+              {/* Turn-based Time Selector */}
+              <div className="space-y-3">
+                <Label>Selecciona tu horario *</Label>
+                {isLoadingAvailability ? (
+                  <div className="flex items-center justify-center p-4 border border-dashed rounded-lg">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <span className="text-sm text-muted-foreground">Cargando disponibilidad...</span>
+                  </div>
+                ) : availabilityResults?.services ? (
+                  <TwoTurnTimeSlotSelector
+                    services={availabilityResults.services}
+                    selectedTime={selectedTime}
+                    onSelectTime={(time) => {
+                      setSelectedTime(time)
+                      setValue('time', time)
+                    }}
+                    language="es"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center p-4 border border-dashed rounded-lg">
+                    <AlertCircle className="h-4 w-4 text-muted-foreground mr-2" />
+                    <span className="text-sm text-muted-foreground">Selecciona fecha y personas para ver horarios</span>
+                  </div>
                 )}
               </div>
             </div>
@@ -923,92 +881,49 @@ export function CustomerEditReservationModal({ isOpen, onClose, reservation, onS
               )}
             </div>
 
-            {/* Table Selection - Multiple Tables Support */}
-            <div className="space-y-3">
-              <Label>
-                Mesas *
-                {watch('tableIds')?.length > 0 && (
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    ({watch('tableIds').length} mesa{watch('tableIds').length > 1 ? 's' : ''} seleccionada{watch('tableIds').length > 1 ? 's' : ''})
-                  </span>
-                )}
-              </Label>
+            {/* Table Selection - Show after time selected */}
+            {selectedTime && currentTurn ? (
+              <div className="space-y-3">
+                <Label>
+                  Mesas disponibles para {selectedTime} *
+                  {watch('tableIds')?.length > 0 && (
+                    <span className="ml-2 text-sm text-muted-foreground">
+                      ({watch('tableIds').length} mesa{watch('tableIds').length > 1 ? 's' : ''} seleccionada{watch('tableIds').length > 1 ? 's' : ''})
+                    </span>
+                  )}
+                </Label>
 
-              <div className="text-sm text-muted-foreground">
-                <p>👥 Selecciona mesas con capacidad suficiente para {availabilityPartySize} personas</p>
-              </div>
-
-              {isLoadingAvailability ? (
-                <div className="flex items-center justify-center p-4 border border-dashed rounded-lg">
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  <span className="text-sm text-muted-foreground">Verificando disponibilidad...</span>
+                {/* Turn info */}
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-sm font-medium">{currentTurn.name.es}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {currentTurn.period} • {currentTurn.maxPerSlot} personas/slot
+                  </p>
                 </div>
-              ) : hasValidFormData && tableOptions.length === 0 ? (
+
+                <p className="text-sm text-muted-foreground">
+                  👥 Selecciona mesas con capacidad suficiente para {availabilityPartySize} personas
+                </p>
+
+                {/* TODO: Fetch tables for selected slot - por ahora mostrar mensaje */}
                 <div className="flex items-center justify-center p-4 border border-dashed rounded-lg">
                   <AlertCircle className="h-4 w-4 text-orange-500 mr-2" />
-                  <span className="text-sm text-muted-foreground">Sin mesas disponibles para esta fecha/hora</span>
+                  <span className="text-sm text-muted-foreground">
+                    Sistema de asignación de mesas en desarrollo. El restaurante confirmará las mesas disponibles.
+                  </span>
                 </div>
-              ) : !hasValidFormData ? (
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <Label>Mesas *</Label>
                 <div className="flex items-center justify-center p-4 border border-dashed rounded-lg">
                   <AlertCircle className="h-4 w-4 text-muted-foreground mr-2" />
-                  <span className="text-sm text-muted-foreground">Complete fecha, hora y comensales para ver mesas disponibles</span>
+                  <span className="text-sm text-muted-foreground">
+                    Selecciona un horario primero para ver mesas disponibles
+                  </span>
                 </div>
-              ) : (
-                <MultiTableSelector
-                  tables={tableOptions
-                    .filter(table => {
-                      const tableLocation = table.location || table.zone
-                      const selectedZone = watch('preferredZone')
-                      return !selectedZone || tableLocation === selectedZone
-                    })
-                    .map(t => ({
-                      id: t.id || t.tableId,
-                      number: t.number || t.tableNumber || 'N/A',
-                      capacity: t.capacity || 0,
-                      location: t.location || t.zone || 'SIN_ZONA',
-                      status: 'available',
-                      available: true
-                    }))}
-                  selectedTableIds={watch('tableIds') || []}
-                  onSelectionChange={(ids) => setValue('tableIds', ids)}
-                  partySize={availabilityPartySize || 1}
-                  maxSelections={5}
-                />
-              )}
-
-              {hasValidFormData && !isLoadingAvailability && (
-                <p className="text-sm text-muted-foreground">
-                  {tableOptions.filter(table => {
-                    const tableLocation = table.location || table.zone
-                    const selectedZone = watch('preferredZone')
-                    return !selectedZone || tableLocation === selectedZone
-                  }).length > 0 ?
-                    `${tableOptions.filter(table => {
-                      const tableLocation = table.location || table.zone
-                      const selectedZone = watch('preferredZone')
-                      return !selectedZone || tableLocation === selectedZone
-                    }).length} mesa${tableOptions.filter(table => {
-                      const tableLocation = table.location || table.zone
-                      const selectedZone = watch('preferredZone')
-                      return !selectedZone || tableLocation === selectedZone
-                    }).length > 1 ? 's' : ''} disponible${tableOptions.filter(table => {
-                      const tableLocation = table.location || table.zone
-                      const selectedZone = watch('preferredZone')
-                      return !selectedZone || tableLocation === selectedZone
-                    }).length > 1 ? 's' : ''}` :
-                    'No hay mesas disponibles en la zona seleccionada'
-                  }
-                </p>
-              )}
-
-              {!watch('tableIds')?.length && (
-                <span className="text-sm text-red-600">Debe seleccionar al menos una mesa</span>
-              )}
-
-              {availabilityError && (
-                <p className="text-sm text-red-600">Error verificando disponibilidad: {availabilityError}</p>
-              )}
-            </div>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="specialRequests">Solicitudes Especiales</Label>
