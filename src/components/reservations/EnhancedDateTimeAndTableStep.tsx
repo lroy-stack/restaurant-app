@@ -238,17 +238,17 @@ export default function EnhancedDateTimeAndTableStep({
     }
   }, [selectedDate, partySize, handleCheckAvailability])
 
-  // Scroll inteligente: cuando se selecciona fecha, scroll a party size
+  // Scroll inteligente: cuando cargan horarios, scroll a party size (DESPUÉS de render)
   useEffect(() => {
-    if (selectedDate && partySizeRef.current) {
+    if (availabilityResults && partySizeRef.current) {
       setTimeout(() => {
         partySizeRef.current?.scrollIntoView({
           behavior: 'smooth',
           block: 'start'
         })
-      }, 300)
+      }, 100)
     }
-  }, [selectedDate])
+  }, [availabilityResults])
 
   // Scroll inteligente: cuando se selecciona hora, scroll a zone preference o continuar
   useEffect(() => {
