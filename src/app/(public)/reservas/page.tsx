@@ -155,22 +155,14 @@ export default function ReservasPage() {
         type: item.type as 'dish' | 'wine'
       }))
 
-      // Preparar texto de zona preferida para comentarios
-      const locationLabels = {
-        TERRACE_CAMPANARI: {
-          es: 'Zona preferida: Terraza Campanari',
-          en: 'Preferred zone: Campanari Terrace',
-          de: 'Bevorzugter Bereich: Campanari Terrasse'
-        },
-        SALA_PRINCIPAL: {
-          es: 'Zona preferida: Sala Principal',
-          en: 'Preferred zone: Main Dining Room',
-          de: 'Bevorzugter Bereich: Hauptsaal'
-        }
+      // Preparar texto de zona preferida para comentarios (SIEMPRE en español para el equipo)
+      const locationLabels: Record<string, string> = {
+        TERRACE_CAMPANARI: 'Zona preferida: Terraza Campanari',
+        SALA_PRINCIPAL: 'Zona preferida: Sala Principal'
       }
 
-      const locationText = data.location && locationLabels[data.location as keyof typeof locationLabels]
-        ? locationLabels[data.location as keyof typeof locationLabels][language]
+      const locationText = data.location && locationLabels[data.location]
+        ? locationLabels[data.location]
         : ''
 
       // Combinar zona preferida con peticiones especiales

@@ -620,18 +620,6 @@ export default function EnhancedDateTimeAndTableStep({
                     </span>
                   </Button>
                 </div>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setPreferredZone('')}
-                  className={cn("text-xs", !preferredZone && "hidden")}
-                >
-                  {language === 'es' ? 'Sin preferencia' :
-                   language === 'en' ? 'No preference' :
-                   'Keine Präferenz'}
-                </Button>
               </div>
             </CardContent>
           </Card>
