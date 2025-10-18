@@ -90,12 +90,12 @@ export function NewsletterBanner() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Tu email"
               required
-              className="flex-1 h-12 sm:h-11 px-4 border-2 border-white/30 bg-white/10 backdrop-blur-md rounded-lg text-sm sm:text-base text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+              className="flex-1 h-11 sm:h-11 px-3 sm:px-4 border-2 border-white/30 bg-white/10 backdrop-blur-md rounded-lg text-sm sm:text-base text-white placeholder:text-white/60 placeholder:text-xs sm:placeholder:text-sm focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
             />
             <Button
               type="submit"
               disabled={isButtonDisabled}
-              className="h-12 sm:h-11 px-4 sm:px-6 bg-white text-primary hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base whitespace-nowrap"
+              className="h-11 sm:h-11 px-4 sm:px-6 bg-white text-primary hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base whitespace-nowrap"
             >
               {isLoading ? (
                 <>
