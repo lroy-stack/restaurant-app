@@ -48,6 +48,14 @@ function createSafeDateTime(date: Date, time: string): string {
   )).toISOString()
 }
 
+// Helper: Format date without timezone conversion (for API calls)
+function formatDateForDB(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 interface Slot {
   time: string
   available: boolean
@@ -180,7 +188,7 @@ export default function EnhancedDateTimeAndTableStep({
     setIsCheckingAvailability(true)
 
     try {
-      const dateStr = selectedDate.toISOString().split('T')[0]
+      const dateStr = formatDateForDB(selectedDate)
 
       const response = await fetch('/api/tables/availability', {
         method: 'POST',
