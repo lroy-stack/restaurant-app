@@ -657,7 +657,15 @@ export async function POST(request: NextRequest) {
           })
           console.log('✅ Customer email sent (background)')
         } catch (emailError) {
-          console.error('⚠️ Customer email error:', emailError)
+          console.error('❌ CRITICAL: Customer email FAILED:', {
+            error: emailError,
+            message: emailError instanceof Error ? emailError.message : 'Unknown error',
+            stack: emailError instanceof Error ? emailError.stack : undefined,
+            customerEmail: data.email,
+            reservationId: reservation.id,
+            hasPreOrder: (data.preOrderItems || []).length > 0,
+            preOrderItemsCount: (data.preOrderItems || []).length
+          })
         }
 
         // ✅ Restaurant notification

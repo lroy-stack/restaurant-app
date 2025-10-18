@@ -78,10 +78,25 @@ export class EmailService {
 
   async sendReservationConfirmation(emailData: any): Promise<EmailResult> {
     try {
-      console.log('📧 Enviando email de confirmación:', emailData.customerEmail)
+      console.log('📧 Enviando email de confirmación:', {
+        customerEmail: emailData.customerEmail,
+        reservationId: emailData.reservationId,
+        hasPreOrder: (emailData.preOrderItems || []).length > 0,
+        preOrderItemsCount: (emailData.preOrderItems || []).length,
+        preOrderTotal: emailData.preOrderTotal
+      })
       return await this.sendEmailDirectWithData(emailData, EmailType.ReservationCreated)
     } catch (error) {
-      console.error('❌ Error enviando confirmación:', error)
+      console.error('❌ CRITICAL: Error enviando confirmación:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown',
+        stack: error instanceof Error ? error.stack : undefined,
+        emailData: {
+          customerEmail: emailData.customerEmail,
+          reservationId: emailData.reservationId,
+          hasPreOrder: (emailData.preOrderItems || []).length > 0
+        }
+      })
       return this.handleEmailError(error)
     }
   }
@@ -479,8 +494,19 @@ ID: ${emailData.reservationId}
         }
       }
 
+      console.log('📤 Intentando enviar email...')
       const transporter = getTransporter()
-      const info = await transporter.sendMail(mailOptions)
+
+      // Add timeout for emails with pre-orders (they can be larger)
+      const hasPreOrder = (enhancedEmailData.preOrderItems || []).length > 0
+      const sendTimeout = hasPreOrder ? 60000 : 30000 // 60s for pre-orders, 30s normal
+
+      console.log('⏱️  Timeout configurado:', sendTimeout, 'ms', hasPreOrder ? '(con pre-pedido)' : '(sin pre-pedido)')
+
+      const info = await Promise.race([
+        transporter.sendMail(mailOptions),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Email timeout')), sendTimeout))
+      ]) as any
 
       console.log('✅ Email enviado exitosamente:', info.messageId, 'a', enhancedEmailData.customerEmail)
 
