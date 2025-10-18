@@ -90,7 +90,7 @@ export function NewsletterBanner() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Tu email"
               required
-              className="flex-1 h-12 sm:h-11 px-4 border-2 border-white/30 bg-white/10 backdrop-blur-md rounded-lg text-base sm:text-base text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+              className="flex-1 h-12 sm:h-11 px-4 border-2 border-white/30 bg-white/10 backdrop-blur-md rounded-lg text-sm sm:text-base text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
             />
             <Button
               type="submit"
