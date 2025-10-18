@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { Clock } from 'lucide-react'
 
 interface Slot {
   time: string
@@ -48,27 +49,89 @@ export function TwoTurnTimeSlotSelector({
   const t = {
     es: {
       available: 'disponibles',
-      full: 'completo'
+      full: 'completo',
+      lastHours: 'Últimas horas disponibles',
+      hurry: 'Reserva pronto'
     },
     en: {
       available: 'available',
-      full: 'full'
+      full: 'full',
+      lastHours: 'Last hours available',
+      hurry: 'Book soon'
     },
     de: {
       available: 'verfügbar',
-      full: 'voll'
+      full: 'voll',
+      lastHours: 'Letzte Stunden verfügbar',
+      hurry: 'Bald buchen'
     }
   }
 
+  // Filter out past services or services with no available slots
+  const isServicePassed = (service: Service): boolean => {
+    // Check if service has ANY available slot
+    const hasAvailableSlots = service.turns.some(turn =>
+      turn.slots.some(slot => slot.available)
+    )
+
+    // If no available slots, hide service
+    if (!hasAvailableSlots) return true
+
+    const now = new Date()
+
+    // Get last slot of last turn
+    const lastTurn = service.turns[service.turns.length - 1]
+    if (!lastTurn || !lastTurn.slots || lastTurn.slots.length === 0) return false
+
+    const lastSlot = lastTurn.slots[lastTurn.slots.length - 1]
+    if (!lastSlot) return false
+
+    // Parse last slot time
+    const [hours, minutes] = lastSlot.time.split(':').map(Number)
+    const lastSlotTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes)
+
+    return now > lastSlotTime
+  }
+
+  // Check if service is ending soon (within 2 hours)
+  const isServiceEndingSoon = (service: Service): boolean => {
+    const now = new Date()
+
+    const lastTurn = service.turns[service.turns.length - 1]
+    if (!lastTurn || !lastTurn.slots || lastTurn.slots.length === 0) return false
+
+    const lastSlot = lastTurn.slots[lastTurn.slots.length - 1]
+    if (!lastSlot) return false
+
+    const [hours, minutes] = lastSlot.time.split(':').map(Number)
+    const lastSlotTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes)
+
+    const twoHoursFromNow = new Date(now.getTime() + (2 * 60 * 60 * 1000))
+
+    return lastSlotTime <= twoHoursFromNow && lastSlotTime > now
+  }
+
+  const activeServices = services.filter(service => !isServicePassed(service))
+
   return (
     <div className="space-y-6 md:space-y-8">
-      {services.map((service, serviceIdx) => (
+      {activeServices.map((service, serviceIdx) => {
+        const endingSoon = service.type === 'dinner' && isServiceEndingSoon(service)
+
+        return (
         <div key={service.type} className="space-y-4 md:space-y-6">
           {/* Service Header */}
           <div className="px-1">
-            <h3 className="text-lg md:text-xl font-bold text-foreground">
-              {service.name[language]}
-            </h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-lg md:text-xl font-bold text-foreground">
+                {service.name[language]}
+              </h3>
+              {endingSoon && (
+                <Badge variant="outline" className="text-xs border-amber-500 text-amber-700 bg-amber-50">
+                  ⏰ {t[language].lastHours}
+                </Badge>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground">{service.period}</p>
           </div>
 
@@ -105,10 +168,18 @@ export function TwoTurnTimeSlotSelector({
                           onClick={() => slot.available && onSelectTime(slot.time)}
                           className={cn(
                             'relative h-10 md:h-11 min-w-[70px] px-2',
-                            !slot.available && 'bg-muted/60 opacity-50 cursor-not-allowed line-through decoration-2'
+                            !slot.available && 'bg-muted/60 opacity-50 cursor-not-allowed'
                           )}
                         >
-                          <span className={cn('text-sm md:text-base font-medium whitespace-nowrap', !slot.available && 'text-muted-foreground')}>{slot.time}</span>
+                          <span className={cn('text-sm md:text-base font-medium whitespace-nowrap', !slot.available && 'text-muted-foreground line-through decoration-2')}>{slot.time}</span>
+                          {!slot.available && (
+                            <Badge
+                              variant="outline"
+                              className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-3.5 px-1 text-[8px] md:text-[9px] border-muted-foreground/30 bg-muted/80"
+                            >
+                              {t[language].full}
+                            </Badge>
+                          )}
                           {slot.available && slot.utilizationPercent > 60 && (
                             <Badge
                               variant={slot.utilizationPercent > 80 ? 'destructive' : 'secondary'}
@@ -160,10 +231,18 @@ export function TwoTurnTimeSlotSelector({
                       onClick={() => slot.available && onSelectTime(slot.time)}
                       className={cn(
                         'relative h-10 md:h-11 min-w-[70px] px-2',
-                        !slot.available && 'bg-muted/60 opacity-50 cursor-not-allowed line-through decoration-2'
+                        !slot.available && 'bg-muted/60 opacity-50 cursor-not-allowed'
                       )}
                     >
-                      <span className={cn('text-sm md:text-base font-medium whitespace-nowrap', !slot.available && 'text-muted-foreground')}>{slot.time}</span>
+                      <span className={cn('text-sm md:text-base font-medium whitespace-nowrap', !slot.available && 'text-muted-foreground line-through decoration-2')}>{slot.time}</span>
+                      {!slot.available && (
+                        <Badge
+                          variant="outline"
+                          className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-3.5 px-1 text-[8px] md:text-[9px] border-muted-foreground/30 bg-muted/80"
+                        >
+                          {t[language].full}
+                        </Badge>
+                      )}
                       {slot.available && slot.utilizationPercent > 60 && (
                         <Badge
                           variant={slot.utilizationPercent > 80 ? 'destructive' : 'secondary'}
@@ -179,7 +258,8 @@ export function TwoTurnTimeSlotSelector({
             </Card>
           ))}
         </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

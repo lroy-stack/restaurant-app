@@ -266,12 +266,8 @@ export function ReservationForm({
       return
     }
 
-    // ✅ FIXED: Validar que se haya seleccionado al menos una mesa
-    if (!formData.tableIds.length) {
-      toast.error('Debes seleccionar al menos una mesa')
-      console.error('No se ha seleccionado ninguna mesa')
-      return
-    }
+    // ✅ Mesa OPCIONAL: Admin puede crear reserva sin asignar mesa
+    // Sistema de turnos gestiona capacidad sin necesidad de mesa específica
 
     try {
       const reservationData: ReservationData = {

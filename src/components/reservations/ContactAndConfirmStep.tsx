@@ -54,11 +54,18 @@ interface ContactAndConfirmStepProps {
   partySize: number
   childrenCount?: number
   tableIds?: string[]
+  location?: string
   preOrderItems?: PreOrderItem[]
   preOrderTotal?: number
 }
 
 const locations = {
+  TERRACE_CAMPANARI: {
+    name: { es: 'Terraza Campanari', en: 'Campanari Terrace', de: 'Campanari Terrasse' }
+  },
+  SALA_PRINCIPAL: {
+    name: { es: 'Sala Principal', en: 'Main Dining Room', de: 'Hauptsaal' }
+  },
   TERRACE_SEA_VIEW: {
     name: { es: 'Terraza Vista Mar', en: 'Sea View Terrace', de: 'Terrasse Meerblick' }
   },
@@ -102,6 +109,7 @@ const content = {
     date: 'Fecha:',
     time: 'Hora:',
     people: 'Personas:',
+    zone: 'Zona preferida:',
     table: 'Mesa:',
     total: 'Total:',
     gdprTitle: 'Protección de datos y consentimientos',
@@ -147,6 +155,7 @@ const content = {
     date: 'Date:',
     time: 'Time:',
     people: 'People:',
+    zone: 'Preferred zone:',
     table: 'Table:',
     total: 'Total:',
     gdprTitle: 'Data protection and consents',
@@ -192,6 +201,7 @@ const content = {
     date: 'Datum:',
     time: 'Uhrzeit:',
     people: 'Personen:',
+    zone: 'Bevorzugter Bereich:',
     table: 'Tisch:',
     total: 'Gesamt:',
     gdprTitle: 'Datenschutz und Einverständniserklärungen',
@@ -225,6 +235,7 @@ export default function ContactAndConfirmStep({
   partySize,
   childrenCount = 0,
   tableIds = [],
+  location = '',
   preOrderItems: propPreOrderItems = [],
   preOrderTotal: propPreOrderTotal = 0
 }: ContactAndConfirmStepProps) {
@@ -542,6 +553,19 @@ export default function ContactAndConfirmStep({
                   )}
                 </div>
               </div>
+
+              {/* Zona preferida */}
+              {location && locations[location as keyof typeof locations] && (
+                <div className="flex justify-between items-center p-3 md:p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                  <span className="flex items-center gap-2 md:gap-2 text-sm md:text-sm font-medium">
+                    <MapPin className="h-4 w-4 md:h-4 md:w-4 text-primary" />
+                    {t.zone}
+                  </span>
+                  <span className="font-semibold text-sm md:text-sm text-primary">
+                    {locations[location as keyof typeof locations]?.name[language]}
+                  </span>
+                </div>
+              )}
 
               {/* Multi-table support (new) */}
               {selectedTables.length > 0 && (

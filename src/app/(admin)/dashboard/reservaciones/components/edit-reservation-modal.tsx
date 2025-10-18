@@ -750,19 +750,16 @@ export function EditReservationModal({ isOpen, onClose, reservation, onSave }: E
       // Get current items directly from PreOrderEditor (bypasses async setState)
       const currentPreOrderItems = preOrderEditorRef.current?.getCurrentItems() || []
 
-      // 🔧 FASE 4: Validate table selection with business rules
-      if (!data.tableIds || data.tableIds.length === 0) {
-        toast.error('Debe seleccionar al menos una mesa')
-        return
-      }
+      // 🔧 FASE 4: Validate table selection ONLY if tables selected
+      // ✅ Mesa OPCIONAL: Admin puede confirmar sin asignar mesa
+      if (data.tableIds && data.tableIds.length > 0) {
+        const selectedTables = tables.filter(t => data.tableIds.includes(t.id))
+        const totalCapacity = selectedTables.reduce((sum, t) => sum + t.capacity, 0)
 
-      // ✅ Capacity validation - ensure selected tables can accommodate party size
-      const selectedTables = tables.filter(t => data.tableIds.includes(t.id))
-      const totalCapacity = selectedTables.reduce((sum, t) => sum + t.capacity, 0)
-
-      if (totalCapacity < data.partySize) {
-        toast.error(`Capacidad insuficiente: ${totalCapacity} asientos para ${data.partySize} personas. Selecciona más mesas.`)
-        return
+        if (totalCapacity < data.partySize) {
+          toast.error(`Capacidad insuficiente: ${totalCapacity} asientos para ${data.partySize} personas. Selecciona más mesas.`)
+          return
+        }
       }
 
       const updateData = {
@@ -1102,9 +1099,6 @@ export function EditReservationModal({ isOpen, onClose, reservation, onSave }: E
                   partySize={watchedPartySize || 1}
                   maxSelections={5}
                 />
-              )}
-              {!watch('tableIds')?.length && (
-                <p className="text-sm text-destructive mt-2">Debe seleccionar al menos una mesa</p>
               )}
               {availabilityError && (
                 <p className="text-sm text-destructive mt-2">{availabilityError}</p>

@@ -248,7 +248,7 @@ export function ReservationCard({
   }
 
   const handleSaveQuickEdit = () => {
-    if (onQuickEdit && editedTime && editedTableIds.length > 0) {
+    if (onQuickEdit && editedTime) {
       onQuickEdit(reservation.id, editedTime, editedTableIds)
       setIsQuickEditOpen(false)
     }

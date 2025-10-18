@@ -271,6 +271,7 @@ export default function ReservasPage() {
                       partySize={form.getValues('partySize')}
                       childrenCount={form.getValues('childrenCount')}
                       tableIds={form.getValues('tableIds')}
+                      location={form.getValues('location')}
                       preOrderItems={preOrderItems}
                       preOrderTotal={cartTotal}
                     />

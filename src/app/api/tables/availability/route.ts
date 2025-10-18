@@ -139,6 +139,162 @@ function divideSlotsIntoTurns(allSlots: string[]): {
 }
 
 /**
+ * Get buffer minutes from business_hours
+ */
+async function getBufferMinutes(dayOfWeek: number): Promise<number> {
+  try {
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/business_hours?select=buffer_minutes&day_of_week=eq.${dayOfWeek}&limit=1`,
+      {
+        headers: {
+          'Accept': 'application/json',
+          'Accept-Profile': 'restaurante',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'apikey': SUPABASE_SERVICE_KEY,
+        }
+      }
+    )
+
+    if (response.ok) {
+      const data = await response.json()
+      if (data && data[0]) {
+        return data[0].buffer_minutes || 130
+      }
+    }
+  } catch (error) {
+    console.warn('Error fetching buffer_minutes, using default 130:', error)
+  }
+
+  return 130
+}
+
+/**
+ * Get all tables with availability status for admin
+ */
+async function getTablesWithAvailability(
+  date: string,
+  time: string | null,
+  partySize: number,
+  includePrivate: boolean = false
+): Promise<any[]> {
+  try {
+    // Fetch all tables from DB
+    const tablesResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/tables?select=*&isActive=eq.true&order=number`,
+      {
+        headers: {
+          'Accept': 'application/json',
+          'Accept-Profile': 'restaurante',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'apikey': SUPABASE_SERVICE_KEY,
+        }
+      }
+    )
+
+    if (!tablesResponse.ok) return []
+
+    const allTables = await tablesResponse.json()
+
+    // Filter private tables if needed
+    const filteredTables = includePrivate
+      ? allTables
+      : allTables.filter((t: any) => t.is_public !== false)
+
+    // If no time provided, return all tables without availability check
+    if (!time) {
+      return filteredTables.map((table: any) => ({
+        tableId: table.id,
+        tableNumber: table.number,
+        capacity: table.capacity,
+        zone: table.location,
+        available: true, // Unknown without time
+        status: 'unknown',
+        position_x: table.position_x,
+        position_y: table.position_y,
+        rotation: table.rotation,
+        width: table.width,
+        height: table.height
+      }))
+    }
+
+    // Get buffer minutes from DB
+    const dayOfWeek = new Date(date).getDay()
+    const bufferMinutes = await getBufferMinutes(dayOfWeek)
+
+    // Get all reservations for the day
+    const reservationsResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/reservations?` +
+      `select=id,table_ids,tableId,time&` +
+      `date=gte.${date}T00:00:00&` +
+      `date=lt.${date}T23:59:59&` +
+      `status=in.(PENDING,CONFIRMED,SEATED)`,
+      {
+        headers: {
+          'Accept': 'application/json',
+          'Accept-Profile': 'restaurante',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'apikey': SUPABASE_SERVICE_KEY,
+        }
+      }
+    )
+
+    const existingReservations = reservationsResponse.ok ? await reservationsResponse.json() : []
+
+    // Build requested datetime
+    const requestDateTime = new Date(`${date}T${time}:00`)
+
+    // Find conflicting table IDs using buffer logic
+    const reservedTableIds = new Set<string>()
+
+    existingReservations.forEach((reservation: any) => {
+      const resDateTime = new Date(reservation.time)
+      const timeDiff = Math.abs(requestDateTime.getTime() - resDateTime.getTime())
+
+      // Check if reservation conflicts with requested time (buffer_minutes window)
+      if (timeDiff < (bufferMinutes * 60000)) {
+        // Add tables from new table_ids array system
+        if (reservation.table_ids && Array.isArray(reservation.table_ids)) {
+          reservation.table_ids.forEach((tableId: string) => {
+            reservedTableIds.add(tableId)
+          })
+        }
+
+        // Add table from legacy tableId field (backward compatibility)
+        if (reservation.tableId) {
+          reservedTableIds.add(reservation.tableId)
+        }
+      }
+    })
+
+    // Transform ALL active tables with availability status
+    const tablesWithAvailability = filteredTables.map((table: any) => {
+      const isReserved = reservedTableIds.has(table.id)
+      const isOccupied = table.currentstatus === 'occupied' || table.currentstatus === 'maintenance'
+      const isAvailable = !isReserved && !isOccupied
+
+      return {
+        tableId: table.id,
+        tableNumber: table.number,
+        capacity: table.capacity,
+        zone: table.location,
+        available: isAvailable,
+        status: isReserved ? 'reserved' : (isOccupied ? table.currentstatus : 'available'),
+        position_x: table.position_x,
+        position_y: table.position_y,
+        rotation: table.rotation,
+        width: table.width,
+        height: table.height
+      }
+    })
+
+    return tablesWithAvailability
+  } catch (error) {
+    console.error('Error fetching tables:', error)
+    return []
+  }
+}
+
+/**
  * Check availability for a single slot
  */
 async function checkSlotAvailability(
@@ -222,7 +378,7 @@ async function checkSlotAvailability(
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { date, partySize } = body
+    const { date, time, partySize } = body
 
     // Validación
     if (!date || !partySize || partySize < 1 || partySize > 10) {
@@ -387,6 +543,10 @@ export async function POST(request: NextRequest) {
       turns: dinnerTurns
     })
 
+    // ✅ ADMIN SUPPORT: Get individual tables with availability
+    const includePrivate = request.nextUrl.searchParams.get('includePrivate') === 'true'
+    const tables = await getTablesWithAvailability(date, time || null, partySize, includePrivate)
+
     return NextResponse.json({
       success: true,
       data: {
@@ -397,7 +557,15 @@ export async function POST(request: NextRequest) {
           target: targetCapacity,
           targetOccupancy: `${config.targetOccupancy * 100}%`
         },
-        services
+        services,
+        tables, // ✅ For admin: individual table availability
+        summary: {
+          requestedDate: date,
+          requestedTime: time || 'all-day',
+          requestedPartySize: partySize,
+          searchDuration: 'N/A'
+        },
+        availableTables: tables.filter(t => t.available) // ✅ Backwards compatibility
       },
       timestamp: new Date().toISOString()
     })

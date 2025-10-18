@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -169,6 +169,12 @@ export default function EnhancedDateTimeAndTableStep({
   const { isGoodWeather } = useWeatherForecast({ lang: language })
   const { maxPartySize } = useBusinessHours()
 
+  // Refs para scroll inteligente
+  const partySizeRef = useRef<HTMLDivElement>(null)
+  const timeSlotsRef = useRef<HTMLDivElement>(null)
+  const zonePreferenceRef = useRef<HTMLDivElement>(null)
+  const continueButtonRef = useRef<HTMLDivElement>(null)
+
   // Manejar selección de fecha desde el panel del tiempo
   const handleDateSelectFromWeather = useCallback((date: Date) => {
     setSelectedDate(date)
@@ -231,6 +237,37 @@ export default function EnhancedDateTimeAndTableStep({
       handleCheckAvailability()
     }
   }, [selectedDate, partySize, handleCheckAvailability])
+
+  // Scroll inteligente: cuando se selecciona fecha, scroll a party size
+  useEffect(() => {
+    if (selectedDate && partySizeRef.current) {
+      setTimeout(() => {
+        partySizeRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        })
+      }, 300)
+    }
+  }, [selectedDate])
+
+  // Scroll inteligente: cuando se selecciona hora, scroll a zone preference o continuar
+  useEffect(() => {
+    if (selectedTime) {
+      setTimeout(() => {
+        if (partySize <= 8 && zonePreferenceRef.current) {
+          zonePreferenceRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          })
+        } else if (continueButtonRef.current) {
+          continueButtonRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest'
+          })
+        }
+      }, 300)
+    }
+  }, [selectedTime, partySize])
 
   // Manejar cambio de tamaño del grupo
   const handlePartySizeChange = (increment: number) => {
@@ -308,7 +345,7 @@ export default function EnhancedDateTimeAndTableStep({
         />
 
         {/* Selector de personas y niños - COMPACTO Y NATURAL */}
-        <Card>
+        <Card ref={partySizeRef}>
           <CardContent className="p-4">
             <div className="space-y-3">
               {/* Número total de personas */}
@@ -528,7 +565,7 @@ export default function EnhancedDateTimeAndTableStep({
 
         {/* Selector de Zona Preferida */}
         {partySize <= 8 && selectedDate && selectedTime && (
-          <Card>
+          <Card ref={zonePreferenceRef}>
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -584,19 +621,17 @@ export default function EnhancedDateTimeAndTableStep({
                   </Button>
                 </div>
 
-                {preferredZone && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPreferredZone('')}
-                    className="text-xs"
-                  >
-                    {language === 'es' ? 'Sin preferencia' :
-                     language === 'en' ? 'No preference' :
-                     'Keine Präferenz'}
-                  </Button>
-                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setPreferredZone('')}
+                  className={cn("text-xs", !preferredZone && "hidden")}
+                >
+                  {language === 'es' ? 'Sin preferencia' :
+                   language === 'en' ? 'No preference' :
+                   'Keine Präferenz'}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -604,7 +639,7 @@ export default function EnhancedDateTimeAndTableStep({
 
         {/* Botón continuar - Solo después de seleccionar time */}
         {partySize <= 8 && selectedDate && selectedTime && (
-          <div className="flex justify-end">
+          <div ref={continueButtonRef} className="flex justify-end">
             <Button
               onClick={handleContinue}
               className="w-full sm:w-auto h-10 md:h-11"
