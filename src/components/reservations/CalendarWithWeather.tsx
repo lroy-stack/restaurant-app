@@ -130,21 +130,21 @@ function getWeatherCellClass(weather: any, isGoodWeather: boolean) {
 
   // ✅ Buen tiempo (☀️) → Naranja cálido Enigma (terraza perfecta)
   if (isGoodWeather) {
-    return 'bg-gradient-to-br from-accent/20 to-accent/30 dark:from-accent/10 dark:to-accent/15 border-accent/40 dark:border-accent/30 hover:border-accent/60 dark:hover:border-accent/50'
+    return 'bg-gradient-to-br from-accent/20 to-accent/30 dark:from-accent/25 dark:to-accent/35 border-accent/40 dark:border-accent/50 hover:border-accent/60 dark:hover:border-accent/70'
   }
 
   // ✅ Lluvia (🌧️) → Atlantic Blue Enigma (interior recomendado)
   if (weather.precipProbability > 60) {
-    return 'bg-gradient-to-br from-primary/15 to-primary/25 dark:from-primary/10 dark:to-primary/15 border-primary/40 dark:border-primary/30 hover:border-primary/60 dark:hover:border-primary/50'
+    return 'bg-gradient-to-br from-primary/15 to-primary/25 dark:from-primary/25 dark:to-primary/35 border-primary/40 dark:border-primary/50 hover:border-primary/60 dark:hover:border-primary/70'
   }
 
   // ✅ Viento fuerte (💨) → Sage Green neutro
   if (weather.windSpeed > 25) {
-    return 'bg-gradient-to-br from-secondary/30 to-secondary/40 dark:from-secondary/15 dark:to-secondary/20 border-secondary/40 dark:border-secondary/30 hover:border-secondary/50 dark:hover:border-secondary/40'
+    return 'bg-gradient-to-br from-secondary/30 to-secondary/40 dark:from-secondary/30 dark:to-secondary/40 border-secondary/40 dark:border-secondary/50 hover:border-secondary/50 dark:hover:border-secondary/60'
   }
 
   // ✅ Nublado/Neutro (☁️) → Sage Green suave
-  return 'bg-gradient-to-br from-secondary/25 to-secondary/35 dark:from-secondary/12 dark:to-secondary/18 border-secondary/35 dark:border-secondary/25 hover:border-secondary/45 dark:hover:border-secondary/35'
+  return 'bg-gradient-to-br from-secondary/25 to-secondary/35 dark:from-secondary/25 dark:to-secondary/35 border-secondary/35 dark:border-secondary/45 hover:border-secondary/45 dark:hover:border-secondary/55'
 }
 
 export default function CalendarWithWeather({
@@ -496,15 +496,15 @@ export default function CalendarWithWeather({
             </p>
             <div className="grid grid-cols-2 gap-2">
               <div className="flex items-center gap-2 text-xs">
-                <div className="w-4 h-4 rounded bg-gradient-to-br from-accent/20 to-accent/30 dark:from-accent/10 dark:to-accent/15 border border-accent/40 dark:border-accent/30" />
+                <div className="w-4 h-4 rounded bg-gradient-to-br from-accent/20 to-accent/30 dark:from-accent/25 dark:to-accent/35 border border-accent/40 dark:border-accent/50" />
                 <span>{t.perfectDay} - {t.terraceDay}</span>
               </div>
               <div className="flex items-center gap-2 text-xs">
-                <div className="w-4 h-4 rounded bg-gradient-to-br from-secondary/25 to-secondary/35 dark:from-secondary/12 dark:to-secondary/18 border border-secondary/35 dark:border-secondary/25" />
+                <div className="w-4 h-4 rounded bg-gradient-to-br from-secondary/25 to-secondary/35 dark:from-secondary/25 dark:to-secondary/35 border border-secondary/35 dark:border-secondary/45" />
                 <span>{t.goodDay}</span>
               </div>
               <div className="flex items-center gap-2 text-xs">
-                <div className="w-4 h-4 rounded bg-gradient-to-br from-primary/15 to-primary/25 dark:from-primary/10 dark:to-primary/15 border border-primary/40 dark:border-primary/30" />
+                <div className="w-4 h-4 rounded bg-gradient-to-br from-primary/15 to-primary/25 dark:from-primary/25 dark:to-primary/35 border border-primary/40 dark:border-primary/50" />
                 <span>{t.checkWeather} - {t.indoorRecommended}</span>
               </div>
               <div className="flex items-center gap-2 text-xs">
@@ -518,11 +518,11 @@ export default function CalendarWithWeather({
           <div className="mt-2 pt-2 border-t hidden md:block">
             <div className="flex items-center justify-center gap-3 text-[10px] text-muted-foreground">
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-gradient-to-br from-accent/20 to-accent/30 dark:from-accent/10 dark:to-accent/15 border border-accent/40 dark:border-accent/30" />
+                <div className="w-3 h-3 rounded bg-gradient-to-br from-accent/20 to-accent/30 dark:from-accent/25 dark:to-accent/35 border border-accent/40 dark:border-accent/50" />
                 <span>{t.perfectDay}</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-gradient-to-br from-primary/15 to-primary/25 dark:from-primary/10 dark:to-primary/15 border border-primary/40 dark:border-primary/30" />
+                <div className="w-3 h-3 rounded bg-gradient-to-br from-primary/15 to-primary/25 dark:from-primary/25 dark:to-primary/35 border border-primary/40 dark:border-primary/50" />
                 <span>{t.checkWeather}</span>
               </div>
             </div>
