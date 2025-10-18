@@ -20,9 +20,14 @@ interface ReservationEmailData {
 
 /**
  * Send reservation confirmation emails
- * Can be called directly or via webhook
+ * Updates email_logs status in database
+ * @param data - Email data
+ * @param emailLogId - Optional email_logs record ID to update status
  */
-export async function sendReservationEmails(data: ReservationEmailData): Promise<void> {
+export async function sendReservationEmails(
+  data: ReservationEmailData,
+  emailLogId?: string
+): Promise<void> {
   const supabase = createDirectAdminClient()
 
   console.log('📧 Sending reservation emails for:', data.reservationId)
@@ -48,9 +53,37 @@ export async function sendReservationEmails(data: ReservationEmailData): Promise
       preOrderTotal: data.preOrderTotal,
       tokenUrl: data.tokenUrl
     })
+
+    // Update email_logs status
+    if (emailLogId) {
+      await supabase
+        .schema('restaurante')
+        .from('email_logs')
+        .update({
+          status: 'sent',
+          sent_at: new Date().toISOString(),
+          error_message: null
+        })
+        .eq('id', emailLogId)
+    }
+
     console.log('✅ Customer email sent to:', data.customerEmail)
-  } catch (emailError) {
+  } catch (emailError: any) {
     console.error('❌ Customer email FAILED:', emailError)
+
+    // Update email_logs with error
+    if (emailLogId) {
+      await supabase
+        .schema('restaurante')
+        .from('email_logs')
+        .update({
+          status: 'failed',
+          error_message: emailError?.message || String(emailError)
+        })
+        .eq('id', emailLogId)
+    }
+
+    throw emailError // Re-throw to be caught by cron job
   }
 
   // ✅ Restaurant notification (only for web reservations)

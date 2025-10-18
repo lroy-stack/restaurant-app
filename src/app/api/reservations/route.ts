@@ -615,8 +615,102 @@ export async function POST(request: NextRequest) {
       console.error('⚠️ Token generation error:', tokenError)
     }
 
-    // ⚡ RESPUESTA INMEDIATA
-    const response = NextResponse.json({
+    // 📧 QUEUE EMAIL JOBS (DB-first approach - 100% reliable)
+    const emailData = {
+      reservationId: reservation.id,
+      customerEmail: data.email,
+      customerName: `${data.firstName} ${data.lastName}`,
+      reservationDate: new Date(reservationDateTime).toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }),
+      reservationTime: new Date(reservationDateTime).toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }),
+      partySize: data.partySize,
+      childrenCount: data.childrenCount,
+      tableNumber: tables.length > 0 ? tables.map(t => t.number).join(', ') : 'Por asignar',
+      tableLocation: tables.length > 0 ? (tables[0]?.location || 'Por asignar') : 'Por asignar',
+      specialRequests: data.specialRequests || '',
+      preOrderItems: data.preOrderItems || [],
+      preOrderTotal: data.preOrderTotal || 0,
+      tokenUrl: reservationToken ? buildTokenUrl(reservationToken) : undefined,
+      phone: data.phone,
+      source: body.source || 'web'
+    }
+
+    // 1. Queue customer email
+    try {
+      await supabase
+        .schema('restaurante')
+        .from('email_logs')
+        .insert({
+          reservation_id: reservation.id,
+          recipient_email: data.email,
+          subject: '¡Reserva confirmada! - Enigma Cocina Con Alma',
+          email_type: body.source === 'admin' ? 'reservation_confirmed' : 'reservation_confirmation',
+          status: 'pending',
+          template_id: body.source === 'admin' ? 'admin_confirmation' : 'customer_confirmation',
+          error_message: JSON.stringify(emailData) // Store email data for processing
+        })
+      console.log('✅ Customer email queued for:', data.email)
+    } catch (queueError) {
+      console.error('❌ Failed to queue customer email:', queueError)
+    }
+
+    // 2. Queue restaurant notification (only for web reservations)
+    if (emailData.source === 'web') {
+      try {
+        const { data: restaurantData } = await supabase
+          .schema('restaurante')
+          .from('restaurants')
+          .select('mailing')
+          .eq('id', 'rest_enigma_001')
+          .single()
+
+        const restaurantEmail = restaurantData?.mailing || 'adminenigmaconalma@gmail.com'
+
+        await supabase
+          .schema('restaurante')
+          .from('email_logs')
+          .insert({
+            reservation_id: reservation.id,
+            recipient_email: restaurantEmail,
+            subject: `Nueva reserva - ${emailData.reservationDate}`,
+            email_type: 'reservation_created',
+            status: 'pending',
+            template_id: 'restaurant_notification',
+            error_message: JSON.stringify(emailData)
+          })
+        console.log('✅ Restaurant email queued for:', restaurantEmail)
+
+        // 3. Queue admin copy if different
+        if (restaurantEmail !== 'adminenigmaconalma@gmail.com') {
+          await supabase
+            .schema('restaurante')
+            .from('email_logs')
+            .insert({
+              reservation_id: reservation.id,
+              recipient_email: 'adminenigmaconalma@gmail.com',
+              subject: `Nueva reserva - ${emailData.reservationDate}`,
+              email_type: 'reservation_created',
+              status: 'pending',
+              template_id: 'restaurant_notification',
+              error_message: JSON.stringify(emailData)
+            })
+          console.log('✅ Admin copy email queued')
+        }
+      } catch (queueError) {
+        console.error('❌ Failed to queue restaurant emails:', queueError)
+      }
+    }
+
+    // ⚡ RESPUESTA INMEDIATA (emails se envían por cron job)
+    return NextResponse.json({
       success: true,
       reservation: {
         id: reservation.id,
@@ -629,40 +723,6 @@ export async function POST(request: NextRequest) {
       },
       message: 'Reserva creada exitosamente'
     }, { status: 201 })
-
-    // 🔥 FIRE & FORGET: Enviar emails en background (no bloqueamos respuesta)
-    Promise.resolve().then(async () => {
-      const { sendReservationEmails } = await import('@/lib/email/sendReservationEmails')
-      await sendReservationEmails({
-        reservationId: reservation.id,
-        customerEmail: data.email,
-        customerName: `${data.firstName} ${data.lastName}`,
-        reservationDate: new Date(reservationDateTime).toLocaleDateString('es-ES', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        }),
-        reservationTime: new Date(reservationDateTime).toLocaleTimeString('es-ES', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false
-        }),
-        partySize: data.partySize,
-        childrenCount: data.childrenCount,
-        tableNumber: tables.length > 0 ? tables.map(t => t.number).join(', ') : 'Por asignar',
-        tableLocation: tables.length > 0 ? (tables[0]?.location || 'Por asignar') : 'Por asignar',
-        specialRequests: data.specialRequests || '',
-        preOrderItems: data.preOrderItems || [],
-        preOrderTotal: data.preOrderTotal || 0,
-        tokenUrl: reservationToken ? buildTokenUrl(reservationToken) : undefined,
-        phone: data.phone,
-        source: body.source
-      })
-    }).catch(err => console.error('❌ Email sending error:', err))
-
-    return response
-    // Emails sent via webhook endpoint /api/send-reservation-emails
 
   } catch (error) {
     console.error('Error creating reservation:', error)
