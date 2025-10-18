@@ -584,32 +584,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ⚡ RESPUESTA INMEDIATA - No bloquear cliente
-    // ⚡ CAPTURAR baseUrl ANTES de waitUntil (headers pueden no estar disponibles después)
+    // 🔒 SOLUCIÓN ROBUSTA: Ejecutar token + emails ANTES de responder (garantiza entrega)
     const apiBaseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.headers.get('x-forwarded-proto') || 'https'}://${request.headers.get('host') || 'almaenigma.vercel.app'}`
 
-    const response = NextResponse.json({
-      success: true,
-      reservation: {
-        id: reservation.id,
-        customerName: reservation.customerName,
-        date: reservation.date,
-        time: reservation.time,
-        partySize: reservation.partySize,
-        tables: validatedTableNames,
-        status: reservation.status
-      },
-      message: 'Reserva creada exitosamente'
-    }, { status: 201 })
-
-    // 🚀 BACKGROUND: Token + Emails (FIXED: waitUntil para producción Vercel)
-    waitUntil(
-      (async () => {
-        try {
-        // ✅ Token generation
-        let reservationToken = null
-        try {
-          const tokenResponse = await fetch(`${apiBaseUrl}/api/reservations/token/generate`, {
+    // ✅ Token generation (SÍINCRONO - antes de responder)
+    let reservationToken = null
+    try {
+      const tokenResponse = await fetch(`${apiBaseUrl}/api/reservations/token/generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -618,28 +599,107 @@ export async function POST(request: NextRequest) {
             })
           })
 
-          if (tokenResponse.ok) {
-            const tokenResult = await tokenResponse.json()
-            reservationToken = tokenResult.token
-            console.log('✅ Token generated (background):', tokenResult.token?.substring(0, 8) + '...')
-          }
-        } catch (tokenError) {
-          console.error('⚠️ Token generation error:', tokenError)
-        }
+      if (tokenResponse.ok) {
+        const tokenResult = await tokenResponse.json()
+        reservationToken = tokenResult.token
+        console.log('✅ Token generated:', tokenResult.token?.substring(0, 8) + '...')
+      }
+    } catch (tokenError) {
+      console.error('⚠️ Token generation error:', tokenError)
+    }
 
-        // ✅ Customer email
-        try {
-          const { emailService } = await import('@/lib/email/emailService')
-          const emailMethod = body.source === 'admin'
-            ? emailService.sendReservationConfirmed.bind(emailService)
-            : emailService.sendReservationConfirmation.bind(emailService)
+    // ✅ Customer email (SÍNCRONO - antes de responder)
+    try {
+      const { emailService } = await import('@/lib/email/emailService')
+      const emailMethod = body.source === 'admin'
+        ? emailService.sendReservationConfirmed.bind(emailService)
+        : emailService.sendReservationConfirmation.bind(emailService)
 
-          console.log(`📧 Sending ${body.source === 'admin' ? 'CONFIRMED' : 'CONFIRMATION'} email (background)`)
+      console.log(`📧 Sending ${body.source === 'admin' ? 'CONFIRMED' : 'CONFIRMATION'} email to customer`)
 
-          await emailMethod({
+      await emailMethod({
+        reservationId: reservation.id,
+        customerEmail: data.email,
+        customerName: `${data.firstName} ${data.lastName}`,
+        reservationDate: new Date(reservationDateTime).toLocaleDateString('es-ES', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }),
+        reservationTime: new Date(reservationDateTime).toLocaleTimeString('es-ES', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }),
+        partySize: data.partySize,
+        tableNumber: tables.length > 0 ? tables.map(t => t.number).join(', ') : 'Por asignar',
+        tableLocation: tables.length > 0 ? (tables[0]?.location || 'Por asignar') : 'Por asignar',
+        specialRequests: data.specialRequests || '',
+        preOrderItems: data.preOrderItems || [],
+        preOrderTotal: data.preOrderTotal || 0,
+        tokenUrl: reservationToken ? buildTokenUrl(reservationToken) : undefined
+      })
+      console.log('✅ Customer email sent')
+    } catch (emailError) {
+      console.error('❌ CRITICAL: Customer email FAILED:', {
+        error: emailError,
+        message: emailError instanceof Error ? emailError.message : 'Unknown error',
+        stack: emailError instanceof Error ? emailError.stack : undefined,
+        customerEmail: data.email,
+        reservationId: reservation.id,
+        hasPreOrder: (data.preOrderItems || []).length > 0,
+        preOrderItemsCount: (data.preOrderItems || []).length
+      })
+    }
+
+    // ✅ Restaurant notification (SÍNCRONO - antes de responder)
+    if (body.source === 'web' || !body.source) {
+      try {
+        const { emailService } = await import('@/lib/email/emailService')
+        const { data: restaurantData } = await supabase
+          .schema('restaurante')
+          .from('restaurants')
+          .select('mailing')
+          .eq('id', 'rest_enigma_001')
+          .single()
+
+        const restaurantEmail = restaurantData?.mailing || 'adminenigmaconalma@gmail.com'
+        console.log(`📧 Sending restaurant notification to: ${restaurantEmail}`)
+
+        await emailService.sendRestaurantNotification({
+          reservationId: reservation.id,
+          customerName: `${data.firstName} ${data.lastName}`,
+          customerEmail: data.email,
+          customerPhone: data.phone,
+          reservationDate: new Date(reservationDateTime).toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          reservationTime: new Date(reservationDateTime).toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }),
+          partySize: data.partySize,
+          childrenCount: data.childrenCount,
+          tableNumbers: tables.length > 0 ? tables.map(t => t.number).join(', ') : 'Por asignar',
+          tableLocation: tables.length > 0 ? (tables[0]?.location || 'Por asignar') : 'Por asignar',
+          specialRequests: data.specialRequests,
+          preOrderItems: data.preOrderItems,
+          restaurantEmail: restaurantEmail
+        })
+        console.log('✅ Restaurant notification sent to:', restaurantEmail)
+
+        // ✅ Copia adicional a adminenigmaconalma.com
+        if (restaurantEmail !== 'adminenigmaconalma@gmail.com') {
+          await emailService.sendRestaurantNotification({
             reservationId: reservation.id,
-            customerEmail: data.email,
             customerName: `${data.firstName} ${data.lastName}`,
+            customerEmail: data.email,
+            customerPhone: data.phone,
             reservationDate: new Date(reservationDateTime).toLocaleDateString('es-ES', {
               weekday: 'long',
               year: 'numeric',
@@ -652,76 +712,34 @@ export async function POST(request: NextRequest) {
               hour12: false
             }),
             partySize: data.partySize,
-            tableNumber: tables.length > 0 ? tables.map(t => t.number).join(', ') : 'Por asignar',
+            childrenCount: data.childrenCount,
+            tableNumbers: tables.length > 0 ? tables.map(t => t.number).join(', ') : 'Por asignar',
             tableLocation: tables.length > 0 ? (tables[0]?.location || 'Por asignar') : 'Por asignar',
-            specialRequests: data.specialRequests || '',
-            preOrderItems: data.preOrderItems || [],
-            preOrderTotal: data.preOrderTotal || 0,
-            tokenUrl: reservationToken ? buildTokenUrl(reservationToken) : undefined
+            specialRequests: data.specialRequests,
+            preOrderItems: data.preOrderItems,
+            restaurantEmail: 'adminenigmaconalma@gmail.com'
           })
-          console.log('✅ Customer email sent (background)')
-        } catch (emailError) {
-          console.error('❌ CRITICAL: Customer email FAILED:', {
-            error: emailError,
-            message: emailError instanceof Error ? emailError.message : 'Unknown error',
-            stack: emailError instanceof Error ? emailError.stack : undefined,
-            customerEmail: data.email,
-            reservationId: reservation.id,
-            hasPreOrder: (data.preOrderItems || []).length > 0,
-            preOrderItemsCount: (data.preOrderItems || []).length
-          })
+          console.log('✅ Copia enviada a: adminenigmaconalma@gmail.com')
         }
+      } catch (notificationError) {
+        console.error('⚠️ Restaurant notification error:', notificationError)
+      }
+    }
 
-        // ✅ Restaurant notification
-        if (body.source === 'web' || !body.source) {
-          try {
-            const { emailService } = await import('@/lib/email/emailService')
-            const { data: restaurantData } = await supabase
-              .schema('restaurante')
-              .from('restaurants')
-              .select('mailing')
-              .eq('id', 'rest_enigma_001')
-              .single()
-
-            const restaurantEmail = restaurantData?.mailing || 'abraldes80@gmail.com'
-            console.log(`📧 Sending restaurant notification (background): ${restaurantEmail}`)
-
-            await emailService.sendRestaurantNotification({
-              reservationId: reservation.id,
-              customerName: `${data.firstName} ${data.lastName}`,
-              customerEmail: data.email,
-              customerPhone: data.phone,
-              reservationDate: new Date(reservationDateTime).toLocaleDateString('es-ES', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              }),
-              reservationTime: new Date(reservationDateTime).toLocaleTimeString('es-ES', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-              }),
-              partySize: data.partySize,
-              childrenCount: data.childrenCount,
-              tableNumbers: tables.length > 0 ? tables.map(t => t.number).join(', ') : 'Por asignar',
-              tableLocation: tables.length > 0 ? (tables[0]?.location || 'Por asignar') : 'Por asignar',
-              specialRequests: data.specialRequests,
-              preOrderItems: data.preOrderItems,
-              restaurantEmail: restaurantEmail
-            })
-            console.log('✅ Restaurant notification sent (background)')
-          } catch (notificationError) {
-            console.error('⚠️ Restaurant notification error:', notificationError)
-          }
-        }
-        } catch (error) {
-          console.error('⚠️ Background tasks error:', error)
-        }
-      })()
-    )
-
-    return response
+    // ⚡ RESPUESTA - Todo ejecutado, ahora respondemos
+    return NextResponse.json({
+      success: true,
+      reservation: {
+        id: reservation.id,
+        customerName: reservation.customerName,
+        date: reservation.date,
+        time: reservation.time,
+        partySize: reservation.partySize,
+        tables: validatedTableNames,
+        status: reservation.status
+      },
+      message: 'Reserva creada exitosamente'
+    }, { status: 201 })
 
   } catch (error) {
     console.error('Error creating reservation:', error)
