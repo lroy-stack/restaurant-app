@@ -95,7 +95,7 @@ export function TwoTurnTimeSlotSelector({
                     </div>
 
                     {/* Slots */}
-                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
                       {turn.slots.map(slot => (
                         <Button
                           key={slot.time}
@@ -104,11 +104,11 @@ export function TwoTurnTimeSlotSelector({
                           size="sm"
                           onClick={() => slot.available && onSelectTime(slot.time)}
                           className={cn(
-                            'relative h-10 md:h-11',
+                            'relative h-10 md:h-11 min-w-[70px] px-2',
                             !slot.available && 'bg-muted/60 opacity-50 cursor-not-allowed line-through decoration-2'
                           )}
                         >
-                          <span className={cn('text-sm md:text-base', !slot.available && 'text-muted-foreground')}>{slot.time}</span>
+                          <span className={cn('text-sm md:text-base font-medium whitespace-nowrap', !slot.available && 'text-muted-foreground')}>{slot.time}</span>
                           {slot.available && slot.utilizationPercent > 60 && (
                             <Badge
                               variant={slot.utilizationPercent > 80 ? 'destructive' : 'secondary'}
@@ -150,7 +150,7 @@ export function TwoTurnTimeSlotSelector({
                 </div>
               </CardHeader>
               <CardContent className="p-4 md:p-5">
-                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
                   {turn.slots.map(slot => (
                     <Button
                       key={slot.time}
@@ -159,11 +159,11 @@ export function TwoTurnTimeSlotSelector({
                       size="sm"
                       onClick={() => slot.available && onSelectTime(slot.time)}
                       className={cn(
-                        'relative h-10 md:h-11',
+                        'relative h-10 md:h-11 min-w-[70px] px-2',
                         !slot.available && 'bg-muted/60 opacity-50 cursor-not-allowed line-through decoration-2'
                       )}
                     >
-                      <span className={cn('text-sm md:text-base', !slot.available && 'text-muted-foreground')}>{slot.time}</span>
+                      <span className={cn('text-sm md:text-base font-medium whitespace-nowrap', !slot.available && 'text-muted-foreground')}>{slot.time}</span>
                       {slot.available && slot.utilizationPercent > 60 && (
                         <Badge
                           variant={slot.utilizationPercent > 80 ? 'destructive' : 'secondary'}
