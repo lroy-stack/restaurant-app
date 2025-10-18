@@ -615,8 +615,7 @@ export async function POST(request: NextRequest) {
       console.error('⚠️ Token generation error:', tokenError)
     }
 
-    // 📧 QUEUE EMAIL JOB (DB-first approach - 100% reliable)
-    // UN SOLO registro que envía todos los emails (cliente + restaurante + admin)
+    // 📧 SEND EMAILS DIRECTLY (same pattern as confirmation - WORKS)
     const emailData = {
       reservationId: reservation.id,
       customerEmail: data.email,
@@ -644,26 +643,19 @@ export async function POST(request: NextRequest) {
       source: body.source || 'web'
     }
 
-    // Queue SINGLE email job that sends all emails (customer + restaurant + admin)
-    try {
-      await supabase
-        .schema('restaurante')
-        .from('email_logs')
-        .insert({
-          reservation_id: reservation.id,
-          recipient_email: data.email, // Primary recipient for tracking
-          subject: '¡Reserva confirmada! - Enigma Cocina Con Alma',
-          email_type: 'reservation_batch', // Indicates this sends all emails
-          status: 'pending',
-          template_id: body.source === 'admin' ? 'admin_confirmation' : 'customer_confirmation',
-          error_message: JSON.stringify(emailData) // Store complete email data
-        })
-      console.log('✅ Email job queued for reservation:', reservation.id)
-    } catch (queueError) {
-      console.error('❌ Failed to queue email job:', queueError)
-    }
+    // 🚀 BACKGROUND EMAIL SENDING (non-blocking, same as confirmation emails)
+    setImmediate(async () => {
+      try {
+        console.log('📧 Enviando emails de creación para reserva:', reservation.id)
+        const { sendReservationEmails } = await import('@/lib/email/sendReservationEmails')
+        await sendReservationEmails(emailData)
+        console.log('✅ Emails de creación enviados exitosamente')
+      } catch (emailError) {
+        console.error('❌ Error enviando emails de creación:', emailError)
+      }
+    })
 
-    // ⚡ RESPUESTA INMEDIATA (emails se envían por cron job)
+    // ⚡ RESPUESTA INMEDIATA (emails se envían en background)
     return NextResponse.json({
       success: true,
       reservation: {
