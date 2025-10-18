@@ -151,35 +151,35 @@ export function TwoTurnTimeSlotSelector({
           {/* Service Header */}
           <div className="px-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-lg md:text-xl font-bold text-foreground">
+              <h3 className="text-xl md:text-2xl font-bold text-foreground">
                 {service.name[language]}
               </h3>
               {endingSoon && (
-                <Badge variant="outline" className="text-xs border-amber-500 text-amber-700 bg-amber-50">
+                <Badge variant="outline" className="text-xs md:text-sm border-amber-500 text-amber-700 bg-amber-50">
                   ⏰ {t[language].lastHours}
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">{service.period}</p>
+            <p className="text-base md:text-lg text-muted-foreground font-medium">{service.period}</p>
           </div>
 
           {/* Lunch: Single card with turns together */}
           {service.type === 'lunch' && (
             <Card className="border-2 border-primary/30 bg-primary/5">
               <CardHeader className="p-4 md:p-5">
-                <CardTitle className="text-base md:text-lg">{service.name[language]}</CardTitle>
-                <CardDescription className="text-xs md:text-sm">{service.period}</CardDescription>
+                <CardTitle className="text-lg md:text-xl">{service.name[language]}</CardTitle>
+                <CardDescription className="text-sm md:text-base font-medium">{service.period}</CardDescription>
               </CardHeader>
               <CardContent className="p-4 md:p-5 space-y-4">
                 {service.turns.map((turn, turnIdx) => (
                   <div key={turnIdx}>
                     {/* Light separator and label */}
                     {turnIdx > 0 && <div className="border-t border-border/50 mb-3" />}
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs font-medium text-muted-foreground">{turn.period}</p>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm md:text-base font-semibold text-foreground">{turn.period}</p>
                       <Badge
                         variant={turn.availableCount > 0 ? 'outline' : 'destructive'}
-                        className="text-xs"
+                        className="text-xs md:text-sm"
                       >
                         {turn.availableCount} {t[language].available}
                       </Badge>
@@ -195,11 +195,11 @@ export function TwoTurnTimeSlotSelector({
                           size="sm"
                           onClick={() => slot.available && onSelectTime(slot.time)}
                           className={cn(
-                            'relative h-10 md:h-11 min-w-[70px] px-2',
+                            'relative h-12 md:h-11 min-w-[75px] px-2',
                             !slot.available && 'bg-muted/60 opacity-50 cursor-not-allowed'
                           )}
                         >
-                          <span className={cn('text-sm md:text-base font-medium whitespace-nowrap', !slot.available && 'text-muted-foreground line-through decoration-2')}>{slot.time}</span>
+                          <span className={cn('text-base md:text-base font-semibold whitespace-nowrap', !slot.available && 'text-muted-foreground line-through decoration-2')}>{slot.time}</span>
                           {!slot.available && (
                             <Badge
                               variant="outline"
@@ -237,12 +237,12 @@ export function TwoTurnTimeSlotSelector({
               <CardHeader className="p-4 md:p-5">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <CardTitle className="text-base md:text-lg">{turn.name[language]}</CardTitle>
-                    <CardDescription className="text-xs md:text-sm">{turn.period}</CardDescription>
+                    <CardTitle className="text-lg md:text-xl">{turn.name[language]}</CardTitle>
+                    <CardDescription className="text-sm md:text-base font-medium">{turn.period}</CardDescription>
                   </div>
                   <Badge
                     variant={turn.availableCount > 0 ? 'default' : 'destructive'}
-                    className="text-xs"
+                    className="text-xs md:text-sm"
                   >
                     {turn.availableCount} {t[language].available}
                   </Badge>
@@ -258,11 +258,11 @@ export function TwoTurnTimeSlotSelector({
                       size="sm"
                       onClick={() => slot.available && onSelectTime(slot.time)}
                       className={cn(
-                        'relative h-10 md:h-11 min-w-[70px] px-2',
+                        'relative h-12 md:h-11 min-w-[75px] px-2',
                         !slot.available && 'bg-muted/60 opacity-50 cursor-not-allowed'
                       )}
                     >
-                      <span className={cn('text-sm md:text-base font-medium whitespace-nowrap', !slot.available && 'text-muted-foreground line-through decoration-2')}>{slot.time}</span>
+                      <span className={cn('text-base md:text-base font-semibold whitespace-nowrap', !slot.available && 'text-muted-foreground line-through decoration-2')}>{slot.time}</span>
                       {!slot.available && (
                         <Badge
                           variant="outline"
