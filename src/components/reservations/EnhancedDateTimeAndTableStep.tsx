@@ -13,7 +13,8 @@ import {
   Minus,
   Baby,
   Info,
-  MessageCircle
+  MessageCircle,
+  MapPin
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -162,6 +163,7 @@ export default function EnhancedDateTimeAndTableStep({
   const [hasChildren, setHasChildren] = useState<boolean>(false)
   const [availabilityResults, setAvailabilityResults] = useState<AvailabilityData | null>(null)
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false)
+  const [preferredZone, setPreferredZone] = useState<string>('')
 
   // Hooks
   const { isGoodWeather } = useWeatherForecast({ lang: language })
@@ -264,6 +266,7 @@ export default function EnhancedDateTimeAndTableStep({
     form.setValue('tableIds', []) // ✅ Sin mesas - staff asigna después
     form.setValue('partySize', partySize)
     form.setValue('childrenCount', childrenCount > 0 ? childrenCount : undefined)
+    form.setValue('location', preferredZone || '') // ✅ Zona preferida opcional
 
     onNext()
   }
@@ -521,6 +524,82 @@ export default function EnhancedDateTimeAndTableStep({
             partySize={partySize}
             language={language}
           />
+        )}
+
+        {/* Selector de Zona Preferida */}
+        {partySize <= 8 && selectedDate && selectedTime && (
+          <Card>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  <Label className="text-base font-medium">
+                    {language === 'es' ? 'Zona Preferida (Opcional)' :
+                     language === 'en' ? 'Preferred Zone (Optional)' :
+                     'Bevorzugter Bereich (Optional)'}
+                  </Label>
+                </div>
+
+                <p className="text-sm text-muted-foreground">
+                  {language === 'es' ? 'Indica tu preferencia de zona. El restaurante intentará asignarte mesas en esta área.' :
+                   language === 'en' ? 'Indicate your zone preference. The restaurant will try to assign you tables in this area.' :
+                   'Geben Sie Ihre Zonenvorliebe an. Das Restaurant wird versuchen, Ihnen Tische in diesem Bereich zuzuweisen.'}
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    type="button"
+                    variant={preferredZone === 'TERRACE_CAMPANARI' ? 'default' : 'outline'}
+                    onClick={() => setPreferredZone('TERRACE_CAMPANARI')}
+                    className="h-auto flex-col items-start p-4 text-left"
+                  >
+                    <span className="font-medium">
+                      {language === 'es' ? 'Terraza Campanari' :
+                       language === 'en' ? 'Campanari Terrace' :
+                       'Campanari Terrasse'}
+                    </span>
+                    <span className="text-xs text-muted-foreground mt-1">
+                      {language === 'es' ? 'Ambiente al aire libre' :
+                       language === 'en' ? 'Outdoor atmosphere' :
+                       'Außenbereich'}
+                    </span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant={preferredZone === 'SALA_PRINCIPAL' ? 'default' : 'outline'}
+                    onClick={() => setPreferredZone('SALA_PRINCIPAL')}
+                    className="h-auto flex-col items-start p-4 text-left"
+                  >
+                    <span className="font-medium">
+                      {language === 'es' ? 'Sala Principal' :
+                       language === 'en' ? 'Main Dining Room' :
+                       'Hauptsaal'}
+                    </span>
+                    <span className="text-xs text-muted-foreground mt-1">
+                      {language === 'es' ? 'Interior acogedor' :
+                       language === 'en' ? 'Cozy interior' :
+                       'Gemütlicher Innenbereich'}
+                    </span>
+                  </Button>
+                </div>
+
+                {preferredZone && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPreferredZone('')}
+                    className="text-xs"
+                  >
+                    {language === 'es' ? 'Sin preferencia' :
+                     language === 'en' ? 'No preference' :
+                     'Keine Präferenz'}
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Botón continuar - Solo después de seleccionar time */}

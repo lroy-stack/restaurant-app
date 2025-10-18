@@ -881,49 +881,6 @@ export function CustomerEditReservationModal({ isOpen, onClose, reservation, onS
               )}
             </div>
 
-            {/* Table Selection - Show after time selected */}
-            {selectedTime && currentTurn ? (
-              <div className="space-y-3">
-                <Label>
-                  Mesas disponibles para {selectedTime} *
-                  {watch('tableIds')?.length > 0 && (
-                    <span className="ml-2 text-sm text-muted-foreground">
-                      ({watch('tableIds').length} mesa{watch('tableIds').length > 1 ? 's' : ''} seleccionada{watch('tableIds').length > 1 ? 's' : ''})
-                    </span>
-                  )}
-                </Label>
-
-                {/* Turn info */}
-                <div className="p-3 bg-muted/50 rounded-lg">
-                  <p className="text-sm font-medium">{currentTurn.name.es}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {currentTurn.period} • {currentTurn.maxPerSlot} personas/slot
-                  </p>
-                </div>
-
-                <p className="text-sm text-muted-foreground">
-                  👥 Selecciona mesas con capacidad suficiente para {availabilityPartySize} personas
-                </p>
-
-                {/* TODO: Fetch tables for selected slot - por ahora mostrar mensaje */}
-                <div className="flex items-center justify-center p-4 border border-dashed rounded-lg">
-                  <AlertCircle className="h-4 w-4 text-orange-500 mr-2" />
-                  <span className="text-sm text-muted-foreground">
-                    Sistema de asignación de mesas en desarrollo. El restaurante confirmará las mesas disponibles.
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <Label>Mesas *</Label>
-                <div className="flex items-center justify-center p-4 border border-dashed rounded-lg">
-                  <AlertCircle className="h-4 w-4 text-muted-foreground mr-2" />
-                  <span className="text-sm text-muted-foreground">
-                    Selecciona un horario primero para ver mesas disponibles
-                  </span>
-                </div>
-              </div>
-            )}
 
             <div className="space-y-2">
               <Label htmlFor="specialRequests">Solicitudes Especiales</Label>
