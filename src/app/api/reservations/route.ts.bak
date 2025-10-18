@@ -666,6 +666,137 @@ export async function POST(request: NextRequest) {
 
     return response
     // Emails sent via webhook endpoint /api/send-reservation-emails
+    try {
+      const { emailService } = await import('@/lib/email/emailService')
+      const emailMethod = body.source === 'admin'
+        ? emailService.sendReservationConfirmed.bind(emailService)
+        : emailService.sendReservationConfirmation.bind(emailService)
+
+      console.log(`📧 Sending ${body.source === 'admin' ? 'CONFIRMED' : 'CONFIRMATION'} email to customer`)
+
+      await emailMethod({
+        reservationId: reservation.id,
+        customerEmail: data.email,
+        customerName: `${data.firstName} ${data.lastName}`,
+        reservationDate: new Date(reservationDateTime).toLocaleDateString('es-ES', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }),
+        reservationTime: new Date(reservationDateTime).toLocaleTimeString('es-ES', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }),
+        partySize: data.partySize,
+        tableNumber: tables.length > 0 ? tables.map(t => t.number).join(', ') : 'Por asignar',
+        tableLocation: tables.length > 0 ? (tables[0]?.location || 'Por asignar') : 'Por asignar',
+        specialRequests: data.specialRequests || '',
+        preOrderItems: data.preOrderItems || [],
+        preOrderTotal: data.preOrderTotal || 0,
+        tokenUrl: reservationToken ? buildTokenUrl(reservationToken) : undefined
+      })
+      console.log('✅ Customer email sent')
+    } catch (emailError) {
+      console.error('❌ CRITICAL: Customer email FAILED:', {
+        error: emailError,
+        message: emailError instanceof Error ? emailError.message : 'Unknown error',
+        stack: emailError instanceof Error ? emailError.stack : undefined,
+        customerEmail: data.email,
+        reservationId: reservation.id,
+        hasPreOrder: (data.preOrderItems || []).length > 0,
+        preOrderItemsCount: (data.preOrderItems || []).length
+      })
+    }
+
+    // ✅ Restaurant notification (SÍNCRONO - antes de responder)
+    if (body.source === 'web' || !body.source) {
+      try {
+        const { emailService } = await import('@/lib/email/emailService')
+        const { data: restaurantData } = await supabase
+          .schema('restaurante')
+          .from('restaurants')
+          .select('mailing')
+          .eq('id', 'rest_enigma_001')
+          .single()
+
+        const restaurantEmail = restaurantData?.mailing || 'adminenigmaconalma@gmail.com'
+        console.log(`📧 Sending restaurant notification to: ${restaurantEmail}`)
+
+        await emailService.sendRestaurantNotification({
+          reservationId: reservation.id,
+          customerName: `${data.firstName} ${data.lastName}`,
+          customerEmail: data.email,
+          customerPhone: data.phone,
+          reservationDate: new Date(reservationDateTime).toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          reservationTime: new Date(reservationDateTime).toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }),
+          partySize: data.partySize,
+          childrenCount: data.childrenCount,
+          tableNumbers: tables.length > 0 ? tables.map(t => t.number).join(', ') : 'Por asignar',
+          tableLocation: tables.length > 0 ? (tables[0]?.location || 'Por asignar') : 'Por asignar',
+          specialRequests: data.specialRequests,
+          preOrderItems: data.preOrderItems,
+          restaurantEmail: restaurantEmail
+        })
+        console.log('✅ Restaurant notification sent to:', restaurantEmail)
+
+        // ✅ Copia adicional a adminenigmaconalma.com
+        if (restaurantEmail !== 'adminenigmaconalma@gmail.com') {
+          await emailService.sendRestaurantNotification({
+            reservationId: reservation.id,
+            customerName: `${data.firstName} ${data.lastName}`,
+            customerEmail: data.email,
+            customerPhone: data.phone,
+            reservationDate: new Date(reservationDateTime).toLocaleDateString('es-ES', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }),
+            reservationTime: new Date(reservationDateTime).toLocaleTimeString('es-ES', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+            }),
+            partySize: data.partySize,
+            childrenCount: data.childrenCount,
+            tableNumbers: tables.length > 0 ? tables.map(t => t.number).join(', ') : 'Por asignar',
+            tableLocation: tables.length > 0 ? (tables[0]?.location || 'Por asignar') : 'Por asignar',
+            specialRequests: data.specialRequests,
+            preOrderItems: data.preOrderItems,
+            restaurantEmail: 'adminenigmaconalma@gmail.com'
+          })
+          console.log('✅ Copia enviada a: adminenigmaconalma@gmail.com')
+        }
+      } catch (notificationError) {
+        console.error('⚠️ Restaurant notification error:', notificationError)
+      }
+    }
+
+    // ⚡ RESPUESTA - Todo ejecutado, ahora respondemos
+    return NextResponse.json({
+      success: true,
+      reservation: {
+        id: reservation.id,
+        customerName: reservation.customerName,
+        date: reservation.date,
+        time: reservation.time,
+        partySize: reservation.partySize,
+        tables: validatedTableNames,
+        status: reservation.status
+      },
+      message: 'Reserva creada exitosamente'
+    }, { status: 201 })
 
   } catch (error) {
     console.error('Error creating reservation:', error)
