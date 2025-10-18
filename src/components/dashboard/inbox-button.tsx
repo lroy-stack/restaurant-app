@@ -59,19 +59,22 @@ export function InboxButton({ onReservationClick }: InboxButtonProps) {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant={unseenCount > 0 ? "default" : "outline"}
           size="sm"
           className={cn(
-            "relative gap-2",
-            unseenCount > 0 && "border-primary text-primary"
+            "relative gap-2 flex-1 sm:flex-initial",
+            unseenCount > 0 && "bg-primary text-primary-foreground shadow-lg"
           )}
         >
           <Inbox className="h-4 w-4" />
           <span className="hidden md:inline">Nuevas</span>
+          <span className="md:hidden">
+            {unseenCount > 0 ? `${unseenCount} Nueva${unseenCount > 1 ? 's' : ''}` : 'Bandeja'}
+          </span>
           {unseenCount > 0 && (
             <Badge
-              variant="destructive"
-              className="absolute -top-2 -right-2 h-5 min-w-5 px-1 flex items-center justify-center text-xs font-bold animate-pulse"
+              variant="secondary"
+              className="absolute -top-2 -right-2 h-5 min-w-5 px-1 flex items-center justify-center text-xs font-bold animate-pulse bg-destructive text-destructive-foreground"
             >
               {unseenCount > 99 ? '99+' : unseenCount}
             </Badge>

@@ -187,12 +187,21 @@ export default function ReservacionesPage() {
           </p>
         </div>
         <div className="flex gap-2 sm:gap-3 w-full sm:w-auto shrink-0">
-          <InboxButton onReservationClick={handleEventClick} />
+          {/* Mobile: Inbox destacado (flex-1), Notificaciones compacto, Refresh icono solo */}
+          <div className="flex gap-2 flex-1 sm:flex-initial">
+            <InboxButton onReservationClick={handleEventClick} />
+          </div>
           <NotificationSettings />
-          <Button onClick={handleRefresh} variant="outline" size="sm" disabled={loading} className="flex-1 sm:flex-initial">
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <Button
+            onClick={handleRefresh}
+            variant="ghost"
+            size="sm"
+            disabled={loading}
+            className="w-9 p-0 sm:w-auto sm:px-3 text-muted-foreground hover:text-foreground"
+            title="Actualizar reservas"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''} sm:mr-2`} />
             <span className="hidden sm:inline">Actualizar</span>
-            <span className="sm:hidden">Refresh</span>
           </Button>
         </div>
       </div>
