@@ -631,12 +631,9 @@ export async function POST(request: NextRequest) {
     }, { status: 201 })
 
     // 🔥 FIRE & FORGET: Enviar emails en background (no bloqueamos respuesta)
-    const apiBaseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.headers.get('x-forwarded-proto') || 'https'}://${request.headers.get('host') || 'almaenigma.vercel.app'}`
-
-    fetch(`${apiBaseUrl}/api/send-reservation-emails`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    Promise.resolve().then(async () => {
+      const { sendReservationEmails } = await import('@/lib/email/sendReservationEmails')
+      await sendReservationEmails({
         reservationId: reservation.id,
         customerEmail: data.email,
         customerName: `${data.firstName} ${data.lastName}`,
@@ -662,7 +659,7 @@ export async function POST(request: NextRequest) {
         phone: data.phone,
         source: body.source
       })
-    }).catch(err => console.error('❌ Email webhook error:', err))
+    }).catch(err => console.error('❌ Email sending error:', err))
 
     return response
     // Emails sent via webhook endpoint /api/send-reservation-emails
