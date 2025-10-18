@@ -109,16 +109,44 @@ async function fetchRealWeatherData(request: WeatherRequest) {
 
     const data = await response.json()
 
-    // Transformar datos de OpenWeather al formato esperado
-    const forecast = data.list.slice(0, 5).map((item: any) => ({
-      date: new Date(item.dt * 1000).toISOString(),
-      tempMax: Math.round(item.main.temp_max),
-      tempMin: Math.round(item.main.temp_min),
-      description: item.weather[0].description,
-      icon: getEmojiIcon(item.weather[0].icon),
-      precipProbability: (item.pop || 0) * 100,
-      windSpeed: item.wind.speed * 3.6 // Convertir m/s a km/h
-    }))
+    // Agrupar por día único (OpenWeather devuelve datos cada 3h)
+    const dailyForecasts = new Map<string, any[]>()
+
+    data.list.forEach((item: any) => {
+      const date = new Date(item.dt * 1000)
+      const dayKey = date.toISOString().split('T')[0] // YYYY-MM-DD
+
+      if (!dailyForecasts.has(dayKey)) {
+        dailyForecasts.set(dayKey, [])
+      }
+      dailyForecasts.get(dayKey)!.push(item)
+    })
+
+    // Tomar primeros 5 días únicos
+    const forecast = Array.from(dailyForecasts.entries())
+      .slice(0, 5)
+      .map(([dayKey, dayItems]) => {
+        // Tomar el pronóstico del mediodía (más representativo)
+        const middayItem = dayItems.find((item: any) => {
+          const hour = new Date(item.dt * 1000).getHours()
+          return hour >= 12 && hour <= 15
+        }) || dayItems[Math.floor(dayItems.length / 2)] // Fallback al item del medio
+
+        // Calcular temp máxima/mínima del día
+        const temps = dayItems.map((i: any) => i.main.temp)
+        const tempMax = Math.round(Math.max(...temps))
+        const tempMin = Math.round(Math.min(...temps))
+
+        return {
+          date: new Date(dayKey).toISOString(),
+          tempMax,
+          tempMin,
+          description: middayItem.weather[0].description,
+          icon: getEmojiIcon(middayItem.weather[0].icon),
+          precipProbability: Math.round((middayItem.pop || 0) * 100),
+          windSpeed: Math.round(middayItem.wind.speed * 3.6)
+        }
+      })
 
     return {
       current: {
