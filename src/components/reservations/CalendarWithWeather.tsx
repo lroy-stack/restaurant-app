@@ -14,7 +14,8 @@ import {
   CloudRain,
   Wind,
   AlertCircle,
-  Info
+  Info,
+  XCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useWeatherForecast } from '@/hooks/useWeatherForecast'
@@ -389,9 +390,9 @@ export default function CalendarWithWeather({
                 onClick={() => handleDateSelect(day)}
                 disabled={!day.isSelectable}
                 className={cn(
-                  "relative aspect-square rounded-lg border-2 transition-all",
+                  "relative aspect-square rounded-lg border-2 transition-all overflow-hidden",
                   compact ? "p-0.5" : "p-1",
-                  "hover:shadow-md hover:-translate-y-0.5",
+                  day.isSelectable && "hover:shadow-md hover:-translate-y-0.5",
                   "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1",
                   // Estado base
                   day.isSelectable ? "cursor-pointer" : "cursor-not-allowed",
@@ -401,11 +402,20 @@ export default function CalendarWithWeather({
                     "bg-card border-border",
                   // Estados especiales
                   day.isPast && "opacity-40",
-                  !day.isOpen && "bg-muted/50 border-border/50 opacity-50",
+                  !day.isOpen && "bg-muted border-destructive/40 text-muted-foreground",
                   day.isToday && "ring-2 ring-primary ring-offset-1",
                   isSelected && "bg-primary text-primary-foreground border-primary"
                 )}
               >
+                {/* Patrón diagonal para días cerrados */}
+                {!day.isOpen && !day.isPast && (
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgb(239 68 68 / 0.1) 5px, rgb(239 68 68 / 0.1) 6px)',
+                    }}
+                  />
+                )}
                 {/* Badges especiales - hidden on compact or small mobile */}
                 {!compact && (
                   <div className="absolute top-0.5 right-0.5 hidden sm:flex gap-0.5">
@@ -450,14 +460,19 @@ export default function CalendarWithWeather({
                     </span>
                   )}
 
-                  {/* Indicador de cerrado */}
+                  {/* Indicador de cerrado - siempre visible */}
                   {day.isOpen === false && !day.isPast && (
-                    <Badge variant="destructive" className={cn(
-                      "text-[10px] px-1 py-0",
-                      compact && "hidden sm:inline-flex"
-                    )}>
-                      {t.closed}
-                    </Badge>
+                    <>
+                      <div className="mt-1">
+                        <XCircle className="h-4 w-4 text-destructive" />
+                      </div>
+                      <Badge variant="destructive" className={cn(
+                        "text-[10px] px-1 py-0 mt-0.5",
+                        compact && "hidden sm:inline-flex"
+                      )}>
+                        {t.closed}
+                      </Badge>
+                    </>
                   )}
                 </div>
 
