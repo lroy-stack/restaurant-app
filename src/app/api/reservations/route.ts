@@ -585,6 +585,9 @@ export async function POST(request: NextRequest) {
     }
 
     // ⚡ RESPUESTA INMEDIATA - No bloquear cliente
+    // ⚡ CAPTURAR baseUrl ANTES de waitUntil (headers pueden no estar disponibles después)
+    const apiBaseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.headers.get('x-forwarded-proto') || 'https'}://${request.headers.get('host') || 'almaenigma.vercel.app'}`
+
     const response = NextResponse.json({
       success: true,
       reservation: {
@@ -606,8 +609,7 @@ export async function POST(request: NextRequest) {
         // ✅ Token generation
         let reservationToken = null
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.headers.get('x-forwarded-proto') || 'http'}://${request.headers.get('host') || 'localhost:3000'}`
-          const tokenResponse = await fetch(`${baseUrl}/api/reservations/token/generate`, {
+          const tokenResponse = await fetch(`${apiBaseUrl}/api/reservations/token/generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
