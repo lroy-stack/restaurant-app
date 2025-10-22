@@ -3,7 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { createMenuItemSchema, updateMenuItemSchema } from '@/app/(admin)/dashboard/menu/schemas/menu-item.schema'
 
-export const dynamic = 'force-dynamic'
+// ⚡ OPTIMIZATION: Cache menu items for 5 minutes (data is relatively static)
+export const revalidate = 300
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!

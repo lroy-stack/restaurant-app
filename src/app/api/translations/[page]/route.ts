@@ -4,6 +4,9 @@ import { getSupabaseHeaders } from '@/lib/supabase/config'
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
+// ⚡ OPTIMIZATION: Cache translations for 1 minute
+export const revalidate = 60
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ page: string }> }
@@ -52,6 +55,10 @@ export async function GET(
       language,
       translations,
       count: data.length
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120'
+      }
     })
 
   } catch (error) {

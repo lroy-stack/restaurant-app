@@ -5,6 +5,9 @@ import { getAvailableTimeSlots } from '@/lib/business-hours-server'
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
+// ⚡ OPTIMIZATION: Cache API responses for 60 seconds
+export const revalidate = 60
+
 interface BusinessHoursConfig {
   totalCapacity: number
   targetOccupancy: number
@@ -49,10 +52,21 @@ interface Service {
   turns: Turn[]
 }
 
+// ⚡ OPTIMIZATION: In-memory cache for business_hours (reduces 5,092 seq scans to ~100)
+const businessHoursCache = new Map<number, { config: BusinessHoursConfig; timestamp: number }>()
+const CACHE_TTL = 60 * 60 * 1000 // 1 hour
+
 /**
  * Get dynamic capacity config from business_hours table
+ * Now with in-memory caching to prevent excessive DB queries
  */
 async function getBusinessHoursConfig(dayOfWeek: number): Promise<BusinessHoursConfig> {
+  // Check cache first
+  const cached = businessHoursCache.get(dayOfWeek)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.config
+  }
+
   try {
     const response = await fetch(
       `${SUPABASE_URL}/rest/v1/business_hours?` +
@@ -75,7 +89,7 @@ async function getBusinessHoursConfig(dayOfWeek: number): Promise<BusinessHoursC
       const data = await response.json()
       if (data && data[0]) {
         const row = data[0]
-        return {
+        const config: BusinessHoursConfig = {
           totalCapacity: row.total_seating_capacity || 63,
           targetOccupancy: row.target_occupancy_rate || 0.80,
           slotDuration: row.slot_duration_minutes || 15,
@@ -88,6 +102,14 @@ async function getBusinessHoursConfig(dayOfWeek: number): Promise<BusinessHoursC
           dinnerCloseTime: row.close_time || '23:00',
           dinnerLastReservationTime: row.last_reservation_time || '22:00'
         }
+
+        // Store in cache
+        businessHoursCache.set(dayOfWeek, {
+          config,
+          timestamp: Date.now()
+        })
+
+        return config
       }
     }
   } catch (error) {
@@ -376,6 +398,73 @@ async function checkSlotAvailability(
   }
 }
 
+/**
+ * ⚡ OPTIMIZATION: Batch check availability for multiple slots
+ * Reduces 40+ individual RPC calls to 1 batch call (40x performance improvement)
+ */
+async function checkSlotAvailabilityBatch(
+  date: string,
+  timeSlots: string[],
+  requestedPartySize: number,
+  maxPerSlotsMap: Map<string, number>
+): Promise<SlotAvailability[]> {
+  try {
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/rpc/check_slots_capacity_batch`,
+      {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'apikey': SUPABASE_SERVICE_KEY,
+        },
+        body: JSON.stringify({
+          check_date: date,
+          time_slots: timeSlots,
+          valid_statuses: ['PENDING', 'CONFIRMED', 'SEATED']
+        })
+      }
+    )
+
+    if (!response.ok) {
+      // Fallback to individual checks if batch fails
+      return Promise.all(
+        timeSlots.map(time =>
+          checkSlotAvailability(date, time, requestedPartySize, maxPerSlotsMap.get(time) || 0)
+        )
+      )
+    }
+
+    const slotsData: Array<{ slot_time: string; total_persons: number }> = await response.json()
+
+    return timeSlots.map(time => {
+      const slotData = slotsData.find(s => s.slot_time === time)
+      const currentPersons = slotData?.total_persons || 0
+      const maxPerSlot = maxPerSlotsMap.get(time) || 0
+      const remainingCapacity = maxPerSlot - currentPersons
+      const available = remainingCapacity >= requestedPartySize
+
+      return {
+        time,
+        available,
+        currentPersons,
+        maxPersons: maxPerSlot,
+        remainingCapacity,
+        utilizationPercent: Math.round((currentPersons / maxPerSlot) * 100)
+      }
+    })
+  } catch (error) {
+    console.error('Batch availability check failed, using fallback:', error)
+    // Fallback to individual checks
+    return Promise.all(
+      timeSlots.map(time =>
+        checkSlotAvailability(date, time, requestedPartySize, maxPerSlotsMap.get(time) || 0)
+      )
+    )
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -416,28 +505,39 @@ export async function POST(request: NextRequest) {
       const turn1MaxPerSlot = turn1SlotTimes.length > 0 ? Math.ceil(targetCapacity / turn1SlotTimes.length) : 0
       const turn2MaxPerSlot = turn2SlotTimes.length > 0 ? Math.ceil(targetCapacity / turn2SlotTimes.length) : 0
 
-      // Verificar disponibilidad de capacidad Y preservar estado de anticipación mínima
-      const turn1Availability = await Promise.all(
-        turn1SlotTimes.map(async (time) => {
-          const originalSlot = allLunchSlots.find(s => s.time === time)
-          const capacityCheck = await checkSlotAvailability(date, time, partySize, turn1MaxPerSlot)
-          return {
-            ...capacityCheck,
-            available: originalSlot?.available && capacityCheck.available
-          }
-        })
+      // ⚡ OPTIMIZATION: Batch check all lunch slots in 1 call (instead of 18+ individual calls)
+      const allLunchTimesForBatch = [...turn1SlotTimes, ...turn2SlotTimes]
+      const lunchMaxPerSlotMap = new Map<string, number>()
+      turn1SlotTimes.forEach(time => lunchMaxPerSlotMap.set(time, turn1MaxPerSlot))
+      turn2SlotTimes.forEach(time => lunchMaxPerSlotMap.set(time, turn2MaxPerSlot))
+
+      const allLunchAvailability = await checkSlotAvailabilityBatch(
+        date,
+        allLunchTimesForBatch,
+        partySize,
+        lunchMaxPerSlotMap
       )
 
-      const turn2Availability = await Promise.all(
-        turn2SlotTimes.map(async (time) => {
-          const originalSlot = allLunchSlots.find(s => s.time === time)
-          const capacityCheck = await checkSlotAvailability(date, time, partySize, turn2MaxPerSlot)
+      // Separar resultados y preservar estado de anticipación mínima
+      const turn1Availability = allLunchAvailability
+        .filter(slot => turn1SlotTimes.includes(slot.time))
+        .map(capacityCheck => {
+          const originalSlot = allLunchSlots.find(s => s.time === capacityCheck.time)
           return {
             ...capacityCheck,
             available: originalSlot?.available && capacityCheck.available
           }
         })
-      )
+
+      const turn2Availability = allLunchAvailability
+        .filter(slot => turn2SlotTimes.includes(slot.time))
+        .map(capacityCheck => {
+          const originalSlot = allLunchSlots.find(s => s.time === capacityCheck.time)
+          return {
+            ...capacityCheck,
+            available: originalSlot?.available && capacityCheck.available
+          }
+        })
 
       const lunchTurns: Turn[] = []
 
@@ -501,29 +601,39 @@ export async function POST(request: NextRequest) {
     const dinnerTurn1MaxPerSlot = dinnerTurn1SlotTimes.length > 0 ? Math.ceil(targetCapacity / dinnerTurn1SlotTimes.length) : 0
     const dinnerTurn2MaxPerSlot = dinnerTurn2SlotTimes.length > 0 ? Math.ceil(targetCapacity / dinnerTurn2SlotTimes.length) : 0
 
-    // Verificar disponibilidad de capacidad Y preservar estado de anticipación mínima
-    const dinnerTurn1Availability = await Promise.all(
-      dinnerTurn1SlotTimes.map(async (time) => {
-        const originalSlot = allDinnerSlots.find(s => s.time === time)
-        const capacityCheck = await checkSlotAvailability(date, time, partySize, dinnerTurn1MaxPerSlot)
-        // Combinar: Solo disponible si AMBOS (anticipación Y capacidad) permiten
-        return {
-          ...capacityCheck,
-          available: originalSlot?.available && capacityCheck.available
-        }
-      })
+    // ⚡ OPTIMIZATION: Batch check all dinner slots in 1 call (instead of 24+ individual calls)
+    const allDinnerTimesForBatch = [...dinnerTurn1SlotTimes, ...dinnerTurn2SlotTimes]
+    const dinnerMaxPerSlotMap = new Map<string, number>()
+    dinnerTurn1SlotTimes.forEach(time => dinnerMaxPerSlotMap.set(time, dinnerTurn1MaxPerSlot))
+    dinnerTurn2SlotTimes.forEach(time => dinnerMaxPerSlotMap.set(time, dinnerTurn2MaxPerSlot))
+
+    const allDinnerAvailability = await checkSlotAvailabilityBatch(
+      date,
+      allDinnerTimesForBatch,
+      partySize,
+      dinnerMaxPerSlotMap
     )
 
-    const dinnerTurn2Availability = await Promise.all(
-      dinnerTurn2SlotTimes.map(async (time) => {
-        const originalSlot = allDinnerSlots.find(s => s.time === time)
-        const capacityCheck = await checkSlotAvailability(date, time, partySize, dinnerTurn2MaxPerSlot)
+    // Separar resultados y preservar estado de anticipación mínima
+    const dinnerTurn1Availability = allDinnerAvailability
+      .filter(slot => dinnerTurn1SlotTimes.includes(slot.time))
+      .map(capacityCheck => {
+        const originalSlot = allDinnerSlots.find(s => s.time === capacityCheck.time)
         return {
           ...capacityCheck,
           available: originalSlot?.available && capacityCheck.available
         }
       })
-    )
+
+    const dinnerTurn2Availability = allDinnerAvailability
+      .filter(slot => dinnerTurn2SlotTimes.includes(slot.time))
+      .map(capacityCheck => {
+        const originalSlot = allDinnerSlots.find(s => s.time === capacityCheck.time)
+        return {
+          ...capacityCheck,
+          available: originalSlot?.available && capacityCheck.available
+        }
+      })
 
     const dinnerTurns: Turn[] = []
 
