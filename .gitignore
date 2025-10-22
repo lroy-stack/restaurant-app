@@ -41,8 +41,6 @@ __tests__/
 # Development only
 .claude/
 docs/
-README.md
-DEPLOYMENT.md
 logs/
 test/
 tests/
