@@ -127,10 +127,10 @@ const content = {
 // 🚀 OPTIMIZED: Location icons with professional mapping
 const getLocationIcon = (locationKey: string) => {
   const iconMap: Record<string, JSX.Element> = {
-    'TERRACE_CAMPANARI': <TreePine className="h-5 w-5 text-green-600" />,
-    'SALA_VIP': <Crown className="h-5 w-5 text-yellow-600" />,
-    'SALA_PRINCIPAL': <Building className="h-5 w-5 text-blue-600" />,
-    'TERRACE_JUSTICIA': <TreePine className="h-5 w-5 text-emerald-600" />
+    'TERRACE_1': <TreePine className="h-5 w-5 text-green-600" />,
+    'VIP_ROOM': <Crown className="h-5 w-5 text-yellow-600" />,
+    'MAIN_ROOM': <Building className="h-5 w-5 text-blue-600" />,
+    'TERRACE_2': <TreePine className="h-5 w-5 text-emerald-600" />
   }
   return iconMap[locationKey] || <MapPin className="h-5 w-5 text-gray-600" />
 }
@@ -244,26 +244,26 @@ export default function SmartAvailabilityStep({
         // 🚀 FIX: Use only active locations from DB
         const zones = [
           {
-            id: 'TERRACE_CAMPANARI',
-            name: { es: 'Terraza Campanari', en: 'Campanari Terrace', de: 'Campanari Terrasse' },
+            id: 'TERRACE_1',
+            name: { es: 'Terraza 1', en: 'Campanari Terrace', de: 'Campanari Terrasse' },
             type: 'terrace',
             description: { es: 'Vista panorámica', en: 'Panoramic view', de: 'Panoramablick' }
           },
           {
-            id: 'SALA_VIP',
+            id: 'VIP_ROOM',
             name: { es: 'Sala VIP', en: 'VIP Room', de: 'VIP-Raum' },
             type: 'indoor',
             description: { es: 'Ambiente exclusivo', en: 'Exclusive atmosphere', de: 'Exklusive Atmosphäre' }
           },
           {
-            id: 'SALA_PRINCIPAL',
+            id: 'MAIN_ROOM',
             name: { es: 'Sala Principal', en: 'Main Hall', de: 'Hauptsaal' },
             type: 'indoor',
             description: { es: 'Ambiente acogedor', en: 'Cozy atmosphere', de: 'Gemütliche Atmosphäre' }
           },
           {
-            id: 'TERRACE_JUSTICIA',
-            name: { es: 'Terraza Justicia', en: 'Justicia Terrace', de: 'Justicia Terrasse' },
+            id: 'TERRACE_2',
+            name: { es: 'Terraza 2', en: 'Justicia Terrace', de: 'Justicia Terrasse' },
             type: 'terrace',
             description: { es: 'Al aire libre', en: 'Outdoor dining', de: 'Im Freien' }
           }

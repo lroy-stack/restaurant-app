@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     // 1. Buscar token en la base de datos usando service client
     const { data: tokenData, error: tokenError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('reservation_tokens')
       .select('*')
       .eq('token', token)
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     // 3. Obtener datos de la reserva
     const { data: reservationData, error: reservationError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('reservations')
       .select(`
         id,
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     let tablesData = []
     if (reservationData.table_ids && reservationData.table_ids.length > 0) {
       const { data: tableResults, error: tableError } = await supabase
-        .schema('restaurante')
+        .schema('public')
         .from('tables')
         .select('id, number, capacity, location')
         .in('id', reservationData.table_ids)

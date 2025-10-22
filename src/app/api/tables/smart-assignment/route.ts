@@ -136,7 +136,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
-        db: { schema: 'restaurante' }
+        db: { schema: 'public' }
       }
     )
 
@@ -227,7 +227,7 @@ async function enrichRecommendations(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
-      db: { schema: 'restaurante' }
+      db: { schema: 'public' }
     }
   )
 
@@ -265,7 +265,7 @@ async function getAvailabilityMetadata(date: string, time: string) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
-      db: { schema: 'restaurante' }
+      db: { schema: 'public' }
     }
   )
 

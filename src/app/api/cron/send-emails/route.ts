@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const tenSecondsAgo = new Date(Date.now() - 10000).toISOString()
 
     const { data: pendingEmails, error: fetchError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('email_logs')
       .select('*')
       .eq('status', 'pending')
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
 
         // Mark as processing
         await supabase
-          .schema('restaurante')
+          .schema('public')
           .from('email_logs')
           .update({ status: 'processing' })
           .eq('id', emailLog.id)
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
 
         // Mark as failed with error message
         await supabase
-          .schema('restaurante')
+          .schema('public')
           .from('email_logs')
           .update({
             status: 'failed',

@@ -7,7 +7,7 @@ import { validateCreateOrder } from '@/lib/orders/order-validators'
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const restaurantId = searchParams.get('restaurantId') || 'rest_enigma_001'
+    const restaurantId = searchParams.get('restaurantId') || process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001'
     const statuses = searchParams.get('statuses')?.split(',')
     const tableId = searchParams.get('tableId')
     const source = searchParams.get('source')
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createServiceClient()
 
     let query = supabase
-      .schema('restaurante')
+      .schema('public')
       .from('orders')
       .select(`
         *,
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
 
     // 1. Create order
     const { data: order, error: orderError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('orders')
       .insert({
         id: orderId,
@@ -153,14 +153,14 @@ export async function POST(request: NextRequest) {
     // 2. Fetch menu item prices and validate stock
     const menuItemIds = body.items.map((i) => i.menuItemId)
     const { data: menuItems, error: menuError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('menu_items')
       .select('id, price, stock, name')
       .in('id', menuItemIds)
 
     if (menuError) {
       // Rollback: delete order
-      await supabase.schema('restaurante').from('orders').delete().eq('id', orderId)
+      await supabase.schema('public').from('orders').delete().eq('id', orderId)
       throw new Error('Failed to fetch menu items')
     }
 
@@ -198,7 +198,7 @@ export async function POST(request: NextRequest) {
 
     if (stockErrors.length > 0) {
       // Rollback: delete order
-      await supabase.schema('restaurante').from('orders').delete().eq('id', orderId)
+      await supabase.schema('public').from('orders').delete().eq('id', orderId)
 
       return NextResponse.json(
         {
@@ -220,7 +220,7 @@ export async function POST(request: NextRequest) {
 
       // Create order item
       const { error: itemError } = await supabase
-        .schema('restaurante')
+        .schema('public')
         .from('order_items')
         .insert({
           id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -236,13 +236,13 @@ export async function POST(request: NextRequest) {
       if (itemError) {
         console.error('❌ Order item creation failed:', itemError)
         // Rollback: delete order and items
-        await supabase.schema('restaurante').from('orders').delete().eq('id', orderId)
+        await supabase.schema('public').from('orders').delete().eq('id', orderId)
         throw new Error('Failed to create order items')
       }
 
       // Decrease stock
       const { error: stockError } = await supabase
-        .schema('restaurante')
+        .schema('public')
         .rpc('decrease_menu_item_stock', {
           item_id: item.menuItemId,
           decrease_amount: item.quantity,
@@ -251,14 +251,14 @@ export async function POST(request: NextRequest) {
       if (stockError) {
         console.error('❌ Stock decrease failed:', stockError)
         // Rollback: delete order and items
-        await supabase.schema('restaurante').from('orders').delete().eq('id', orderId)
+        await supabase.schema('public').from('orders').delete().eq('id', orderId)
         throw new Error('Failed to reserve stock')
       }
     }
 
     // 4. Update order total
     const { error: updateError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('orders')
       .update({ totalAmount: calculatedTotal })
       .eq('id', orderId)

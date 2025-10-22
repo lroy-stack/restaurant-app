@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Instagram, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState, useEffect } from 'react'
+import { useSocials } from '@/hooks/useSocials'
 
 interface InstagramFeedProps {
   className?: string
@@ -20,65 +21,79 @@ interface InstagramPost {
 /**
  * Instagram Feed Component
  *
- * Muestra los últimos posts de @enigmaconalma usando custom cards
+ * Muestra los últimos posts desde socials table (dinámico)
  * Sin headers de Instagram, control total del diseño
  */
 export function InstagramFeed({ className }: InstagramFeedProps) {
-  const postUrls = [
-    'https://www.instagram.com/reel/DMYPOovoXA5/',
-    'https://www.instagram.com/p/DNoG84kIUWm/',
-    'https://www.instagram.com/p/DOIyaaoiLlR/',
-    'https://www.instagram.com/p/DLNh-Uaooir/',
-    'https://www.instagram.com/reel/DHNwxWeIag9/',
-    'https://www.instagram.com/p/DOD5dGzCN2P/'
-  ]
+  const { getInstagram, loading: socialsLoading } = useSocials({ platform: 'instagram' })
+  const instagram = getInstagram()
 
-  const [posts, setPosts] = useState<InstagramPost[]>(
-    postUrls.map(url => ({ url, loading: true }))
-  )
+  const postUrls = instagram?.featured_posts || []
+
+  const [posts, setPosts] = useState<InstagramPost[]>([])
 
   useEffect(() => {
-    const fetchThumbnails = async () => {
-      const results = await Promise.all(
-        postUrls.map(async (url) => {
-          try {
-            const res = await fetch(`/api/instagram/thumbnail?url=${encodeURIComponent(url)}`)
-            const data = await res.json()
-            return {
-              url,
-              thumbnail: data.thumbnail,
-              loading: false,
-              error: !data.thumbnail
-            }
-          } catch {
-            return { url, loading: false, error: true }
-          }
-        })
-      )
-      setPosts(results)
-    }
+    if (postUrls.length === 0) return
 
-    fetchThumbnails()
-  }, [])
+    // Check if URLs are already images (placeholders) or Instagram URLs
+    const isPlaceholder = postUrls[0]?.includes('unsplash.com') || postUrls[0]?.includes('images.')
+
+    if (isPlaceholder) {
+      // Direct image URLs - no need to fetch thumbnails
+      setPosts(postUrls.map(url => ({
+        url,
+        thumbnail: url,
+        loading: false,
+        error: false
+      })))
+    } else {
+      // Instagram URLs - fetch thumbnails
+      const fetchThumbnails = async () => {
+        const results = await Promise.all(
+          postUrls.map(async (url) => {
+            try {
+              const res = await fetch(`/api/instagram/thumbnail?url=${encodeURIComponent(url)}`)
+              const data = await res.json()
+              return {
+                url,
+                thumbnail: data.thumbnail,
+                loading: false,
+                error: !data.thumbnail
+              }
+            } catch {
+              return { url, loading: false, error: true }
+            }
+          })
+        )
+        setPosts(results)
+      }
+
+      fetchThumbnails()
+    }
+  }, [postUrls.length])
 
   return (
     <section className={cn("py-12 sm:py-16", className)}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
+        {/* Header - Dynamic from DB */}
         <div className="text-center mb-8 sm:mb-12">
-          <h3 className="enigma-section-title">Síguenos en Instagram</h3>
+          <h3 className="enigma-section-title">
+            {instagram?.display_title || 'Síguenos en Instagram'}
+          </h3>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Descubre el día a día de Enigma: platos especiales, ambiente auténtico y experiencias reales de nuestros clientes
+            {instagram?.description || 'Descubre el día a día de nuestro restaurante'}
           </p>
-          <a
-            href="https://www.instagram.com/enigmaconalma/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline mt-2 inline-flex items-center gap-1 text-sm sm:text-base font-medium"
-          >
-            <Instagram className="h-4 w-4" />
-            @enigmaconalma
-          </a>
+          {instagram && (
+            <a
+              href={instagram.profile_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline mt-2 inline-flex items-center gap-1 text-sm sm:text-base font-medium"
+            >
+              <Instagram className="h-4 w-4" />
+              @{instagram.username}
+            </a>
+          )}
         </div>
 
         {/* Instagram Posts Grid */}
@@ -90,7 +105,7 @@ export function InstagramFeed({ className }: InstagramFeedProps) {
               style={{ animationDelay: `${idx * 100}ms` }}
             >
               <a
-                href={post.url}
+                href={instagram?.profile_url || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block h-full w-full"
@@ -133,23 +148,25 @@ export function InstagramFeed({ className }: InstagramFeedProps) {
           ))}
         </div>
 
-        {/* CTA Button */}
-        <div className="text-center mt-8 sm:mt-12">
-          <Button
-            size="lg"
-            asChild
-            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg"
-          >
-            <a
-              href="https://www.instagram.com/enigmaconalma/"
-              target="_blank"
-              rel="noopener noreferrer"
+        {/* CTA Button - Dynamic from DB */}
+        {instagram && (
+          <div className="text-center mt-8 sm:mt-12">
+            <Button
+              size="lg"
+              asChild
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg"
             >
-              <Instagram className="mr-2 h-5 w-5" />
-              Seguir en Instagram
-            </a>
-          </Button>
-        </div>
+              <a
+                href={instagram.profile_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Instagram className="mr-2 h-5 w-5" />
+                Seguir en Instagram
+              </a>
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   )

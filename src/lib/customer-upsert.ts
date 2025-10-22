@@ -1,4 +1,5 @@
 /**
+import { getSupabaseHeaders } from '@/lib/supabase/config'
  * CUSTOMER UPSERT UTILITY - GDPR COMPLIANT
  * 
  * Implements secure customer auto-creation with deduplication
@@ -68,7 +69,7 @@ export async function upsertCustomer(
         method: 'GET',
         headers: {
           'Accept': 'application/json',
-          'Accept-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
           'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
           'apikey': SUPABASE_SERVICE_KEY,
         }
@@ -118,8 +119,8 @@ export async function upsertCustomer(
             headers: {
               'Accept': 'application/json',
               'Content-Type': 'application/json',
-              'Accept-Profile': 'restaurante',
-              'Content-Profile': 'restaurante',
+              // Schema handled by getSupabaseHeaders()
+              // Schema handled by getSupabaseHeaders()
               'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
               'apikey': SUPABASE_SERVICE_KEY,
               'Prefer': 'return=representation'
@@ -188,8 +189,8 @@ export async function upsertCustomer(
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Accept-Profile': 'restaurante',
-        'Content-Profile': 'restaurante',
+        // Schema handled by getSupabaseHeaders()
+        // Schema handled by getSupabaseHeaders()
         'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
         'apikey': SUPABASE_SERVICE_KEY,
         'Prefer': 'return=representation'

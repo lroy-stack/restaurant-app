@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
             COUNT(*) FILTER (WHERE withdrawn_at IS NOT NULL)::decimal /
             NULLIF(COUNT(*), 0) * 100, 2
           ) as withdrawal_rate
-        FROM restaurante.cookie_consents cc
+        FROM public.cookie_consents cc
         CROSS JOIN date_range dr
         WHERE cc.created_at >= dr.start_date
           AND cc.created_at <= dr.end_date
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
           COUNT(*) FILTER (WHERE analytics_consent = true) as daily_analytics,
           COUNT(*) FILTER (WHERE marketing_consent = true) as daily_marketing,
           COUNT(*) FILTER (WHERE withdrawn_at IS NOT NULL) as daily_withdrawals
-        FROM restaurante.cookie_consents cc
+        FROM public.cookie_consents cc
         CROSS JOIN date_range dr
         WHERE cc.created_at >= dr.start_date
           AND cc.created_at <= dr.end_date
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
             COUNT(*) FILTER (WHERE status = 'bounced')::decimal /
             NULLIF(COUNT(*), 0) * 100, 2
           ) as bounce_rate
-        FROM restaurante.email_logs el
+        FROM public.email_logs el
         CROSS JOIN date_range dr
         WHERE el.sent_at >= dr.start_date
           AND el.sent_at <= dr.end_date
@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
       ] = await Promise.all([
         // All cookie consents in period
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('cookie_consents')
           .select('created_at, analytics_consent, marketing_consent, functional_consent, withdrawn_at')
           .gte('created_at', from)
@@ -150,7 +150,7 @@ export async function GET(request: NextRequest) {
 
         // Email logs in period
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('email_logs')
           .select('sent_at, status, recipient_email')
           .gte('sent_at', from)
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
 
         // Total consents
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('cookie_consents')
           .select('*', { count: 'exact', head: true })
           .gte('created_at', from)
@@ -166,7 +166,7 @@ export async function GET(request: NextRequest) {
 
         // Analytics consents
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('cookie_consents')
           .select('*', { count: 'exact', head: true })
           .eq('analytics_consent', true)
@@ -175,7 +175,7 @@ export async function GET(request: NextRequest) {
 
         // Marketing consents
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('cookie_consents')
           .select('*', { count: 'exact', head: true })
           .eq('marketing_consent', true)
@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
 
         // Withdrawals
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('cookie_consents')
           .select('*', { count: 'exact', head: true })
           .not('withdrawn_at', 'is', null)

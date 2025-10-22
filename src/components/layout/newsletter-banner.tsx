@@ -63,7 +63,7 @@ export function NewsletterBanner() {
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/60 z-10" />
         <img
-          src={restaurant?.footer_newsletter_image_url || 'https://ik.imagekit.io/insomnialz/feeling.jpg?updatedAt=1754141886874'}
+          src={restaurant?.footer_newsletter_image_url || 'https://images.unsplash.com/photo-1530554764233-e79e16c91d08?w=1200&h=800&fit=crop'}
           alt="Newsletter"
           className="w-full h-full object-cover"
         />

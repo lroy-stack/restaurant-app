@@ -68,7 +68,7 @@ export function HeroSection({ className }: HeroSectionProps) {
           style={{
             backgroundImage: heroImage
               ? `url(${buildImageUrl(heroImage)})`
-              : 'url(https://ik.imagekit.io/insomnialz/compressed/enigma_night.png?updatedAt=1754141731421)',
+              : 'url(https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1920&h=1080&fit=crop)',
             backgroundPosition: 'center center'
           }}
         />
@@ -89,17 +89,13 @@ export function HeroSection({ className }: HeroSectionProps) {
           })}
         </div>
 
-        <Badge variant="outline" className="mb-6 text-white border-white/50 bg-black/60 backdrop-blur-sm">
-          🏛️ Restaurante en el Auténtico Casco Antiguo de Calpe
-        </Badge>
-
         {/* Dynamic content from restaurant data */}
         <h1 className="enigma-hero-title">
           {restaurant?.hero_title || restaurant?.name || "Enigma Cocina Con Alma"}
         </h1>
 
         <p className="enigma-hero-subtitle opacity-90">
-          {restaurant?.description || "Cocina mediterránea de autor en el corazón del casco antiguo de Calpe. Ingredientes de proximidad, técnicas tradicionales y pasión en cada plato."}
+          {restaurant?.description || "Cocina mediterránea de autor en el corazón . Ingredientes de proximidad, técnicas tradicionales y pasión en cada plato."}
         </p>
 
         <div className="enigma-hero-description mb-6 sm:mb-8 opacity-80">

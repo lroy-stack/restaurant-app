@@ -30,8 +30,8 @@ const chefStory = {
 }
 
 const locationStory = {
-  title: "En el Corazón Histórico de Calpe",
-  description: "Ubicado en el auténtico casco antiguo, nuestro restaurante forma parte de la rica historia de Calpe. Entre callejones empedrados y arquitectura tradicional, ofrecemos una experiencia gastronómica única.",
+  title: restaurant?.historia_location_title || "En el Corazón Histórico",
+  description: restaurant?.historia_location_content || "Ubicado en el auténtico casco antiguo, nuestro restaurante forma parte de la rica historia. Entre callejones empedrados y arquitectura tradicional, ofrecemos una experiencia gastronómica única.",
   highlights: [
     {
       icon: MapPin,
@@ -183,13 +183,13 @@ export function StorytellingFlow() {
               <CardContent className="p-0">
                 <h4 className="font-semibold mb-2 text-primary">Visítanos</h4>
                 <p className="text-muted-foreground">
-                  Carrer Justicia 6A, 03710 Calpe, Alicante
+                  {restaurant?.address || 'Dirección del restaurante'}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
                   En el corazón del casco antiguo
                 </p>
                 <p className="text-sm text-primary mt-2">
-                  📞 +34 672 79 60 06 | ✉️ reservas@enigmaconalma.com
+                  {restaurant?.phone && `📞 ${restaurant.phone}`} {restaurant?.email && `| ✉️ ${restaurant.email}`}
                 </p>
               </CardContent>
             </Card>

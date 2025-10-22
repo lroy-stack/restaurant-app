@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 
 // GET QR Settings - Admin endpoint to retrieve current QR system configuration
 export async function GET() {
@@ -7,12 +8,12 @@ export async function GET() {
 
     // Use direct fetch to bypass any Supabase SSR issues
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/business_hours?restaurant_id=eq.rest_enigma_001&day_of_week=eq.7&select=qr_ordering_enabled,qr_only_menu,updated_at`,
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/business_hours?restaurant_id=eq.${process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001'}&day_of_week=eq.7&select=qr_ordering_enabled,qr_only_menu,updated_at`,
       {
         method: 'GET',
         headers: {
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
+          // Schema handled by getSupabaseHeaders()
           'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
           'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
           'Content-Type': 'application/json'
@@ -77,12 +78,12 @@ export async function POST(request: NextRequest) {
 
     // Use direct fetch to bypass any Supabase SSR issues
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/business_hours?restaurant_id=eq.rest_enigma_001&day_of_week=eq.7`,
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/business_hours?restaurant_id=eq.${process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001'}&day_of_week=eq.7`,
       {
         method: 'PATCH',
         headers: {
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
+          // Schema handled by getSupabaseHeaders()
           'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
           'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
           'Content-Type': 'application/json',

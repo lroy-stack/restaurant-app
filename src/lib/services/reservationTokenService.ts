@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 import { buildTokenUrl } from '../email/config/emailConfig'
 
 export interface TokenValidationResult {
@@ -155,8 +156,8 @@ export class ReservationTokenService {
         {
           method: 'PATCH',
           headers: {
-            'Accept-Profile': 'restaurante',
-            'Content-Profile': 'restaurante',
+            // Schema handled by getSupabaseHeaders()
+            // Schema handled by getSupabaseHeaders()
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${supabaseKey}`,
             'apikey': supabaseKey
@@ -171,8 +172,8 @@ export class ReservationTokenService {
         {
           method: 'PATCH',
           headers: {
-            'Accept-Profile': 'restaurante',
-            'Content-Profile': 'restaurante',
+            // Schema handled by getSupabaseHeaders()
+            // Schema handled by getSupabaseHeaders()
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${supabaseKey}`,
             'apikey': supabaseKey
@@ -217,8 +218,8 @@ export class ReservationTokenService {
         {
           method: 'PATCH',
           headers: {
-            'Accept-Profile': 'restaurante',
-            'Content-Profile': 'restaurante',
+            // Schema handled by getSupabaseHeaders()
+            // Schema handled by getSupabaseHeaders()
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${supabaseKey}`,
             'apikey': supabaseKey

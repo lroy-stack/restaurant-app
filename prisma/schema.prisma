@@ -8,7 +8,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["restaurante"]
+  schemas  = ["public"]
 }
 
 // ============================================
@@ -55,7 +55,7 @@ model User {
   customerNotesCreated   CustomerNote[]
   
   @@map("users")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 model Customer {
@@ -89,7 +89,7 @@ model Customer {
   gdprConsents           GdprConsent[]
 
   @@map("customers")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 model Account {
@@ -110,7 +110,7 @@ model Account {
   
   @@unique([provider, providerAccountId])
   @@map("accounts")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 model Session {
@@ -121,7 +121,7 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@map("sessions")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 model VerificationToken {
@@ -131,7 +131,7 @@ model VerificationToken {
   
   @@unique([identifier, token])
   @@map("verification_tokens")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 // ============================================
@@ -168,7 +168,7 @@ model Restaurant {
   updatedAt DateTime @updatedAt
   
   @@map("restaurants")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 // ============================================
@@ -193,7 +193,7 @@ model Table {
   updatedAt DateTime @updatedAt
   
   @@map("tables")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 enum TableLocation {
@@ -205,7 +205,7 @@ enum TableLocation {
   SALA_PRINCIPAL
   TERRACE_JUSTICIA
   
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 // ============================================
@@ -218,8 +218,8 @@ model Reservation {
   customerEmail   String
   customerPhone   String
   partySize       Int
-  date            DateTime
-  time            DateTime
+  date            DateTime          @db.Timestamptz(6)
+  time            DateTime          @db.Timestamptz(6)
   status          ReservationStatus
   specialRequests String?
   
@@ -255,7 +255,7 @@ model Reservation {
   updatedAt DateTime @updatedAt
   
   @@map("reservations")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 enum ReservationSource {
@@ -266,7 +266,7 @@ enum ReservationSource {
   EMAIL
   SOCIAL_MEDIA
   
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 model ReservationItem {
@@ -280,7 +280,7 @@ model ReservationItem {
   menuItemId    String
   
   @@map("reservation_items")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 enum ReservationStatus {
@@ -291,7 +291,7 @@ enum ReservationStatus {
   CANCELLED
   NO_SHOW
   
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 // ============================================
@@ -318,7 +318,7 @@ model MenuCategory {
   updatedAt DateTime @updatedAt
   
   @@map("menu_categories")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 enum CategoryType {
@@ -326,7 +326,7 @@ enum CategoryType {
   WINE
   BEVERAGE
   
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 model MenuItem {
@@ -399,7 +399,7 @@ model MenuItem {
   updatedAt DateTime @updatedAt
   
   @@map("menu_items")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 // ============================================
@@ -414,7 +414,7 @@ model Allergen {
   menuItems MenuItemAllergen[]
   
   @@map("allergens")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 model MenuItemAllergen {
@@ -425,7 +425,7 @@ model MenuItemAllergen {
   
   @@id([menuItemId, allergenId])
   @@map("menu_item_allergens")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 // ============================================
@@ -443,7 +443,7 @@ model WinePairing {
   
   @@unique([foodItemId, wineItemId])
   @@map("wine_pairings")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 // ============================================
@@ -476,7 +476,7 @@ model Order {
   updatedAt DateTime @updatedAt
   
   @@map("orders")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 model OrderItem {
@@ -496,7 +496,7 @@ model OrderItem {
   updatedAt DateTime @updatedAt
   
   @@map("order_items")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 enum OrderStatus {
@@ -507,7 +507,7 @@ enum OrderStatus {
   SERVED
   CANCELLED
   
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 enum OrderItemStatus {
@@ -517,7 +517,7 @@ enum OrderItemStatus {
   SERVED
   CANCELLED
   
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 // ============================================
@@ -530,7 +530,7 @@ enum UserRole {
   STAFF     // Reservations and orders only
   CUSTOMER  // Public user
   
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 // ============================================
@@ -542,7 +542,7 @@ enum Language {
   EN  // English (tourist market)
   DE  // German (expansion ready)
   
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 // ============================================
@@ -562,7 +562,7 @@ model CustomerNote {
   createdByUser User   @relation(fields: [createdBy], references: [id])
   
   @@map("customer_notes")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 model NewsletterSubscription {
@@ -575,7 +575,7 @@ model NewsletterSubscription {
   customer       Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
   
   @@map("newsletter_subscriptions")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 // ============================================
@@ -595,7 +595,7 @@ model GdprConsent {
   customer      Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
   
   @@map("gdpr_consents")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 enum ConsentType {
@@ -605,7 +605,7 @@ enum ConsentType {
   ANALYTICS
   COOKIES
   
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 // ============================================
@@ -623,7 +623,7 @@ model AnalyticsEvent {
   timestamp DateTime           @default(now())
   
   @@map("analytics_events")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 enum AnalyticsEventType {
@@ -640,7 +640,7 @@ enum AnalyticsEventType {
   VIP_CUSTOMER_IDENTIFIED
   CUSTOMER_RETURNED
   
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 model SystemSetting {
@@ -654,7 +654,7 @@ model SystemSetting {
   updatedBy   String?  // Staff member who updated the setting
   
   @@map("system_settings")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 model BusinessHours {
@@ -678,7 +678,7 @@ model BusinessHours {
   updatedAt   DateTime  @updatedAt
 
   @@map("business_hours")
-  @@schema("restaurante")
+  @@schema("public")
 }
 
 // ============================================
@@ -703,5 +703,5 @@ model FloorPlanElement {
   restaurant  Restaurant @relation(fields: [restaurantId], references: [id])
 
   @@map("floor_plan_elements")
-  @@schema("restaurante")
+  @@schema("public")
 }

@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 interface Table {
   id: string
   number: string
-  location: 'TERRACE_CAMPANARI' | 'SALA_PRINCIPAL' | 'SALA_VIP' | 'TERRACE_JUSTICIA'
+  location: 'TERRACE_1' | 'MAIN_ROOM' | 'VIP_ROOM' | 'TERRACE_2'
   capacity: number
   isActive: boolean
 }
@@ -16,10 +16,10 @@ interface GroupedTables {
 }
 
 const LOCATION_LABELS: Record<string, string> = {
-  TERRACE_CAMPANARI: 'Terraza Campanario',
-  SALA_PRINCIPAL: 'Sala Principal',
-  SALA_VIP: 'Sala VIP',
-  TERRACE_JUSTICIA: 'Terraza Justicia',
+  TERRACE_1: 'Terraza 1o',
+  MAIN_ROOM: 'Sala Principal',
+  VIP_ROOM: 'Sala VIP',
+  TERRACE_2: 'Terraza 2',
 }
 
 export function useActiveTables() {

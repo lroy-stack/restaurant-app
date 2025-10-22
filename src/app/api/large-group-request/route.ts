@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     // Obtener email del restaurante desde DB
     const supabase = createDirectAdminClient()
     const { data: restaurant } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('restaurants')
       .select('mailing')
       .single()

@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     
     // Test connection with a simple query using a table we know exists
     const { error: connectionError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('tables')
       .select('id')
       .limit(1)
@@ -75,25 +75,25 @@ export async function GET(request: NextRequest) {
     ] = await Promise.all([
       // Total reservations
       supabase
-        .schema('restaurante')
+        .schema('public')
         .from('reservations')
         .select('*', { count: 'exact', head: true }),
       
       // Total customers
       supabase
-        .schema('restaurante')
+        .schema('public')
         .from('customers')
         .select('*', { count: 'exact', head: true }),
       
       // Total menu items (real count from menu_items table)
       supabase
-        .schema('restaurante')
+        .schema('public')
         .from('menu_items')
         .select('*', { count: 'exact', head: true }),
       
       // Today's reservations
       supabase
-        .schema('restaurante')
+        .schema('public')
         .from('reservations')
         .select('*', { count: 'exact', head: true })
         .gte('date', todayStart)
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
       
       // Confirmed reservations today
       supabase
-        .schema('restaurante')
+        .schema('public')
         .from('reservations')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'CONFIRMED')
@@ -110,13 +110,13 @@ export async function GET(request: NextRequest) {
       
       // Total tables
       supabase
-        .schema('restaurante')
+        .schema('public')
         .from('tables')
         .select('*', { count: 'exact', head: true }),
       
       // Recent reservations for display
       supabase
-        .schema('restaurante')
+        .schema('public')
         .from('reservations')
         .select(`
           id,

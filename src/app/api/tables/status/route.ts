@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 import { createServiceClient } from '@/utils/supabase/server'
 import { getSpainDate } from '@/lib/utils/timestamps'
 
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
     // Get all table statuses with current reservation info using service client
     const supabase = await createServiceClient()
     const { data: tablesData, error: tablesError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('tables')
       .select(`
         *,
@@ -161,7 +162,7 @@ export async function PATCH(request: NextRequest) {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
-          'Accept-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
           'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
           'apikey': SUPABASE_SERVICE_KEY,
         }
@@ -206,8 +207,8 @@ export async function PATCH(request: NextRequest) {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
+          // Schema handled by getSupabaseHeaders()
           'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
           'apikey': SUPABASE_SERVICE_KEY,
           'Prefer': 'return=representation'

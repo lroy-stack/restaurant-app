@@ -32,7 +32,9 @@ export async function getBusinessHours(): Promise<BusinessHours[]> {
       headers: {
         'Content-Type': 'application/json',
       },
-      cache: 'no-store' // Always get fresh data
+      cache: 'no-store', // Always get fresh data
+      // Add timeout to fail fast during dev server restarts
+      signal: AbortSignal.timeout(5000)
     })
 
     if (!response.ok) {
@@ -40,14 +42,19 @@ export async function getBusinessHours(): Promise<BusinessHours[]> {
     }
 
     const result = await response.json()
-    
+
     if (!result.success) {
       throw new Error(result.error || 'Failed to fetch business hours')
     }
 
     return result.data
   } catch (error) {
-    console.error('❌ [CLIENT] Error fetching business hours:', error)
+    // Silently use fallback during dev (common during HMR/restarts)
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('⚠️ Using fallback hours (dev mode)')
+    } else {
+      console.error('❌ Error fetching business hours:', error)
+    }
     // Return conservative fallback
     return getDefaultBusinessHours()
   }
@@ -98,24 +105,16 @@ export async function getAvailableTimeSlots(
     
   } catch (error) {
     console.error('❌ [CLIENT] Error fetching time slots:', error)
-    
+    console.warn('⚠️ Using fallback time slots - CONNECT TO DATABASE')
+
     // Enterprise fallback: Same logic as server but client-side
     const selectedDate = new Date(date + 'T00:00:00')
     const dayOfWeek = selectedDate.getDay()
     const isToday = date === currentDateTime.toISOString().split('T')[0]
-    
-    // Conservative fallback: Restaurant industry standard
-    if (dayOfWeek === 0) { // Sunday closed
-      return [{
-        time: '',
-        available: false,
-        reason: 'Restaurant closed on Sundays'
-      }]
-    }
-    
-    // Generate emergency slots with current time validation
-    const emergencySlots = ['18:00', '18:15', '18:30', '18:45', '19:00', '19:15', '19:30', '19:45', 
-                           '20:00', '20:15', '20:30', '20:45', '21:00', '21:15', '21:30', '21:45', 
+
+    // Generate emergency placeholder slots
+    const emergencySlots = ['18:00', '18:15', '18:30', '18:45', '19:00', '19:15', '19:30', '19:45',
+                           '20:00', '20:15', '20:30', '20:45', '21:00', '21:15', '21:30', '21:45',
                            '22:00', '22:15', '22:30', '22:45']
     
     if (isToday) {
@@ -184,18 +183,9 @@ export async function validateTimeSlot(
     
   } catch (error) {
     console.error('❌ [CLIENT] Error validating time slot:', error)
-    
-    // Conservative fallback: Basic validation
-    const selectedDate = new Date(date + 'T00:00:00')
-    const dayOfWeek = selectedDate.getDay()
-    
-    if (dayOfWeek === 0) {
-      return {
-        valid: false,
-        reason: 'Restaurant closed on Sundays'
-      }
-    }
-    
+    console.warn('⚠️ Assuming valid - CONNECT TO DATABASE for real validation')
+
+    // Optimistic fallback: Assume valid
     return { valid: true }
   }
 }
@@ -213,9 +203,9 @@ export async function isRestaurantOpenOnDate(date: string): Promise<boolean> {
     return dayHours ? dayHours.is_open : false
   } catch (error) {
     console.error('❌ [CLIENT] Error checking if open:', error)
-    // Conservative: Assume closed on Sunday
-    const selectedDate = new Date(date + 'T00:00:00')
-    return selectedDate.getDay() !== 0
+    console.warn('⚠️ Assuming open - CONNECT TO DATABASE for real schedule')
+    // Optimistic fallback: Assume open (shows it's placeholder)
+    return true
   }
 }
 
@@ -268,7 +258,10 @@ export async function isRestaurantOpenNow(): Promise<boolean> {
 
     return false
   } catch (error) {
-    console.error('❌ [CLIENT] Error checking if open now:', error)
+    // Silently fallback in dev, only log in production
+    if (process.env.NODE_ENV !== 'development') {
+      console.error('❌ Error checking if open now:', error)
+    }
     // Fallback: Simple time-based check (18:00-23:00)
     const now = new Date()
     const hour = now.getHours()
@@ -283,17 +276,24 @@ export async function isRestaurantOpenNow(): Promise<boolean> {
 
 /**
  * Default business hours fallback (CLIENT SIDE)
+ *
+ * ⚠️ PLACEHOLDER: Generic hours - CONNECT TO DATABASE for real schedule
  */
 function getDefaultBusinessHours(): BusinessHours[] {
-  console.log('⚠️ [CLIENT] Using default business hours fallback')
-  
+  // Only warn in production where this should not happen
+  if (process.env.NODE_ENV !== 'development') {
+    console.error('⚠️ USING FALLBACK BUSINESS HOURS - DATABASE NOT CONNECTED')
+    console.warn('👉 All days showing generic hours - this is NOT real data')
+  }
+
+  // PLACEHOLDER: All days with generic schedule
   return Array.from({ length: 7 }, (_, day) => ({
     id: `fallback_${day}`,
     day_of_week: day,
-    open_time: day === 0 ? '00:00' : '18:00', // Sunday closed
-    close_time: day === 0 ? '00:00' : '23:00',
-    is_open: day !== 0,   // Sunday closed (false), others open (true)
-    last_reservation_time: day === 0 ? '00:00' : '22:45', // 15min slots: last at 22:45
+    open_time: '18:00', // Generic placeholder
+    close_time: '23:00', // Generic placeholder
+    is_open: day !== 1, // Closed Monday (common for restaurants)
+    last_reservation_time: '22:45',
     advance_booking_minutes: 30,
     slot_duration_minutes: 15
   }))

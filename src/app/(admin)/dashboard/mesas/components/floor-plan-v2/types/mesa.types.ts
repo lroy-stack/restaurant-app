@@ -5,7 +5,7 @@ export interface VisualMesa {
   id: string
   number: string  // "T1", "S10", etc.
   capacity: number
-  location: 'TERRACE_CAMPANARI' | 'SALA_PRINCIPAL' | 'SALA_VIP' | 'TERRACE_JUSTICIA'
+  location: 'TERRACE_1' | 'MAIN_ROOM' | 'VIP_ROOM' | 'TERRACE_2'
   position: { x: number, y: number }  // From DB position_x, position_y
   dimensions: { width: number, height: number }  // From DB width, height
   rotation: number  // From DB rotation field
@@ -113,10 +113,10 @@ export const STATUS_COLORS = {
 
 // Zone definitions from existing codebase
 export const ENIGMA_ZONES = {
-  'TERRACE_CAMPANARI': 'Terraza Campanari',
-  'SALA_PRINCIPAL': 'Sala Principal',
-  'SALA_VIP': 'Sala VIP',
-  'TERRACE_JUSTICIA': 'Terraza Justicia'
+  'TERRACE_1': 'Terraza 1',
+  'MAIN_ROOM': 'Sala Principal',
+  'VIP_ROOM': 'Sala VIP',
+  'TERRACE_2': 'Terraza 2'
 } as const
 
 export type EnigmaZone = keyof typeof ENIGMA_ZONES

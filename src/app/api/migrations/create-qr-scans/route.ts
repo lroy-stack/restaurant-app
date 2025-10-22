@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -89,7 +90,7 @@ export async function GET(request: NextRequest) {
       {
         headers: {
           'Accept': 'application/json',
-          'Accept-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
           'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
           'apikey': SUPABASE_SERVICE_KEY,
         }

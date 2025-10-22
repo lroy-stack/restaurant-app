@@ -40,18 +40,18 @@ export async function updateSession(request: NextRequest) {
     !user &&
     request.nextUrl.pathname.startsWith('/dashboard')
   ) {
-    // no user accessing protected /dashboard routes, redirect to almaenigma
-    console.log('🚨 REDIRECT: Unauthenticated user accessing', request.nextUrl.pathname, '-> redirecting to /almaenigma')
+    // no user accessing protected /dashboard routes, redirect to acceso
+    console.log('🚨 REDIRECT: Unauthenticated user accessing', request.nextUrl.pathname, '-> redirecting to /acceso')
     const url = request.nextUrl.clone()
-    url.pathname = '/almaenigma'
+    url.pathname = '/acceso'
     url.search = ''
     return NextResponse.redirect(url, 307)
   }
 
   // Add Supabase schema headers for API routes
   if (request.nextUrl.pathname.startsWith('/api/')) {
-    supabaseResponse.headers.set('Accept-Profile', 'restaurante')
-    supabaseResponse.headers.set('Content-Profile', 'restaurante')
+    supabaseResponse.headers.set('Accept-Profile', 'public')
+    supabaseResponse.headers.set('Content-Profile', 'public')
     
     // CORS headers for API routes
     supabaseResponse.headers.set('Access-Control-Allow-Origin', '*')
@@ -65,7 +65,7 @@ export async function updateSession(request: NextRequest) {
     
     // Log API requests in development
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[API] ${request.method} ${request.nextUrl.pathname} - Schema: restaurante`)
+      console.log(`[API] ${request.method} ${request.nextUrl.pathname} - Schema: public`)
     }
   }
 

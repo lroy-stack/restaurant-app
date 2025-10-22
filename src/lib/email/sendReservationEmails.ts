@@ -94,7 +94,7 @@ export async function sendReservationEmails(
         .schema('restaurante')
         .from('restaurants')
         .select('mailing')
-        .eq('id', 'rest_enigma_001')
+        .eq('id', process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001')
         .single()
 
       const restaurantEmail = restaurantData?.mailing || 'adminenigmaconalma@gmail.com'

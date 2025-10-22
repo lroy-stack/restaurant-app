@@ -40,36 +40,37 @@ export interface TimeSlot {
 export async function getBusinessHours(): Promise<BusinessHours[]> {
   try {
     const supabase = await createServiceClient()
-    
+
     // First try to get from business_hours table
     const { data: businessHours, error } = await supabase
-      .schema('restaurante')
       .from('business_hours')
       .select('*')
       .order('day_of_week')
-    
+
     if (!error && businessHours && businessHours.length > 0) {
+      console.log('✅ Business hours loaded from DB:', businessHours.length, 'days')
       return businessHours
     }
-    
+
     // Fallback: Parse from restaurants.hours_operation
-    console.log('📊 No business_hours table found, parsing from restaurants')
+    console.log('⚠️ No business_hours table found, parsing from restaurants')
     const { data: restaurant, error: restaurantError } = await supabase
-      .schema('restaurante')
       .from('restaurants')
       .select('hours_operation')
       .limit(1)
       .single()
-    
+
     if (restaurantError || !restaurant?.hours_operation) {
+      console.error('❌ No business hours configuration found in DB')
       throw new Error('No business hours configuration found')
     }
-    
+
     // Parse "Mar-Dom: 18:00 - 23:00" format
     return parseHoursOperation(restaurant.hours_operation)
-    
+
   } catch (error) {
     console.error('❌ Error fetching business hours:', error)
+    console.warn('⚠️ Using fallback business hours - CONNECT TO DATABASE')
     // Conservative fallback
     return getDefaultBusinessHours()
   }
@@ -78,52 +79,61 @@ export async function getBusinessHours(): Promise<BusinessHours[]> {
 /**
  * Parses hours_operation string into BusinessHours array
  * Handles formats like "Mar-Dom: 18:00 - 23:00"
+ *
+ * ⚠️ PLACEHOLDER: Este método genera horarios desde string, no es dinámico
  */
 function parseHoursOperation(hoursOperation: string): BusinessHours[] {
   const businessHours: BusinessHours[] = []
-  
+
+  console.warn('⚠️ Parsing hours_operation string - NOT using business_hours table')
+
   // Default parsing for "Mar-Dom: 18:00 - 23:00"
   const [dayRange, timeRange] = hoursOperation.split(': ')
   const [openTime, closeTime] = timeRange.split(' - ')
-  
+
   // Convert to 24h format and calculate last reservation (30min before close)
   const closeHour = parseInt(closeTime.split(':')[0])
   const lastReservationTime = `${(closeHour - 1).toString().padStart(2, '0')}:30`
-  
-  // Create entries for Monday(1) through Saturday(6)
-  // Sunday(0) is closed based on "Lun-Sáb" (Mon-Sat)
+
+  // Create entries for all days (0-6) - ALL OPEN by default from string
   for (let day = 0; day <= 6; day++) {
     businessHours.push({
-      id: `default_${day}`,
+      id: `parsed_${day}`,
       day_of_week: day,
-      open_time: day === 0 ? '00:00' : openTime, // Sunday closed
-      close_time: day === 0 ? '00:00' : closeTime,
-      is_open: day !== 0, // Sunday closed (false), others open (true)
-      last_reservation_time: day === 0 ? '00:00' : lastReservationTime,
+      open_time: openTime,
+      close_time: closeTime,
+      is_open: true, // All days open when parsing from string
+      last_reservation_time: lastReservationTime,
       advance_booking_minutes: 30,
       slot_duration_minutes: 15
     })
   }
-  
+
   return businessHours
 }
 
 /**
  * Default business hours fallback
  * Used when database is unavailable
+ *
+ * ⚠️ PLACEHOLDER: Shows generic hours - CONNECT TO DATABASE for real schedule
  */
 function getDefaultBusinessHours(): BusinessHours[] {
-  console.log('⚠️ Using default business hours fallback')
-  
+  console.error('⚠️⚠️⚠️ USING FALLBACK BUSINESS HOURS - DATABASE NOT CONNECTED ⚠️⚠️⚠️')
+  console.warn('👉 All days showing as OPEN with generic hours - this is NOT real data')
+
+  // PLACEHOLDER: All days open with generic schedule
   return Array.from({ length: 7 }, (_, day) => ({
     id: `fallback_${day}`,
     day_of_week: day,
-    open_time: day === 0 ? '00:00' : '18:00', // Sunday closed
-    close_time: day === 0 ? '00:00' : '23:00',
-    is_open: day !== 0,   // Sunday closed (false), others open (true)
-    last_reservation_time: day === 0 ? '00:00' : '22:45', // 15min slots: last at 22:45
+    open_time: '18:00', // Generic placeholder
+    close_time: '23:00', // Generic placeholder
+    is_open: true, // All days "open" in fallback to show it's placeholder
+    last_reservation_time: '22:45',
     advance_booking_minutes: 30,
-    slot_duration_minutes: 15
+    slot_duration_minutes: 15,
+    // Mark as placeholder
+    lunch_enabled: false
   }))
 }
 
@@ -336,4 +346,43 @@ export async function isRestaurantOpenOnDate(date: string): Promise<boolean> {
   const hasDinnerService = dayHours.is_open
 
   return hasLunchService || hasDinnerService
+}
+
+/**
+ * Check if restaurant is currently open RIGHT NOW (SERVER ONLY)
+ * Checks current time against business hours for today
+ */
+export async function isRestaurantOpenNow(): Promise<boolean> {
+  const businessHours = await getBusinessHours()
+
+  // Use Europe/Madrid timezone for accurate time
+  const now = new Date()
+  const madridTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Madrid"}))
+  const dayOfWeek = madridTime.getDay()
+  const currentHour = madridTime.getHours()
+  const currentMinute = madridTime.getMinutes()
+  const currentTimeMinutes = currentHour * 60 + currentMinute
+
+  const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
+  if (!dayHours) return false
+
+  // Check lunch service
+  if (dayHours.lunch_enabled && dayHours.lunch_open_time && dayHours.lunch_close_time) {
+    const lunchOpenMinutes = timeToMinutes(dayHours.lunch_open_time)
+    const lunchCloseMinutes = timeToMinutes(dayHours.lunch_close_time)
+    if (currentTimeMinutes >= lunchOpenMinutes && currentTimeMinutes < lunchCloseMinutes) {
+      return true
+    }
+  }
+
+  // Check dinner service
+  if (dayHours.is_open && dayHours.open_time && dayHours.close_time) {
+    const dinnerOpenMinutes = timeToMinutes(dayHours.open_time)
+    const dinnerCloseMinutes = timeToMinutes(dayHours.close_time)
+    if (currentTimeMinutes >= dinnerOpenMinutes && currentTimeMinutes < dinnerCloseMinutes) {
+      return true
+    }
+  }
+
+  return false
 }

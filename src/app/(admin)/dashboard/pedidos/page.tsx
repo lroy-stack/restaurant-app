@@ -26,7 +26,7 @@ export default function PedidosPage() {
     error,
     refetch,
   } = useRealtimeOrders({
-    restaurantId: 'rest_enigma_001',
+    restaurantId: process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001',
     activeOnly: true,
     onNewOrder: (order) => {
       playNewOrderNotification(formatOrderNumber(order.orderNumber))

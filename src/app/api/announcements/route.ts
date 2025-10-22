@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/client'
 import type { CreateAnnouncementInput, AnnouncementFilters } from '@/types/announcements'
-
-const SUPABASE_URL = 'https://supabase.enigmaconalma.com'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NTcxOTYwMDAsImV4cCI6MTkxNDk2MjQwMH0.m0raHGfbQAMISP5sMQ7xade4B30IOk0qTfyiNEt1Mkg'
+import { getSupabaseApiUrl, getSupabaseHeaders } from '@/lib/supabase/config'
 
 export async function GET(request: Request) {
   try {
@@ -38,15 +36,10 @@ export async function GET(request: Request) {
     }
 
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/announcements?${query}&order=display_order.desc,created_at.desc`,
+      getSupabaseApiUrl(`announcements?${query}&order=display_order.desc,created_at.desc`),
       {
         method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'apikey': SUPABASE_KEY,
-        }
+        headers: getSupabaseHeaders(true)
       }
     )
 
@@ -135,8 +128,8 @@ export async function POST(request: Request) {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Accept-Profile': 'restaurante',
-        'Content-Profile': 'restaurante',
+        // Schema handled by getSupabaseHeaders()
+        // Schema handled by getSupabaseHeaders()
         'Authorization': `Bearer ${SUPABASE_KEY}`,
         'apikey': SUPABASE_KEY,
         'Prefer': 'return=representation'

@@ -19,7 +19,7 @@ interface GroupedMenuItems {
 
 export function useMenuItemsForPOS(options: UseMenuItemsForPOSOptions = {}) {
   const {
-    restaurantId = 'rest_enigma_001',
+    restaurantId = process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001',
     category,
     searchQuery,
     availableOnly = true,

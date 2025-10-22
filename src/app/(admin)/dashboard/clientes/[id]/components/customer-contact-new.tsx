@@ -36,10 +36,10 @@ const LANGUAGES = [
 ]
 
 const TABLE_LOCATIONS = [
-  { value: 'TERRACE_CAMPANARI', label: 'Terraza Campanari' },
-  { value: 'SALA_VIP', label: 'Sala VIP' },
-  { value: 'TERRACE_JUSTICIA', label: 'Terraza Justicia' },
-  { value: 'SALA_PRINCIPAL', label: 'Sala Principal' }
+  { value: 'TERRACE_1', label: 'Terraza 1' },
+  { value: 'VIP_ROOM', label: 'Sala VIP' },
+  { value: 'TERRACE_2', label: 'Terraza 2' },
+  { value: 'MAIN_ROOM', label: 'Sala Principal' }
 ]
 
 const DIETARY_RESTRICTIONS = [

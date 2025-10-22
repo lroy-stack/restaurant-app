@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useCart } from '@/hooks/useCart'
 import { useRestaurant } from '@/hooks/use-restaurant'
+import { useNavigation } from '@/hooks/useNavigation'
 import {
   Menu,
   X,
@@ -30,32 +31,19 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 
-const navigationItems = [
-  {
-    name: 'Menú',
-    href: '/menu',
-    description: 'Nuestras creaciones culinarias',
-    icon: Utensils,
-  },
-  {
-    name: 'Historia',
-    href: '/historia',
-    description: 'Nuestra historia y tradición',
-    icon: Heart,
-  },
-  {
-    name: 'Galería',
-    href: '/galeria',
-    description: 'Impresiones de nuestro restaurante',
-    icon: Camera,
-  },
-  {
-    name: 'Contacto',
-    href: '/contacto',
-    description: 'Encuéntranos en Calpe',
-    icon: MapPin,
-  },
-]
+// Icon mapping
+const getIconComponent = (iconName: string | null) => {
+  const icons: Record<string, any> = {
+    Utensils,
+    Heart,
+    Camera,
+    MapPin,
+    Phone,
+    Clock,
+    Menu
+  }
+  return icons[iconName || 'Menu'] || Menu
+}
 
 interface FloatingNavbarProps {
   className?: string
@@ -71,8 +59,10 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
   const { getCartCount, toggleCart } = useCart()
   const cartCount = getCartCount()
 
-  // Restaurant data
+  // Restaurant data & navigation
   const { restaurant } = useRestaurant()
+  const { getNavItems } = useNavigation()
+  const navigationItems = getNavItems()
 
   // Prevent hydration mismatch - wait for client mount
   useEffect(() => {
@@ -106,10 +96,11 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
     setIsMobileMenuOpen(false)
   }, [pathname])
 
-  // Generate WhatsApp URL
+  // Generate WhatsApp URL - DINÁMICO desde DB
   const getWhatsAppUrl = () => {
-    const phone = '34672796006'
-    const message = encodeURIComponent('Hola, me gustaría obtener más información sobre Enigma Cocina Con Alma')
+    const phone = restaurant?.whatsapp_number?.replace(/[^\d]/g, '') || '34600000000'
+    const restaurantName = restaurant?.name || 'el restaurante'
+    const message = encodeURIComponent(`Hola, me gustaría obtener más información sobre ${restaurantName}`)
     return `https://wa.me/${phone}?text=${message}`
   }
 
@@ -156,16 +147,16 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
                 className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 px-3 py-2 bg-popover/95 backdrop-blur-sm border border-border text-popover-foreground text-sm rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
                 style={{ pointerEvents: 'none' }}
               >
-                Enigma Cocina Con Alma
+                {restaurant?.name || 'Inicio'}
                 <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-popover/95 border-r border-b border-border rotate-45" />
               </div>
             </div>
           </Link>
 
-          {/* Navigation Icons */}
+          {/* Navigation Icons - DINÁMICO desde DB */}
           {navigationItems.map((item) => {
             const isActive = pathname === item.href
-            const Icon = item.icon
+            const Icon = getIconComponent(item.icon)
             
             return (
               <Link key={item.href} href={item.href}>
@@ -305,10 +296,10 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
                 </Link>
                 <div className="flex-1 text-center">
                   <SheetTitle className="enigma-brand-main text-base font-bold text-primary">
-                    Enigma Cocina Con Alma
+                    {restaurant?.name || 'Nombre Restaurante'}
                   </SheetTitle>
                   <SheetDescription className="text-xs text-muted-foreground">
-                    Auténtico casco antiguo de Calpe
+                    {restaurant?.description || 'Restaurante'}
                   </SheetDescription>
                 </div>
               </div>
@@ -406,7 +397,7 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
                   <div className="flex items-start gap-3">
                     <MapPin className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
                     <span className="text-xs leading-relaxed">
-                      {restaurant?.address || "Carrer Justicia 6A, Calpe"}
+                      {restaurant?.address || "Dirección del restaurante"}
                     </span>
                   </div>
                 </div>

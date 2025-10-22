@@ -1,27 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-const SUPABASE_URL = 'https://supabase.enigmaconalma.com'
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
+import { getSupabaseApiUrl, getSupabaseHeaders } from '@/lib/supabase/config'
 
 // Zone metadata for UI (minimal, static data only)
 const ZONE_METADATA = {
-  TERRACE_CAMPANARI: { 
+  TERRACE_1: { 
     name: { es: 'Terraza Principal', en: 'Main Terrace', de: 'Hauptterrasse' },
     type: 'terrace',
     description: { es: 'Terraza principal', en: 'Main terrace', de: 'Hauptterrasse' }
   },
-  SALA_VIP: { 
+  VIP_ROOM: { 
     name: { es: 'Sala VIP', en: 'VIP Room', de: 'VIP-Bereich' },
     type: 'indoor',
     description: { es: 'Sala privada', en: 'Private room', de: 'Privater Bereich' }
   },
-  SALA_PRINCIPAL: { 
+  MAIN_ROOM: { 
     name: { es: 'Sala Interior', en: 'Main Hall', de: 'Hauptsaal' },
     type: 'indoor', 
     description: { es: 'Sala interior principal', en: 'Main interior hall', de: 'Hauptinnensaal' }
   },
-  TERRACE_JUSTICIA: { 
-    name: { es: 'Terraza Justicia', en: 'Justicia Terrace', de: 'Justicia Terrasse' },
+  TERRACE_2: { 
+    name: { es: 'Terraza 2', en: 'Justicia Terrace', de: 'Justicia Terrasse' },
     type: 'terrace',
     description: { es: 'Terraza de verano', en: 'Summer terrace', de: 'Sommerterrasse' }
   }
@@ -35,20 +33,15 @@ export async function GET(request: NextRequest) {
     const includePrivate = searchParams.get('includePrivate') === 'true'
 
     // Query active tables - filter by is_public for web, show all for admin
-    let query = `${SUPABASE_URL}/rest/v1/tables?select=location&isActive=eq.true`
+    let queryStr = `tables?select=location&isActive=eq.true`
     if (!includePrivate) {
-      query += `&is_public=eq.true` // Web form: only public zones
+      queryStr += `&is_public=eq.true` // Web form: only public zones
     }
 
-    const response = await fetch(query, 
+    const response = await fetch(
+      getSupabaseApiUrl(queryStr),
       {
-        headers: {
-          'Accept': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante',
-          'apikey': SUPABASE_SERVICE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-        }
+        headers: getSupabaseHeaders(true)
       }
     )
 

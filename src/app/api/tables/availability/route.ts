@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 import { getAvailableTimeSlots } from '@/lib/business-hours-server'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -63,7 +64,7 @@ async function getBusinessHoursConfig(dayOfWeek: number): Promise<BusinessHoursC
       {
         headers: {
           'Accept': 'application/json',
-          'Accept-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
           'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
           'apikey': SUPABASE_SERVICE_KEY,
         }
@@ -148,7 +149,7 @@ async function getBufferMinutes(dayOfWeek: number): Promise<number> {
       {
         headers: {
           'Accept': 'application/json',
-          'Accept-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
           'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
           'apikey': SUPABASE_SERVICE_KEY,
         }
@@ -184,7 +185,7 @@ async function getTablesWithAvailability(
       {
         headers: {
           'Accept': 'application/json',
-          'Accept-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
           'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
           'apikey': SUPABASE_SERVICE_KEY,
         }
@@ -231,7 +232,7 @@ async function getTablesWithAvailability(
       {
         headers: {
           'Accept': 'application/json',
-          'Accept-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
           'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
           'apikey': SUPABASE_SERVICE_KEY,
         }
@@ -312,8 +313,8 @@ async function checkSlotAvailability(
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Accept-Profile': 'restaurante',
-        'Content-Profile': 'restaurante',
+        // Schema handled by getSupabaseHeaders()
+        // Schema handled by getSupabaseHeaders()
         'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
         'apikey': SUPABASE_SERVICE_KEY,
       },
@@ -344,7 +345,7 @@ async function checkSlotAvailability(
       {
         headers: {
           'Accept': 'application/json',
-          'Accept-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
           'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
           'apikey': SUPABASE_SERVICE_KEY,
         }

@@ -1,4 +1,5 @@
 'use client'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 
 import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -183,7 +184,7 @@ export function CustomEmailComposer({
         customerName: customerName || 'Cliente Ejemplo',
         customerEmail: customerEmail || 'cliente@ejemplo.com',
         ctaText: (emailData.ctaText || '').trim() || 'Ver Más',
-        ctaUrl: (emailData.ctaUrl || '').trim() || 'https://enigmaconalma.com',
+        ctaUrl: (emailData.ctaUrl || '').trim() || 'https://turestaurante.com',
         priority: emailData.priority || 'normal',
         templateSource: emailData.templateSource || 'custom',
         previewMode: true
@@ -219,8 +220,8 @@ export function CustomEmailComposer({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante'
+          // Schema handled by getSupabaseHeaders()
+          // Schema handled by getSupabaseHeaders()
         },
         body: JSON.stringify({
           // ✅ FIXED: Spread emailData but filter out empty optional fields
@@ -504,7 +505,7 @@ export function CustomEmailComposer({
                           id="ctaUrl"
                           value={emailData.ctaUrl || ''}
                           onChange={(e) => updateField('ctaUrl', e.target.value)}
-                          placeholder="https://enigmaconalma.com/..."
+                          placeholder="https://turestaurante.com/..."
                           className="h-9"
                         />
                       </div>

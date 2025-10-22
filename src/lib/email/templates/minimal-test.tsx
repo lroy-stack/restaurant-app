@@ -6,7 +6,7 @@ export const MinimalTestEmail = () => {
     <Html>
       <Body>
         <Text>This is a minimal test email</Text>
-        <Text>Mesa T5 - Terraza Campanari</Text>
+        <Text>Mesa T5 - Terraza 1</Text>
       </Body>
     </Html>
   )

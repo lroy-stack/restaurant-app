@@ -6,7 +6,7 @@ interface Table {
   id: string
   number: string
   capacity: number
-  location: 'TERRACE_CAMPANARI' | 'SALA_VIP' | 'TERRACE_JUSTICIA' | 'SALA_PRINCIPAL'
+  location: 'TERRACE_1' | 'VIP_ROOM' | 'TERRACE_2' | 'MAIN_ROOM'
   isActive: boolean
   restaurantId: string
 }

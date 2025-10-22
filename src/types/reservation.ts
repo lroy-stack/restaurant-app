@@ -8,10 +8,10 @@ export type ReservationStatus =
   | 'NO_SHOW'
 
 export type TableLocation =
-  | 'TERRACE_CAMPANARI'
-  | 'TERRACE_JUSTICIA'
-  | 'SALA_VIP'
-  | 'SALA_PRINCIPAL'
+  | 'TERRACE_1'
+  | 'TERRACE_2'
+  | 'VIP_ROOM'
+  | 'MAIN_ROOM'
   | 'TERRACE'
   | 'INTERIOR'
   | 'BAR'

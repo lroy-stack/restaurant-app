@@ -35,8 +35,8 @@ export async function GET(request: NextRequest) {
             COUNT(r.id) FILTER (WHERE r.status = 'CONFIRMED')::decimal /
             NULLIF(COUNT(r.id), 0) * 100, 2
           ) as confirmation_rate
-        FROM restaurante.tables t
-        LEFT JOIN restaurante.reservations r ON t.id = r.table_id
+        FROM public.tables t
+        LEFT JOIN public.reservations r ON t.id = r.table_id
           AND r.date >= (SELECT start_date FROM date_range)::date
           AND r.date <= (SELECT end_date FROM date_range)::date
         GROUP BY t.id, t.number, t.capacity, t.location
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
             COUNT(*) FILTER (WHERE r.status = 'CONFIRMED')::decimal /
             NULLIF(COUNT(*), 0) * 100, 2
           ) as hourly_occupancy
-        FROM restaurante.reservations r
+        FROM public.reservations r
         CROSS JOIN date_range dr
         WHERE r.date >= dr.start_date::date
           AND r.date <= dr.end_date::date
@@ -93,8 +93,8 @@ export async function GET(request: NextRequest) {
               ELSE NULL
             END
           ) as average_dining_duration
-        FROM restaurante.tables t
-        LEFT JOIN restaurante.reservations r ON t.id = r.table_id
+        FROM public.tables t
+        LEFT JOIN public.reservations r ON t.id = r.table_id
         CROSS JOIN date_range dr
         WHERE r.date IS NULL OR (
           r.date >= dr.start_date::date AND r.date <= dr.end_date::date
@@ -145,13 +145,13 @@ export async function GET(request: NextRequest) {
       ] = await Promise.all([
         // All tables with their details
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('tables')
           .select('id, number, capacity, location'),
 
         // Reservations in date range
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('reservations')
           .select('table_id, status, date, time, location')
           .gte('date', from.split('T')[0])
@@ -159,13 +159,13 @@ export async function GET(request: NextRequest) {
 
         // Total tables count
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('tables')
           .select('*', { count: 'exact', head: true }),
 
         // Total reservations in period
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('reservations')
           .select('*', { count: 'exact', head: true })
           .gte('date', from.split('T')[0])
@@ -173,7 +173,7 @@ export async function GET(request: NextRequest) {
 
         // Confirmed reservations in period
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('reservations')
           .select('*', { count: 'exact', head: true })
           .eq('status', 'CONFIRMED')

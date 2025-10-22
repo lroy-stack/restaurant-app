@@ -13,16 +13,16 @@ export async function POST(request: NextRequest) {
       // VACUUM specific table
       switch (operation) {
         case 'vacuum_only':
-          query = `VACUUM restaurante.${table}`
+          query = `VACUUM public.${table}`
           description = `VACUUM en tabla ${table}`
           break
         case 'analyze_only':
-          query = `ANALYZE restaurante.${table}`
+          query = `ANALYZE public.${table}`
           description = `ANALYZE en tabla ${table}`
           break
         case 'vacuum_analyze':
         default:
-          query = `VACUUM ANALYZE restaurante.${table}`
+          query = `VACUUM ANALYZE public.${table}`
           description = `VACUUM ANALYZE en tabla ${table}`
           break
       }
@@ -30,16 +30,16 @@ export async function POST(request: NextRequest) {
       // VACUUM all tables in restaurante schema
       switch (operation) {
         case 'vacuum_only':
-          query = `VACUUM SCHEMA restaurante`
+          query = `VACUUM SCHEMA public`
           description = 'VACUUM en esquema restaurante'
           break
         case 'analyze_only':
-          query = `ANALYZE SCHEMA restaurante`
+          query = `ANALYZE SCHEMA public`
           description = 'ANALYZE en esquema restaurante'
           break
         case 'vacuum_analyze':
         default:
-          query = `VACUUM ANALYZE SCHEMA restaurante`
+          query = `VACUUM ANALYZE SCHEMA public`
           description = 'VACUUM ANALYZE en esquema restaurante'
           break
       }
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
           last_analyze,
           last_autoanalyze
         FROM pg_stat_user_tables
-        WHERE schemaname = 'restaurante'
+        WHERE schemaname = 'public'
         ORDER BY GREATEST(
           COALESCE(last_vacuum, '1970-01-01'::timestamp),
           COALESCE(last_autovacuum, '1970-01-01'::timestamp)

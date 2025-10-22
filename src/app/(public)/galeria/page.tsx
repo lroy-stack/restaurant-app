@@ -93,7 +93,7 @@ export default function GaleriaPage() {
             style={{
               backgroundImage: heroImage
                 ? `url(${buildImageUrl(heroImage)})`
-                : 'url(https://ik.imagekit.io/insomnialz/mariposas.jpg?updatedAt=1758793673956)',
+                : 'url(https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1920&h=1080&fit=crop)',
               backgroundPosition: 'center center'
             }}
           />
@@ -101,19 +101,21 @@ export default function GaleriaPage() {
 
         <div className="relative z-20 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-12" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
           <h1 className="enigma-hero-title">
-            {restaurant?.galeria_experiencia_title || "Descubre Nuestro Mundo"}
+            {restaurant?.galeria_experiencia_title}
           </h1>
 
           <p className="enigma-hero-subtitle">
-            {restaurant?.ambiente || "Un refugio gastronómico en el auténtico casco antiguo, donde las calles empedradas y la arquitectura centenaria crean el escenario perfecto para tu experiencia culinaria."}
+            {restaurant?.ambiente}
           </p>
 
-          <div className="flex justify-center items-center text-sm sm:text-base text-white/90 mb-8">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-white" />
-              <span>{restaurant?.address || "Carrer Justicia 6A, Calpe"}</span>
+          {restaurant?.address && (
+            <div className="flex justify-center items-center text-sm sm:text-base text-white/90 mb-8">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-white" />
+                <span>{restaurant.address}</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -218,9 +220,7 @@ export default function GaleriaPage() {
                   </h3>
                   <div className="prose max-w-none">
                     <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                      {restaurant?.galeria_ambiente_content ||
-                        "Nuestro restaurante se encuentra en el corazón del auténtico casco antiguo de Calpe, donde cada piedra cuenta una historia y cada rincón respira tradición mediterránea. Los callejones históricos rodeados de plantas crean el escenario perfecto para una experiencia gastronómica que conecta el pasado con el presente."
-                      }
+                      {restaurant?.galeria_ambiente_content}
                     </p>
                   </div>
                 </CardContent>
@@ -233,9 +233,7 @@ export default function GaleriaPage() {
                   </h3>
                   <div className="prose max-w-none">
                     <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                      {restaurant?.galeria_cocina_content ||
-                        "Cada plato es una obra de arte culinaria que fusiona tradiciones atlánticas y mediterráneas con técnicas modernas y presentación innovadora. Nuestros ingredientes seleccionados y la pasión de nuestro equipo se reflejan en cada creación que sale de nuestra cocina."
-                      }
+                      {restaurant?.galeria_cocina_content}
                     </p>
                   </div>
                 </CardContent>
@@ -254,10 +252,12 @@ export default function GaleriaPage() {
               <h2 className="enigma-section-title">
                 Visita Nuestro Restaurante
               </h2>
-              <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed">
-                Las imágenes solo pueden capturar una parte de la magia. Te invitamos a experimentar 
-                personalmente nuestro ambiente auténtico y acogedor en el casco antiguo de Calpe.
-              </p>
+              {restaurant?.ambiente && (
+                <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed">
+                  Las imágenes solo pueden capturar una parte de la magia. Te invitamos a experimentar
+                  personalmente {restaurant.ambiente}.
+                </p>
+              )}
               
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center max-w-lg mx-auto">
                 <Link href="/reservas">
@@ -283,39 +283,45 @@ export default function GaleriaPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto">
             <h2 className="enigma-section-title-large">
-              Encuéntranos en Calpe
+              {restaurant?.galeria_encuentranos_title || restaurant?.contacto_hero_title}
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-              <div className="flex items-center gap-3 p-4 bg-card/80 backdrop-blur-sm border border-border/40 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                <MapPin className="h-5 w-5 text-primary flex-shrink-0" />
-                <span className="text-sm sm:text-base text-foreground break-words">
-                  {restaurant?.address || "Carrer Justicia 6A, 03710 Calpe, Alicante"}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-card/80 backdrop-blur-sm border border-border/40 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                <span className="text-2xl flex-shrink-0">📞</span>
-                <a
-                  href={`tel:${restaurant?.phone?.replace(/\s/g, '') || "+34672796006"}`}
-                  className="text-sm sm:text-base text-foreground hover:text-primary transition-colors break-words"
-                >
-                  {restaurant?.phone || "+34 672 79 60 06"}
-                </a>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-card/80 backdrop-blur-sm border border-border/40 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                <span className="text-2xl flex-shrink-0">✉️</span>
-                <a
-                  href={`mailto:${restaurant?.email || "reservas@enigmaconalma.com"}`}
-                  className="text-sm sm:text-base text-foreground hover:text-primary transition-colors break-words"
-                >
-                  {restaurant?.email || "reservas@enigmaconalma.com"}
-                </a>
-              </div>
-            </div>
+            {restaurant && (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                  <div className="flex items-center gap-3 p-4 bg-card/80 backdrop-blur-sm border border-border/40 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                    <MapPin className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="text-sm sm:text-base text-foreground break-words">
+                      {restaurant.address}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-card/80 backdrop-blur-sm border border-border/40 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                    <span className="text-2xl flex-shrink-0">📞</span>
+                    <a
+                      href={`tel:${restaurant.phone.replace(/\s/g, '')}`}
+                      className="text-sm sm:text-base text-foreground hover:text-primary transition-colors break-words"
+                    >
+                      {restaurant.phone}
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-card/80 backdrop-blur-sm border border-border/40 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                    <span className="text-2xl flex-shrink-0">✉️</span>
+                    <a
+                      href={`mailto:${restaurant.email}`}
+                      className="text-sm sm:text-base text-foreground hover:text-primary transition-colors break-words"
+                    >
+                      {restaurant.email}
+                    </a>
+                  </div>
+                </div>
 
-            <p className="text-sm sm:text-base text-muted-foreground mt-6 italic">
-              &quot;{restaurant?.ambiente || "Un refugio gastronómico en el auténtico casco antiguo, donde las calles empedradas y la arquitectura centenaria crean el escenario perfecto para tu experiencia culinaria."}&quot;
-            </p>
+                {restaurant.ambiente && (
+                  <p className="text-sm sm:text-base text-muted-foreground mt-6 italic">
+                    &quot;{restaurant.ambiente}&quot;
+                  </p>
+                )}
+              </>
+            )}
           </div>
         </div>
       </section>

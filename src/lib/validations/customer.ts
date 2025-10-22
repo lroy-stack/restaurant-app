@@ -10,7 +10,7 @@ export const customerSchema = z.object({
   language: z.string().default('ES'),
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha debe ser YYYY-MM-DD').optional(),
   preferredTime: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Hora debe ser HH:MM').optional(),
-  preferredLocation: z.enum(['TERRACE_CAMPANARI', 'SALA_VIP', 'TERRACE_JUSTICIA', 'SALA_PRINCIPAL']).optional(),
+  preferredLocation: z.enum(['TERRACE_1', 'VIP_ROOM', 'TERRACE_2', 'MAIN_ROOM']).optional(),
   dietaryRestrictions: z.array(z.enum(['vegetarian', 'vegan', 'gluten_free', 'lactose_free', 'halal', 'kosher'])).default([]),
   allergies: z.string().max(500, 'Alergias demasiado largas').optional(),
   favoriteDisheIds: z.array(z.string().uuid()).default([]),
@@ -131,7 +131,7 @@ export const customerFilterSchema = z.object({
   search: z.string().max(100).optional(),
   vipStatus: z.enum(['all', 'vip', 'regular']).default('all'),
   tier: z.enum(['all', 'VIP Elite', 'Oro', 'Plata', 'Bronce']).default('all'),
-  location: z.enum(['all', 'TERRACE_CAMPANARI', 'SALA_VIP', 'TERRACE_JUSTICIA', 'SALA_PRINCIPAL']).default('all'),
+  location: z.enum(['all', 'TERRACE_1', 'VIP_ROOM', 'TERRACE_2', 'MAIN_ROOM']).default('all'),
   language: z.enum(['all', 'ES', 'EN', 'DE']).default('all'),
   hasConsent: z.enum(['all', 'email', 'sms', 'marketing']).default('all'),
   visitRange: z.object({

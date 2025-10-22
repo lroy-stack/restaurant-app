@@ -39,7 +39,7 @@ export interface EmailRestaurantInfo {
  * Fetch restaurant data from real DB structure (VERIFIED via SSH)
  * Uses exact field names from restaurante.restaurants table
  */
-export async function getRestaurantData(restaurantId = 'rest_enigma_001'): Promise<RestaurantData | null> {
+export async function getRestaurantData(restaurantId = process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001'): Promise<RestaurantData | null> {
   try {
     const supabase = await createAdminClient()
 
@@ -66,7 +66,7 @@ export async function getRestaurantData(restaurantId = 'rest_enigma_001'): Promi
  * Get formatted restaurant info for email templates
  * DYNAMIC: All data from DB, following React Email + Postmark patterns
  */
-export async function getEmailRestaurantInfo(restaurantId = 'rest_enigma_001'): Promise<EmailRestaurantInfo> {
+export async function getEmailRestaurantInfo(restaurantId = process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001'): Promise<EmailRestaurantInfo> {
   try {
     const restaurantData = await getRestaurantData(restaurantId)
 

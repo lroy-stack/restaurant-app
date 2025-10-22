@@ -1,4 +1,5 @@
 'use client'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -34,10 +35,10 @@ import {
 
 // REAL Enigma location options
 const ENIGMA_LOCATION_OPTIONS = [
-  { value: 'TERRACE_CAMPANARI', label: 'Terraza Campanari' },
-  { value: 'SALA_PRINCIPAL', label: 'Sala Principal' },
-  { value: 'SALA_VIP', label: 'Sala VIP' },
-  { value: 'TERRACE_JUSTICIA', label: 'Terraza Justicia' }
+  { value: 'TERRACE_1', label: 'Terraza 1' },
+  { value: 'MAIN_ROOM', label: 'Sala Principal' },
+  { value: 'VIP_ROOM', label: 'Sala VIP' },
+  { value: 'TERRACE_2', label: 'Terraza 2' }
 ]
 
 // Standard capacity options for restaurant tables
@@ -50,6 +51,7 @@ interface TableData {
   location: keyof typeof ENIGMA_LOCATION_OPTIONS
   qrCode: string
   isActive: boolean
+  is_public?: boolean
   restaurantId: string
   currentStatus?: 'available' | 'reserved' | 'occupied' | 'maintenance'
 }
@@ -72,17 +74,20 @@ function TableConfigCard({
   tableId,
   onEdit,
   onDelete,
-  onToggleActive
+  onToggleActive,
+  onTogglePublic
 }: {
   tableId: string
   onEdit: (table: TableData) => void
   onDelete: (tableId: string) => void
   onToggleActive: (tableId: string, isActive: boolean) => void
+  onTogglePublic: (tableId: string, isPublic: boolean) => void
 }) {
   // GET FRESH DATA from store - NO STALE PROPS
   const table = useTableStore(state => state.tables.find(t => t.id === tableId))
 
-  const [isUpdating, setIsUpdating] = useState(false)
+  const [isUpdatingActive, setIsUpdatingActive] = useState(false)
+  const [isUpdatingPublic, setIsUpdatingPublic] = useState(false)
   const [showQRModal, setShowQRModal] = useState(false)
 
   // Handle case where table not found in store yet
@@ -99,113 +104,124 @@ function TableConfigCard({
   const locationLabel = ENIGMA_LOCATION_OPTIONS.find(opt => opt.value === table.location)?.label || table.location
 
   const handleToggleActive = async () => {
-    setIsUpdating(true)
+    setIsUpdatingActive(true)
     try {
       await onToggleActive(table.id, !table.isActive)
     } finally {
-      setIsUpdating(false)
+      setIsUpdatingActive(false)
+    }
+  }
+
+  const handleTogglePublic = async () => {
+    if (!table.isActive) {
+      toast.error('Activa la mesa primero antes de cambiar visibilidad')
+      return
+    }
+    setIsUpdatingPublic(true)
+    try {
+      await onTogglePublic(table.id, !table.is_public)
+    } finally {
+      setIsUpdatingPublic(false)
     }
   }
 
   return (
-    <Card className={`${table.isActive ? '' : 'opacity-75 bg-muted/30'}`}>
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-start">
-          <div className="space-y-1">
-            <CardTitle className="text-lg flex items-center gap-2">
-              Mesa {table.number}
-              {table.isActive ? (
-                <Badge variant="default" className="text-xs">Activa</Badge>
-              ) : (
-                <Badge variant="secondary" className="text-xs">Inactiva</Badge>
-              )}
-            </CardTitle>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <MapPin className="w-3 h-3" />
-                {locationLabel}
-              </div>
-              <div className="flex items-center gap-1">
-                <Users className="w-3 h-3" />
-                {table.capacity} personas
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleToggleActive}
-              disabled={isUpdating}
-            >
-              {isUpdating ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : table.isActive ? (
-                <ToggleRight className="w-4 h-4 text-[#9FB289]" />
-              ) : (
-                <ToggleLeft className="w-4 h-4 text-muted-foreground" />
-              )}
-            </Button>
+    <Card className={`${table.isActive ? '' : 'opacity-60 bg-muted/30'} hover:shadow-md transition-shadow`}>
+      <CardContent className="p-3 space-y-2">
+        {/* Header Compacto */}
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-sm">Mesa {table.number}</h3>
+          <div className="flex items-center gap-1">
+            <Users className="w-3 h-3 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">{table.capacity}</span>
           </div>
         </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {/* QR Code Info */}
-        <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg border">
-          <div className="flex items-center gap-2">
-            <QrCode className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm font-mono">
-              {table.qrCode
-                ? `QR_${table.number}_${table.location.split('_')[1] || table.location}`
-                : `QR_${table.number}_${table.location.split('_')[1] || table.location}`
-              }
-            </span>
-          </div>
-          <Button 
-            variant="outline" 
+
+        {/* Toggles Compactos */}
+        <div className="flex gap-1.5">
+          {/* Active Toggle */}
+          <Button
+            variant="outline"
             size="sm"
-            onClick={() => setShowQRModal(true)}
-            disabled={!table.isActive}
+            onClick={handleToggleActive}
+            disabled={isUpdatingActive}
+            className={`flex-1 h-7 px-2 text-[10px] font-medium ${
+              table.isActive ? 'border-chart-2 bg-chart-2/10 text-chart-2' : 'border-muted text-muted-foreground'
+            }`}
+            title={table.isActive ? 'Mesa activa' : 'Mesa inactiva'}
           >
-            Ver QR
+            {isUpdatingActive ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : table.isActive ? (
+              <ToggleRight className="w-3 h-3" />
+            ) : (
+              <ToggleLeft className="w-3 h-3" />
+            )}
+          </Button>
+
+          {/* Public Toggle */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleTogglePublic}
+            disabled={!table.isActive || isUpdatingPublic}
+            className={`flex-1 h-7 px-2 text-[10px] font-medium ${
+              table.is_public
+                ? 'border-chart-1 bg-chart-1/10 text-chart-1'
+                : 'border-accent bg-accent/10 text-accent-foreground'
+            } ${!table.isActive ? 'opacity-40' : ''}`}
+            title={table.is_public ? 'Pública en web' : 'Solo personal'}
+          >
+            {isUpdatingPublic ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : table.is_public ? (
+              <Eye className="w-3 h-3" />
+            ) : (
+              <EyeOff className="w-3 h-3" />
+            )}
           </Button>
         </div>
 
-        {/* Current Status - ALWAYS SHOW */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Estado actual:</span>
+        {/* Estado */}
+        <div className="flex items-center justify-between text-[10px]">
+          <span className="text-muted-foreground">Estado:</span>
           <Badge variant={
             !table.isActive ? 'secondary' :
             table.currentStatus === 'available' ? 'default' :
-            table.currentStatus === 'reserved' ? 'secondary' :
             table.currentStatus === 'occupied' ? 'destructive' : 'outline'
-          }>
-            {!table.isActive ? 'Temporalmente Cerrada' :
-             table.currentStatus === 'available' ? 'Disponible' :
-             table.currentStatus === 'reserved' ? 'Reservada' :
-             table.currentStatus === 'occupied' ? 'Ocupada' :
-             table.currentStatus === 'maintenance' ? 'Mantenimiento' :
-             'Disponible'}
+          } className="h-4 text-[10px] px-1.5">
+            {!table.isActive ? 'Cerrada' :
+             table.currentStatus === 'available' ? 'Libre' :
+             table.currentStatus === 'reserved' ? 'Reserv' :
+             table.currentStatus === 'occupied' ? 'Ocup' : 'Libre'}
           </Badge>
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-2 pt-2">
+        {/* Acciones */}
+        <div className="flex gap-1 pt-1 border-t">
           <Button
-            variant="outline" 
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowQRModal(true)}
+            disabled={!table.isActive}
+            className="flex-1 h-7 px-1 text-[10px]"
+            title="Ver código QR"
+          >
+            <QrCode className="w-3 h-3" />
+          </Button>
+          <Button
+            variant="ghost"
             size="sm"
             onClick={() => onEdit(table)}
-            className="flex-1"
+            className="flex-1 h-7 px-1 text-[10px]"
+            title="Editar mesa"
           >
-            <Edit2 className="w-3 h-3 mr-1" />
-            Editar
+            <Edit2 className="w-3 h-3" />
           </Button>
-          
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Trash2 className="w-3 h-3" />
+              <Button variant="ghost" size="sm" className="h-7 px-1.5" title="Eliminar mesa">
+                <Trash2 className="w-3 h-3 text-destructive" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -254,7 +270,7 @@ function TableFormDialog({
   const [formData, setFormData] = useState<TableFormData>({
     number: table?.number || '',
     capacity: table?.capacity || 2,
-    location: table?.location || 'TERRACE_CAMPANARI',
+    location: table?.location || 'TERRACE_1',
     isActive: table?.isActive ?? true,
     is_public: table?.is_public ?? true
   })
@@ -274,7 +290,7 @@ function TableFormDialog({
       setFormData({
         number: '',
         capacity: 2,
-        location: 'TERRACE_CAMPANARI',
+        location: 'TERRACE_1',
         isActive: true,
         is_public: true
       })
@@ -407,7 +423,7 @@ function TableFormDialog({
               >
                 {formData.isActive ? (
                   <>
-                    <ToggleRight className="w-4 h-4 text-[#9FB289]" />
+                    <ToggleRight className="w-4 h-4 text-chart-2" />
                     Mesa Activa (Uso Interno)
                   </>
                 ) : (
@@ -428,12 +444,12 @@ function TableFormDialog({
               >
                 {formData.is_public ? (
                   <>
-                    <Eye className="w-4 h-4 text-blue-600" />
+                    <Eye className="w-4 h-4 text-chart-1" />
                     Visible en Web Pública
                   </>
                 ) : (
                   <>
-                    <EyeOff className="w-4 h-4 text-amber-600" />
+                    <EyeOff className="w-4 h-4 text-accent" />
                     Solo Personal (Mesa Comodín)
                   </>
                 )}
@@ -536,12 +552,12 @@ export function TableConfiguration({ tables, onRefresh }: TableConfigurationProp
       method,
       headers: {
         'Content-Type': 'application/json',
-        'Accept-Profile': 'restaurante',
-        'Content-Profile': 'restaurante'
+        // Schema handled by getSupabaseHeaders()
+        // Schema handled by getSupabaseHeaders()
       },
       body: JSON.stringify({
         ...formData,
-        restaurantId: 'rest_enigma_001',
+        restaurantId: process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001',
         qrCode: `QR_${formData.number}_${formData.location.split('_')[1] || formData.location}`
       })
     })
@@ -565,8 +581,8 @@ export function TableConfiguration({ tables, onRefresh }: TableConfigurationProp
       const response = await fetch(`/api/tables/${tableId}`, {
         method: 'DELETE',
         headers: {
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante'
+          // Schema handled by getSupabaseHeaders()
+          // Schema handled by getSupabaseHeaders()
         }
       })
 
@@ -590,6 +606,31 @@ export function TableConfiguration({ tables, onRefresh }: TableConfigurationProp
     await toggleTable(tableId, isActive)
   }
 
+  // Toggle is_public field
+  const handleTogglePublic = async (tableId: string, isPublic: boolean) => {
+    try {
+      const response = await fetch(`/api/tables/${tableId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ is_public: isPublic })
+      })
+
+      if (!response.ok) {
+        throw new Error('Error updating table visibility')
+      }
+
+      toast.success(isPublic ? 'Mesa ahora visible en web pública' : 'Mesa ahora solo visible para personal')
+
+      // Reload tables
+      await loadTables()
+    } catch (error) {
+      console.error('Error toggling public:', error)
+      toast.error('Error al actualizar visibilidad')
+    }
+  }
+
   // Enhanced zone toggle with loading states
   const handleBulkToggleZone = async (location: string, activate: boolean) => {
     setZoneLoadingStates(prev => ({ ...prev, [location]: true }))
@@ -605,6 +646,8 @@ export function TableConfiguration({ tables, onRefresh }: TableConfigurationProp
     total: activeTables.length,
     active: activeTables.filter(t => t.isActive).length,
     inactive: activeTables.filter(t => !t.isActive).length,
+    public: activeTables.filter(t => t.isActive && t.is_public).length,
+    private: activeTables.filter(t => t.isActive && !t.is_public).length,
     totalCapacity: activeTables.filter(t => t.isActive).reduce((sum, t) => sum + t.capacity, 0)
   }
 
@@ -636,7 +679,7 @@ export function TableConfiguration({ tables, onRefresh }: TableConfigurationProp
                 Configuración de Mesas
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                {stats.total} mesas configuradas • {stats.active} activas • {stats.totalCapacity} personas capacidad total
+                {stats.total} mesas • {stats.active} activas • {stats.public} públicas • {stats.totalCapacity} personas
               </p>
             </div>
             
@@ -678,22 +721,30 @@ export function TableConfiguration({ tables, onRefresh }: TableConfigurationProp
 
         {/* Quick Stats */}
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
             <div className="text-center p-3">
               <div className="text-2xl font-bold text-primary">{stats.total}</div>
-              <div className="text-sm text-muted-foreground">Total Mesas</div>
+              <div className="text-sm text-muted-foreground">Total</div>
             </div>
             <div className="text-center p-3">
-              <div className="text-2xl font-bold text-[#9FB289]">{stats.active}</div>
+              <div className="text-2xl font-bold text-chart-2">{stats.active}</div>
               <div className="text-sm text-muted-foreground">Activas</div>
             </div>
             <div className="text-center p-3">
               <div className="text-2xl font-bold text-muted-foreground">{stats.inactive}</div>
               <div className="text-sm text-muted-foreground">Inactivas</div>
             </div>
+            <div className="text-center p-3 border-l">
+              <div className="text-2xl font-bold text-chart-1">{stats.public}</div>
+              <div className="text-sm text-muted-foreground">Públicas</div>
+            </div>
             <div className="text-center p-3">
-              <div className="text-2xl font-bold text-[#237584]">{stats.totalCapacity}</div>
-              <div className="text-sm text-muted-foreground">Capacidad Total</div>
+              <div className="text-2xl font-bold text-accent">{stats.private}</div>
+              <div className="text-sm text-muted-foreground">Privadas</div>
+            </div>
+            <div className="text-center p-3 border-l">
+              <div className="text-2xl font-bold text-primary">{stats.totalCapacity}</div>
+              <div className="text-sm text-muted-foreground">Capacidad</div>
             </div>
           </div>
         </CardContent>
@@ -739,7 +790,7 @@ export function TableConfiguration({ tables, onRefresh }: TableConfigurationProp
                     handleBulkToggleZone(value, true)
                   })
                 }}
-                className="text-[#9FB289] hover:text-[#9FB289]/80"
+                className="text-chart-2 hover:text-chart-2/80"
                 disabled={Object.values(zoneLoadingStates).some(Boolean)}
               >
                 <CheckCircle2 className="w-3 h-3 mr-1" />
@@ -764,27 +815,51 @@ export function TableConfiguration({ tables, onRefresh }: TableConfigurationProp
         </CardContent>
       </Card>
 
-      {/* Tables Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredTables.map(table => (
-          <TableConfigCard
-            key={table.id}
-            tableId={table.id}
-            onEdit={handleEditTable}
-            onDelete={handleDeleteTable}
-            onToggleActive={handleToggleActive}
-          />
-        ))}
-      </div>
+      {/* Tables Grid - Agrupadas por Zona */}
+      {ENIGMA_LOCATION_OPTIONS.map(({ value, label }) => {
+        const zoneTables = filteredTables.filter(t => t.location === value)
+
+        if (zoneTables.length === 0) return null
+
+        return (
+          <Card key={value}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  <CardTitle className="text-base">{label}</CardTitle>
+                </div>
+                <Badge variant="outline" className="text-xs">
+                  {zoneTables.filter(t => t.isActive).length} / {zoneTables.length} activas
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                {zoneTables.map(table => (
+                  <TableConfigCard
+                    key={table.id}
+                    tableId={table.id}
+                    onEdit={handleEditTable}
+                    onDelete={handleDeleteTable}
+                    onToggleActive={handleToggleActive}
+                    onTogglePublic={handleTogglePublic}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })}
 
       {filteredTables.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
-            <AlertTriangle className="w-12 h-12 text-[#CB5910] mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-[#CB5910] mb-2">
+            <AlertTriangle className="w-12 h-12 text-accent mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-accent mb-2">
               No hay mesas con los filtros seleccionados
             </h3>
-            <p className="text-[#CB5910]/80">
+            <p className="text-accent/80">
               Cambia los filtros o crea una nueva mesa.
             </p>
           </CardContent>

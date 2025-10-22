@@ -14,7 +14,7 @@ if (!supabaseAnonKey) {
   throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable')
 }
 
-// 🔧 CORRECCIÓN: Cliente sin restricción de schema (para auth)
+// 🔧 CORRECCIÓN: Cliente con schema 'public' explícito
 export function createServerSupabaseClient(cookieStore: ReadonlyRequestCookies) {
   return createServerClient(supabaseUrl!, supabaseAnonKey!, {
     cookies: {
@@ -32,6 +32,9 @@ export function createServerSupabaseClient(cookieStore: ReadonlyRequestCookies) 
           // user sessions.
         }
       },
+    },
+    db: {
+      schema: 'public'
     },
     auth: {
       persistSession: false,
@@ -99,6 +102,9 @@ export function createAdminSupabaseClient(cookieStore: ReadonlyRequestCookies) {
           }
         },
       },
+      db: {
+        schema: 'public'
+      },
       auth: {
         persistSession: false,
         autoRefreshToken: false,
@@ -165,6 +171,9 @@ export function createDirectAdminClient() {
       cookies: {
         getAll() { return [] },
         setAll() { /* no-op */ },
+      },
+      db: {
+        schema: 'public'
       },
       auth: {
         persistSession: false,

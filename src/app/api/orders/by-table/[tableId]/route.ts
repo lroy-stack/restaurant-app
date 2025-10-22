@@ -10,7 +10,7 @@ export async function GET(
     const supabase = await createServiceClient()
 
     const { data: orders, error } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('orders')
       .select(`
         id,

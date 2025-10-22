@@ -60,10 +60,10 @@ interface ContactAndConfirmStepProps {
 }
 
 const locations = {
-  TERRACE_CAMPANARI: {
-    name: { es: 'Terraza Campanari', en: 'Campanari Terrace', de: 'Campanari Terrasse' }
+  TERRACE_1: {
+    name: { es: 'Terraza 1', en: 'Campanari Terrace', de: 'Campanari Terrasse' }
   },
-  SALA_PRINCIPAL: {
+  MAIN_ROOM: {
     name: { es: 'Sala Principal', en: 'Main Dining Room', de: 'Hauptsaal' }
   },
   TERRACE_SEA_VIEW: {

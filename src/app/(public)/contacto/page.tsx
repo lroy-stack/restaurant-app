@@ -159,19 +159,21 @@ export default function ContactoPage() {
         
         <div className="relative z-20 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-10" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
           <h1 className="enigma-hero-title">
-            Encuéntranos en Calpe
+            {restaurant?.contacto_hero_title || 'Encuéntranos'}
           </h1>
-          
+
           <p className="enigma-hero-subtitle">
-            En el auténtico casco antiguo, donde cada callejón cuenta una historia
+            {restaurant?.contacto_hero_subtitle || restaurant?.ambiente || 'Cargando...'}
           </p>
           
-          <div className="flex justify-center items-center text-sm sm:text-base text-white/90">
-            <div className="flex items-center gap-2" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.6)' }}>
-              <MapPin className="h-4 w-4 text-white" />
-              <span>Casco Antiguo de Calpe</span>
+          {restaurant?.contacto_location_badge && (
+            <div className="flex justify-center items-center text-sm sm:text-base text-white/90">
+              <div className="flex items-center gap-2" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.6)' }}>
+                <MapPin className="h-4 w-4 text-white" />
+                <span>{restaurant.contacto_location_badge}</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -341,16 +343,16 @@ export default function ContactoPage() {
                         Ver Menú
                       </Button>
                     </Link>
-                    <a href="tel:+34672796006">
-                      <Button variant="outline" className="w-full">
+                    <a href={`tel:${restaurant?.phone?.replace(/\s/g, '')}`}>
+                      <Button variant="outline" className="w-full" disabled={!restaurant?.phone}>
                         <Phone className="mr-2 h-4 w-4" />
-                        Llamar Ahora
+                        {restaurant?.phone ? 'Llamar Ahora' : 'No disponible'}
                       </Button>
                     </a>
-                    <a href="mailto:reservas@enigmaconalma.com">
-                      <Button variant="outline" className="w-full">
+                    <a href={`mailto:${restaurant?.email}`}>
+                      <Button variant="outline" className="w-full" disabled={!restaurant?.email}>
                         <Mail className="mr-2 h-4 w-4" />
-                        Enviar Email
+                        {restaurant?.email ? 'Enviar Email' : 'No disponible'}
                       </Button>
                     </a>
                   </div>
@@ -432,11 +434,11 @@ export default function ContactoPage() {
         </div>
       </section>
 
-      {/* How to Get Here Section */}
+      {/* How to Get Here Section - DYNAMIC */}
       <section className="py-12 sm:py-16 bg-muted/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="enigma-section-title-center">
-            Cómo Llegar
+            {restaurant?.contacto_map_section_title || 'Cómo Llegar'}
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-12">
@@ -445,10 +447,9 @@ export default function ContactoPage() {
                 <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
                   <Car className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                 </div>
-                <h3 className="enigma-subsection-title">En Coche</h3>
+                <h3 className="enigma-subsection-title">{restaurant?.contacto_transport_car_title || 'En Coche'}</h3>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  Parking público disponible cerca del casco antiguo. 
-                  El restaurante está en zona peatonal.
+                  {restaurant?.contacto_transport_car_content || 'Parking público disponible cerca del casco antiguo.'}
                 </p>
               </CardContent>
             </Card>
@@ -458,10 +459,9 @@ export default function ContactoPage() {
                 <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 bg-secondary/10 rounded-full flex items-center justify-center">
                   <User className="h-6 w-6 sm:h-8 sm:w-8 text-secondary" />
                 </div>
-                <h3 className="enigma-subsection-title">A Pie</h3>
+                <h3 className="enigma-subsection-title">{restaurant?.contacto_transport_walk_title || 'A Pie'}</h3>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  Fácil acceso desde el centro de Calpe. 
-                  Paseo de 5-10 minutos desde la playa principal.
+                  {restaurant?.contacto_transport_walk_content || 'Fácil acceso desde el centro de Calpe.'}
                 </p>
               </CardContent>
             </Card>
@@ -471,10 +471,9 @@ export default function ContactoPage() {
                 <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 bg-accent/10 rounded-full flex items-center justify-center">
                   <Bus className="h-6 w-6 sm:h-8 sm:w-8 text-accent" />
                 </div>
-                <h3 className="enigma-subsection-title">Transporte Público</h3>
+                <h3 className="enigma-subsection-title">{restaurant?.contacto_transport_bus_title || 'Transporte Público'}</h3>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  Paradas de autobús cercanas con conexiones 
-                  desde Benidorm y Altea.
+                  {restaurant?.contacto_transport_bus_content || 'Paradas de autobús cercanas con conexiones.'}
                 </p>
               </CardContent>
             </Card>
@@ -531,20 +530,22 @@ export default function ContactoPage() {
                   Reservar Mesa
                 </Button>
               </Link>
-              <a href="tel:+34672796006">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary text-primary hover:bg-primary hover:text-white px-6 sm:px-8 py-3 sm:py-4">
+              <a href={`tel:${restaurant?.phone?.replace(/\s/g, '')}`}>
+                <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary text-primary hover:bg-primary hover:text-white px-6 sm:px-8 py-3 sm:py-4" disabled={!restaurant?.phone}>
                   <Phone className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                  Llamar Ahora
+                  {restaurant?.phone ? 'Llamar Ahora' : '📞 Conectar a DB'}
                 </Button>
               </a>
             </div>
 
-            {/* Quote */}
-            <div className="mt-8 sm:mt-12 p-4 sm:p-6 bg-muted/30 rounded-lg border-l-4 border-primary">
-              <p className="enigma-body-text italic text-primary font-medium">
-                &quot;Cada plato es una historia de tradición, pasión y sabores únicos en el auténtico casco antiguo de Calpe&quot;
-              </p>
-            </div>
+            {/* Quote - DYNAMIC */}
+            {restaurant?.contacto_quote && (
+              <div className="mt-8 sm:mt-12 p-4 sm:p-6 bg-muted/30 rounded-lg border-l-4 border-primary">
+                <p className="enigma-body-text italic text-primary font-medium">
+                  &quot;{restaurant.contacto_quote}&quot;
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>

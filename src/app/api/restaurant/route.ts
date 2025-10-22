@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -6,12 +7,12 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 export async function GET() {
   try {
     // Fetch ALL restaurant data including dynamic fields
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/restaurants?id=eq.rest_enigma_001`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/restaurants?id=eq.${process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001'}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Accept-Profile': 'restaurante',
+        // Schema handled by getSupabaseHeaders()
         'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
         'apikey': SUPABASE_SERVICE_KEY,
       }
@@ -49,13 +50,13 @@ export async function PUT(request: NextRequest) {
     console.log('Received updates:', JSON.stringify(updates, null, 2))
 
     // Update restaurant data in Supabase
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/restaurants?id=eq.rest_enigma_001`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/restaurants?id=eq.${process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001'}`, {
       method: 'PATCH',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Accept-Profile': 'restaurante',
-        'Content-Profile': 'restaurante',
+        // Schema handled by getSupabaseHeaders()
+        // Schema handled by getSupabaseHeaders()
         'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
         'apikey': SUPABASE_SERVICE_KEY,
         'Prefer': 'return=representation,resolution=merge-duplicates'

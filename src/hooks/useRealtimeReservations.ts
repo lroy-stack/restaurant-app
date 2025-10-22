@@ -39,7 +39,7 @@ interface Reservation {
     id: string
     number: string
     capacity: number
-    location: 'TERRACE_CAMPANARI' | 'SALA_VIP' | 'TERRACE_JUSTICIA' | 'SALA_PRINCIPAL'
+    location: 'TERRACE_1' | 'VIP_ROOM' | 'TERRACE_2' | 'MAIN_ROOM'
   } | null
   createdAt: string
   updatedAt: string
@@ -288,7 +288,17 @@ export function useRealtimeReservations(filters: RealtimeFilters = {}): UseRealt
                   .then(result => {
                     if (result.success && result.reservation) {
                       const newReservation = result.reservation as Reservation
-                      setReservations(prev => [newReservation, ...prev])
+
+                      // 🔧 FIX: Deduplicación - evitar añadir si ya existe
+                      setReservations(prev => {
+                        const exists = prev.some(r => r.id === newReservation.id)
+                        if (exists) {
+                          console.log('⚠️ Reservation already exists, skipping duplicate INSERT:', newReservation.id)
+                          return prev
+                        }
+                        return [newReservation, ...prev]
+                      })
+
                       setSummary(prev => ({
                         total: (prev?.total || 0) + 1,
                         pending: (prev?.pending || 0) + (newReservation.status === 'PENDING' ? 1 : 0),

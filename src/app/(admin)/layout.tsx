@@ -4,17 +4,26 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { RealtimeNotificationsProvider } from '@/components/providers/realtime-notifications-provider'
+import { getRestaurant } from '@/lib/data/restaurant'
 
-export const metadata: Metadata = {
-  title: {
-    template: '%s | Admin - Enigma Cocina Con Alma',
-    default: 'Admin - Enigma Cocina Con Alma'
-  },
-  description: 'Panel de administración del restaurante Enigma Cocina Con Alma',
-  robots: {
-    index: false,
-    follow: false,
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const restaurant = await getRestaurant()
+
+  if (!restaurant) {
+    throw new Error('⚠️ Configure restaurants table in database')
+  }
+
+  return {
+    title: {
+      template: `%s | Admin - ${restaurant.name}`,
+      default: `Admin - ${restaurant.name}`
+    },
+    description: `Panel de administración del restaurante ${restaurant.name}`,
+    robots: {
+      index: false,
+      follow: false,
+    },
+  }
 }
 
 interface AdminRouteLayoutProps {
@@ -65,7 +74,7 @@ export default async function AdminRouteLayout({ children }: AdminRouteLayoutPro
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/almaenigma')
+    redirect('/acceso')
   }
 
   return (

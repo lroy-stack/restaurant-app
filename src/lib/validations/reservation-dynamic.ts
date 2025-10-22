@@ -187,8 +187,8 @@ export async function createDynamicAvailabilitySchema() {
       .default(limits.maxDuration), // DYNAMIC!
     tableZone: z.enum([
       'TERRACE', 'INTERIOR', 'BAR',
-      'TERRACE_CAMPANARI', 'SALA_VIP',
-      'SALA_PRINCIPAL', 'TERRACE_JUSTICIA'
+      'TERRACE_1', 'VIP_ROOM',
+      'MAIN_ROOM', 'TERRACE_2'
     ]).optional(),
     preferredTables: z.array(z.string()).optional()
   })

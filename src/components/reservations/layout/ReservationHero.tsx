@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CheckCircle, Shield, Timer, Utensils } from 'lucide-react'
 import type { Language } from '@/lib/validations/reservation-professional'
+import { usePageTranslations } from '@/hooks/use-page-translations'
 
 interface ReservationHeroProps {
   language: Language
@@ -11,59 +12,12 @@ interface ReservationHeroProps {
   isConnected?: boolean
 }
 
-const content = {
-  es: {
-    hero: {
-      title: 'Reservar Mesa',
-      subtitle: 'Reserva tu experiencia culinaria en el corazón del casco antiguo de Calpe. Cocina mediterránea con productos locales y vistas a las callejuelas históricas.',
-      badge: 'Reserva Online'
-    },
-    trustSignals: {
-      confirmation: 'Confirmación inmediata',
-      gdpr: 'Cumplimiento GDPR',
-      cancellation: 'Cancelación gratuita'
-    },
-    connection: {
-      live: 'En vivo',
-      offline: 'Sin conexión'
-    }
-  },
-  en: {
-    hero: {
-      title: 'Book a Table',
-      subtitle: 'Reserve your culinary experience in the heart of Calpe\'s old town. Mediterranean cuisine with local products and views of historic streets.',
-      badge: 'Online Booking'
-    },
-    trustSignals: {
-      confirmation: 'Instant confirmation',
-      gdpr: 'GDPR compliant',
-      cancellation: 'Free cancellation'
-    },
-    connection: {
-      live: 'Live',
-      offline: 'Offline'
-    }
-  },
-  de: {
-    hero: {
-      title: 'Tisch reservieren',
-      subtitle: 'Reservieren Sie Ihr kulinarisches Erlebnis im Herzen der Altstadt von Calpe. Mediterrane Küche mit lokalen Produkten und Blick auf historische Gassen.',
-      badge: 'Online Reservierung'
-    },
-    trustSignals: {
-      confirmation: 'Sofortige Bestätigung',
-      gdpr: 'DSGVO-konform',
-      cancellation: 'Kostenlose Stornierung'
-    },
-    connection: {
-      live: 'Live',
-      offline: 'Offline'
-    }
-  }
-}
-
 export function ReservationHero({ language, onLanguageChange, isConnected = true }: ReservationHeroProps) {
-  const t = content[language]
+  const { t, loading } = usePageTranslations({
+    page: 'reservations',
+    language: language as 'es' | 'en' | 'de',
+    section: 'hero'
+  })
 
   return (
     <section className="relative py-12 md:py-20 text-white overflow-hidden">
@@ -72,7 +26,7 @@ export function ReservationHero({ language, onLanguageChange, isConnected = true
         <div
           className="w-full h-full bg-cover bg-no-repeat"
           style={{
-            backgroundImage: 'url(https://ik.imagekit.io/insomnialz/taboulee.jpg?updatedAt=1754141888431)',
+            backgroundImage: 'url(https://images.unsplash.com/photo-1571997478779-2adcbbe9ab2f?w=1920&h=1080&fit=crop)',
             backgroundPosition: 'center 60%'
           }}
         />
@@ -81,11 +35,11 @@ export function ReservationHero({ language, onLanguageChange, isConnected = true
       <div className="relative z-20 container mx-auto px-4">
         <div className="text-center pt-4 sm:pt-6">
           <h1 className="enigma-hero-title">
-            {t.hero.title}
+            {loading ? 'Cargando...' : t('hero', 'title', 'Reservar Mesa')}
           </h1>
 
           <p className="enigma-hero-subtitle">
-            {t.hero.subtitle}
+            {loading ? '' : t('hero', 'subtitle', 'Reserva tu experiencia culinaria')}
           </p>
 
           {/* Language Selector */}
@@ -103,28 +57,34 @@ export function ReservationHero({ language, onLanguageChange, isConnected = true
             ))}
           </div>
 
-          {/* Trust Signals */}
+          {/* Trust Signals - DYNAMIC */}
           <div className="flex flex-wrap justify-center gap-6">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5" />
-              <span className="text-sm">{t.trustSignals.confirmation}</span>
+              <span className="text-sm">{loading ? 'Confirmación' : t('hero', 'trustSignals_confirmation', 'Confirmación inmediata')}</span>
             </div>
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5" />
-              <span className="text-sm">{t.trustSignals.gdpr}</span>
+              <span className="text-sm">{loading ? 'GDPR' : t('hero', 'trustSignals_gdpr', 'Cumplimiento GDPR')}</span>
             </div>
             <div className="flex items-center gap-2">
               <Timer className="h-5 w-5" />
-              <span className="text-sm">{t.trustSignals.cancellation}</span>
+              <span className="text-sm">{loading ? 'Cancelación' : t('hero', 'trustSignals_cancellation', 'Cancelación gratuita')}</span>
             </div>
           </div>
 
-          {/* Connection Status */}
+          {/* Connection Status - DYNAMIC */}
           <div className="flex justify-center mt-6">
             <div className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
               <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
               <span className="text-sm">
-                {isConnected ? t.connection.live : t.connection.offline}
+                {loading
+                  ? (isConnected ? 'En vivo' : 'Sin conexión')
+                  : (isConnected
+                      ? t('hero', 'connection_live', 'En vivo')
+                      : t('hero', 'connection_offline', 'Sin conexión')
+                    )
+                }
               </span>
             </div>
           </div>

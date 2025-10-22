@@ -472,7 +472,7 @@ export class LegalContentService {
 
 export async function createLegalContentService() {
   const cookieStore = await cookies()
-  const supabaseClient = createServerSupabaseRestauranteClient(cookieStore)
+  const supabaseClient = createServerSupabaseClient(cookieStore)
   return new LegalContentService(supabaseClient)
 }
 

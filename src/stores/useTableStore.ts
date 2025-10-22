@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 import { devtools } from 'zustand/middleware'
 import { toast } from 'sonner'
 
@@ -6,7 +7,7 @@ interface TableData {
   id: string
   number: string
   capacity: number
-  location: 'TERRACE_CAMPANARI' | 'SALA_PRINCIPAL' | 'SALA_VIP' | 'TERRACE_JUSTICIA'
+  location: 'TERRACE_1' | 'MAIN_ROOM' | 'VIP_ROOM' | 'TERRACE_2'
   qrCode: string
   isActive: boolean
   restaurantId: string
@@ -56,8 +57,8 @@ export const useTableStore = create<TableStore>()(
 
           const response = await fetch('/api/tables/status', {
             headers: {
-              'Accept-Profile': 'restaurante',
-              'Content-Profile': 'restaurante'
+              // Schema handled by getSupabaseHeaders()
+              // Schema handled by getSupabaseHeaders()
             }
           })
 
@@ -83,8 +84,8 @@ export const useTableStore = create<TableStore>()(
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
-              'Accept-Profile': 'restaurante',
-              'Content-Profile': 'restaurante'
+              // Schema handled by getSupabaseHeaders()
+              // Schema handled by getSupabaseHeaders()
             },
             body: JSON.stringify({ isActive })
           })
@@ -120,10 +121,10 @@ export const useTableStore = create<TableStore>()(
 
           if (affectedTables.length === 0) {
             const locationLabels = {
-              'TERRACE_CAMPANARI': 'Terraza Campanari',
-              'SALA_PRINCIPAL': 'Sala Principal',
-              'SALA_VIP': 'Sala VIP',
-              'TERRACE_JUSTICIA': 'Terraza Justicia'
+              'TERRACE_1': 'Terraza 1',
+              'MAIN_ROOM': 'Sala Principal',
+              'VIP_ROOM': 'Sala VIP',
+              'TERRACE_2': 'Terraza 2'
             }
             const locationLabel = locationLabels[location as keyof typeof locationLabels]
             toast.info(`Todas las mesas de ${locationLabel} ya están ${activate ? 'activas' : 'inactivas'}`)
@@ -138,8 +139,8 @@ export const useTableStore = create<TableStore>()(
               method: 'PATCH',
               headers: {
                 'Content-Type': 'application/json',
-                'Accept-Profile': 'restaurante',
-                'Content-Profile': 'restaurante'
+                // Schema handled by getSupabaseHeaders()
+                // Schema handled by getSupabaseHeaders()
               },
               body: JSON.stringify({ isActive: activate })
             })
@@ -162,10 +163,10 @@ export const useTableStore = create<TableStore>()(
           }))
 
           const locationLabels = {
-            'TERRACE_CAMPANARI': 'Terraza Campanari',
-            'SALA_PRINCIPAL': 'Sala Principal',
-            'SALA_VIP': 'Sala VIP',
-            'TERRACE_JUSTICIA': 'Terraza Justicia'
+            'TERRACE_1': 'Terraza 1',
+            'MAIN_ROOM': 'Sala Principal',
+            'VIP_ROOM': 'Sala VIP',
+            'TERRACE_2': 'Terraza 2'
           }
           const locationLabel = locationLabels[location as keyof typeof locationLabels]
 
@@ -188,8 +189,8 @@ export const useTableStore = create<TableStore>()(
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
-              'Accept-Profile': 'restaurante',
-              'Content-Profile': 'restaurante'
+              // Schema handled by getSupabaseHeaders()
+              // Schema handled by getSupabaseHeaders()
             },
             body: JSON.stringify({
               tableId,
@@ -251,8 +252,8 @@ export const useTableStore = create<TableStore>()(
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
-              'Accept-Profile': 'restaurante',
-              'Content-Profile': 'restaurante'
+              // Schema handled by getSupabaseHeaders()
+              // Schema handled by getSupabaseHeaders()
             },
             body: JSON.stringify({
               position_x: validatedX,
@@ -293,8 +294,8 @@ export const useTableStore = create<TableStore>()(
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
-              'Accept-Profile': 'restaurante',
-              'Content-Profile': 'restaurante'
+              // Schema handled by getSupabaseHeaders()
+              // Schema handled by getSupabaseHeaders()
             },
             body: JSON.stringify({
               rotation: snappedRotation

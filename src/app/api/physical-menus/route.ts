@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     // UPSERT batch into physical_menus table (update if code exists, insert if new)
     const { data, error } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('physical_menus')
       .upsert(menus, { onConflict: 'code' })
       .select()

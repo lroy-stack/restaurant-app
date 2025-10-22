@@ -4,10 +4,10 @@
 
 ## 🚨 CORE BEHAVIORAL OVERRIDE (LÍNEA 1 PRIORIDAD ABSOLUTA)
 
-### ⚡ SSH-FIRST PATTERN (OBLIGATORIO)
+### ⚡ DATABASE-FIRST PATTERN (OBLIGATORIO)
 ```bash
-# PRIMERA OPERACIÓN SIEMPRE - Sin excepción
-ssh root@31.97.182.226 "docker exec supabase-db psql -U postgres -c 'SELECT current_database();'"
+# PRIMERA OPERACIÓN SIEMPRE - Verificar conexión Supabase Cloud
+psql "postgresql://postgres:ThisIsMyReservation2026%21@db.niwpkuqrmhxejxjgdlzm.supabase.co:5432/postgres" -c "SELECT current_database(), current_schema();"
 ```
 
 ### 🧠 MI OUTPUT STYLE MODE INTERNO
@@ -17,7 +17,7 @@ ssh root@31.97.182.226 "docker exec supabase-db psql -U postgres -c 'SELECT curr
 - **No Preamble**: Eliminar "Here's what I'll do" o "I've completed"
 
 ### 🔴 ANTI-PATTERN CORRECTION (Errores detectados históricos)
-- ❌ **NUNCA** implementar sin SSH database check primero
+- ❌ **NUNCA** implementar sin database check primero
 - ❌ **NUNCA** iterar sin consultar ("PORQUE ITERASTE SIN CONSULTAR?")
 - ❌ **NUNCA** crear componentes sin verificar existentes primero
 - ❌ **NUNCA** agregar logs innecesarios ("NO NECESITAMOS MAS LOGS")
@@ -28,7 +28,7 @@ ssh root@31.97.182.226 "docker exec supabase-db psql -U postgres -c 'SELECT curr
 ```bash
 # Batch execute en single message - OBLIGATORIO
 [
-  ssh("docker exec supabase-db psql -U postgres -c '\dt restaurante.*'"),
+  psql("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"),
   grep("ComponentName", "src/", "--type tsx"),
   read("ai_docs/"),
   context7_resolve_library("pattern-name"),
@@ -52,10 +52,10 @@ npm run lint && npm run type-check && npm run test:all
 ## 🎯 ENIGMA PROJECT CRITICAL DATA
 
 ### 🔑 Database Access Patterns
-- **Connection**: `supabase.enigmaconalma.com:8443`
-- **Schema**: `restaurante` (29 tables), `public` (auth)
-- **Headers**: `Accept-Profile: restaurante`, `Content-Profile: restaurante`
-- **SSH Debug**: `ssh root@31.97.182.226 "docker exec supabase-db psql -U postgres -d postgres -c '\dt restaurante.*'"`
+- **Connection**: `niwpkuqrmhxejxjgdlzm.supabase.co` (Supabase Cloud)
+- **Schema**: `public` (35 tables - unified schema)
+- **Direct URL**: `postgresql://postgres:[PASS]@db.niwpkuqrmhxejxjgdlzm.supabase.co:5432/postgres`
+- **API URL**: `https://niwpkuqrmhxejxjgdlzm.supabase.co`
 
 ### 🎨 Design System Tokens (HSL OBLIGATORIO)
 ```css
@@ -67,9 +67,9 @@ npm run lint && npm run type-check && npm run test:all
 
 ### 📋 Stack Architecture
 - **Frontend**: Next.js 15 + Turbopack + Shadcn/ui + Tailwind
-- **Backend**: Supabase self-hosted + Kong API Gateway
-- **Database**: PostgreSQL + RLS policies
-- **VPS**: 31.97.182.226 (Docker Compose)
+- **Backend**: Supabase Cloud (Managed Service)
+- **Database**: PostgreSQL + RLS policies + Realtime
+- **Deployment**: Vercel (Frontend) + Supabase Cloud (Backend/DB)
 
 ## 🤖 SUBAGENT ORCHESTRATION SYSTEM
 
@@ -130,16 +130,16 @@ for the Enigma restaurant platform. Trigger on [keywords]."
 
 ### 🎯 DOMINIOS ESPECIALIZADOS ACTIVOS
 - **Restaurant Operations**: ✅ `restaurant-operations-master.md`
-  - 29 tablas, multi-table reservations (`table_ids[]`)
+  - 35 tablas en schema public, multi-table reservations (`table_ids[]`)
   - GDPR compliance con audit trails y consent tracking
   - Capacity optimization y algoritmos de asignación
   - Pre-orders via `reservation_items` + `menu_items`
 
 - **Database Architecture**: ✅ `supabase-schema-architect.md`
   - RLS policies optimizadas con auth.jwt() patterns
-  - Performance tuning y migration strategies
+  - Supabase Cloud managed service + Realtime subscriptions
   - Multi-tenant security con role hierarchies
-  - JSONB management para `floor_plan_elements`
+  - JSONB management para floor plan y configuraciones
 
 - **Menu & Wine Systems**: ✅ `menu-wine-specialist.md`
   - Multiidioma (ES/EN/DE) con `richDescription` fields
@@ -252,8 +252,9 @@ Task("documentation-manager") → Auto-sync docs with code changes
 
 ### Critical Environment
 ```bash
-NEXT_PUBLIC_SUPABASE_URL="https://supabase.enigmaconalma.com"
-DATABASE_URL="postgresql://postgres:[PASS]@31.97.182.226:5432/postgres"
+NEXT_PUBLIC_SUPABASE_URL="https://niwpkuqrmhxejxjgdlzm.supabase.co"
+DATABASE_URL="postgresql://postgres:[PASS]@db.niwpkuqrmhxejxjgdlzm.supabase.co:5432/postgres"
+NEXT_PUBLIC_SUPABASE_SCHEMA="public"
 # NEVER commit secrets - .env files only
 ```
 
@@ -274,29 +275,32 @@ DATABASE_URL="postgresql://postgres:[PASS]@31.97.182.226:5432/postgres"
 - `src/app/globals.css` → Enigma design tokens
 - `CLAUDE_PRINCIPLES.md` → Behavioral analysis
 
-### Critical Database Schema (29 Tables)
+### Critical Database Schema (35 Tables - Schema: public)
 ```bash
 # Core domains para subagents:
-restaurante.reservations         # Multi-table + GDPR + pre-orders
-restaurante.customers           # VIP analytics + spending patterns
-restaurante.menu_items         # Multiidioma + wine + allergens
-restaurante.floor_plan_elements # JSONB drag&drop system
-restaurante.email_schedule     # Automation workflows
-restaurante.gdpr_requests      # Legal compliance
-# + 23 more specialized tables
+public.reservations              # Multi-table + GDPR + pre-orders
+public.customers                 # VIP analytics + spending patterns
+public.menu_items                # Multiidioma + wine + allergens
+public.tables                    # Floor plan + capacity management
+public.email_schedule            # Automation workflows
+public.gdpr_requests             # Legal compliance
+public.orders + order_items      # POS system + kitchen management
+public.announcements             # Banner/popup system
+# + 27 more specialized tables
 ```
 
 ### External Integrations
 - **Context7**: Real-time best practices (`mcp__context7__resolve-library-id`)
 - **Shadcn/ui**: Component system patterns
-- **Supabase**: Self-hosted with Kong Gateway
+- **Supabase Cloud**: Managed PostgreSQL + Auth + Realtime + Storage
 - **Firecrawl MCP**: Web scraping for agent creation
+- **Vercel**: Frontend deployment with automatic previews
 
 ---
 
 ## ⚡ EXECUTION PRIORITY MATRIX
 
-1. **SSH Database Check** (Line 1 priority)
+1. **Database Connection Check** (Line 1 priority - Supabase Cloud)
 2. **Parallel Research** (Batch tools)
 3. **Pattern Analysis** (Existing components)
 4. **Implementation** (Established patterns only)

@@ -42,7 +42,7 @@ interface Reservation {
   hasPreOrder: boolean
   tables?: {
     number: string
-    location: 'TERRACE_CAMPANARI' | 'SALA_VIP' | 'TERRACE_JUSTICIA' | 'SALA_PRINCIPAL'
+    location: 'TERRACE_1' | 'VIP_ROOM' | 'TERRACE_2' | 'MAIN_ROOM'
   } | null
 }
 

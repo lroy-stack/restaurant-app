@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/client'
 import { MenuFilterData } from '@/lib/validations/menu'
-
-const SUPABASE_URL = 'https://supabase.enigmaconalma.com'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NTcxOTYwMDAsImV4cCI6MTkxNDk2MjQwMH0.m0raHGfbQAMISP5sMQ7xade4B30IOk0qTfyiNEt1Mkg'
+import { getSupabaseApiUrl, getSupabaseHeaders } from '@/lib/supabase/config'
 
 export async function GET(request: Request) {
   try {
@@ -25,16 +23,9 @@ export async function GET(request: Request) {
     console.log('Fetching complete menu with filters:', filters)
 
     // Get menu items from database using working function
-    const menuResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_complete_menu`, {
+    const menuResponse = await fetch(getSupabaseApiUrl('rpc/get_complete_menu'), {
       method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Accept-Profile': 'restaurante',
-        'Content-Profile': 'restaurante',
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'apikey': SUPABASE_KEY,
-      },
+      headers: getSupabaseHeaders(true),
       body: JSON.stringify({})
     })
 
@@ -54,14 +45,9 @@ export async function GET(request: Request) {
     console.log('Raw menu data from get_complete_menu:', menuData.length, 'categories')
 
     // Fetch wine pairings data
-    const pairingsResponse = await fetch(`${SUPABASE_URL}/rest/v1/wine_pairings?select=*,foodItem:menu_items!foodItemId(id,name,nameEn),wineItem:menu_items!wineItemId(id,name,nameEn,price)`, {
+    const pairingsResponse = await fetch(getSupabaseApiUrl('wine_pairings?select=*,foodItem:menu_items!foodItemId(id,name,nameEn),wineItem:menu_items!wineItemId(id,name,nameEn,price)'), {
       method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Accept-Profile': 'restaurante',
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'apikey': SUPABASE_KEY,
-      }
+      headers: getSupabaseHeaders(true)
     })
 
     let winePairings = []
@@ -74,14 +60,9 @@ export async function GET(request: Request) {
 
     // get_complete_menu returns categories with items already structured
     // Fetch allergens for all items
-    const allergensResponse = await fetch(`${SUPABASE_URL}/rest/v1/menu_item_allergens?select=menuItemId,allergen:allergens(id,name,nameEn)`, {
+    const allergensResponse = await fetch(getSupabaseApiUrl('menu_item_allergens?select=menuItemId,allergen:allergens(id,name,nameEn)'), {
       method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Accept-Profile': 'restaurante',
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'apikey': SUPABASE_KEY,
-      }
+      headers: getSupabaseHeaders(true)
     })
 
     let itemAllergens = []
@@ -274,8 +255,8 @@ export async function GET(request: Request) {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
+          // Schema handled by getSupabaseHeaders()
           'Authorization': `Bearer ${SUPABASE_KEY}`,
           'apikey': SUPABASE_KEY,
         },

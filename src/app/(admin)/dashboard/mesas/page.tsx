@@ -1,4 +1,6 @@
 // src/app/(admin)/dashboard/mesas/page.tsx - ENIGMA TABLE MANAGEMENT
+import { getSupabaseHeaders } from '@/lib/supabase/config'
+import { getRestaurant } from '@/lib/data/restaurant'
 export const dynamic = 'force-dynamic'
 
 import { Suspense } from 'react'
@@ -8,9 +10,17 @@ import { TableTabs } from './components/table-tabs'
 import { QRSystemToggle } from '@/components/admin/QRSystemToggle'
 import { AlertCircle, Loader2 } from 'lucide-react'
 
-export const metadata: Metadata = {
-  title: 'Gestión de Mesas | Dashboard - Enigma Cocina Con Alma',
-  description: 'Sistema completo de gestión de mesas con vista de planta, estados en tiempo real y análisis de ocupación.',
+export async function generateMetadata(): Promise<Metadata> {
+  const restaurant = await getRestaurant()
+
+  if (!restaurant) {
+    throw new Error('⚠️ Configure restaurants table in database')
+  }
+
+  return {
+    title: `Gestión de Mesas | Dashboard - ${restaurant.name}`,
+    description: 'Sistema completo de gestión de mesas con vista de planta, estados en tiempo real y análisis de ocupación.',
+  }
 }
 
 // Types based on REAL Enigma data structure
@@ -18,9 +28,10 @@ interface TableData {
   id: string
   number: string  // "T1", "S1", "S10", etc.
   capacity: number
-  location: 'TERRACE_CAMPANARI' | 'SALA_PRINCIPAL' | 'SALA_VIP' | 'TERRACE_JUSTICIA'
+  location: 'TERRACE_1' | 'MAIN_ROOM' | 'VIP_ROOM' | 'TERRACE_2'
   qrCode: string
   isActive: boolean
+  is_public?: boolean
   restaurantId: string
   currentStatus?: 'available' | 'reserved' | 'occupied' | 'maintenance'
   currentReservation?: any
@@ -29,7 +40,7 @@ interface TableData {
 interface TablesPageProps {
   searchParams: Promise<{
     tab?: string
-    location?: 'TERRACE_CAMPANARI' | 'SALA_PRINCIPAL' | 'SALA_VIP' | 'TERRACE_JUSTICIA'
+    location?: 'TERRACE_1' | 'MAIN_ROOM' | 'VIP_ROOM' | 'TERRACE_2'
     status?: string
     capacity?: string
     view?: string
@@ -38,10 +49,10 @@ interface TablesPageProps {
 
 // REAL Enigma zones with Spanish labels
 const ENIGMA_ZONES = {
-  'TERRACE_CAMPANARI': 'Terraza Campanari',
-  'SALA_PRINCIPAL': 'Sala Principal', 
-  'SALA_VIP': 'Sala VIP',
-  'TERRACE_JUSTICIA': 'Terraza Justicia'
+  'TERRACE_1': 'Terraza 1',
+  'MAIN_ROOM': 'Sala Principal', 
+  'VIP_ROOM': 'Sala VIP',
+  'TERRACE_2': 'Terraza 2'
 } as const
 
 // Calculate table status based on current reservations
@@ -65,8 +76,8 @@ async function getTables(filters: any = {}): Promise<TableData[]> {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'Accept-Profile': 'restaurante',
-        'Content-Profile': 'restaurante',
+        // Schema handled by getSupabaseHeaders()
+        // Schema handled by getSupabaseHeaders()
         'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
         'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
       },
@@ -136,11 +147,11 @@ async function TablesContent({ searchParams }: { searchParams: Awaited<TablesPag
         </div>
         <Card>
           <CardContent className="p-12 text-center">
-            <AlertCircle className="w-12 h-12 text-amber-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-amber-900 mb-2">
+            <AlertCircle className="w-12 h-12 text-accent/50 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-accent mb-2">
               No se encontraron mesas
             </h3>
-            <p className="text-amber-600">
+            <p className="text-accent/80">
               Verifica la conexión con la base de datos o configura las primeras mesas.
             </p>
           </CardContent>
@@ -157,6 +168,8 @@ async function TablesContent({ searchParams }: { searchParams: Awaited<TablesPag
     totalTables: tables.length,
     activeTables: activeTables.length,
     inactiveTables: inactiveTables.length,
+    publicTables: activeTables.filter(t => t.is_public).length,
+    privateTables: activeTables.filter(t => !t.is_public).length,
     availableTables: activeTables.filter(t => t.currentStatus === 'available').length,
     occupiedTables: activeTables.filter(t => t.currentStatus === 'occupied').length,
     reservedTables: activeTables.filter(t => t.currentStatus === 'reserved').length,
@@ -165,7 +178,9 @@ async function TablesContent({ searchParams }: { searchParams: Awaited<TablesPag
       label,
       count: tables.filter(t => t.location === zone).length,
       activeCount: tables.filter(t => t.location === zone && t.isActive).length,
-      inactiveCount: tables.filter(t => t.location === zone && !t.isActive).length
+      inactiveCount: tables.filter(t => t.location === zone && !t.isActive).length,
+      publicCount: tables.filter(t => t.location === zone && t.isActive && t.is_public).length,
+      privateCount: tables.filter(t => t.location === zone && t.isActive && !t.is_public).length
     }))
   }
 
@@ -178,7 +193,7 @@ async function TablesContent({ searchParams }: { searchParams: Awaited<TablesPag
             Gestión de Mesas
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
-            {stats.totalTables} mesas • {stats.activeTables} activas • {stats.inactiveTables} cerradas
+            {stats.totalTables} mesas • {stats.activeTables} activas • {stats.publicTables} públicas • {stats.privateTables} privadas
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
@@ -189,15 +204,24 @@ async function TablesContent({ searchParams }: { searchParams: Awaited<TablesPag
 
       {/* Zone Quick Stats - RESPONSIVE GRID */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {stats.zoneBreakdown.map(({ zone, label, count, activeCount, inactiveCount }) => (
+        {stats.zoneBreakdown.map(({ zone, label, count, activeCount, inactiveCount, publicCount, privateCount }) => (
           <Card key={zone}>
             <CardContent className="p-3 sm:p-4">
               <div className="text-xl sm:text-2xl font-bold leading-none">{count}</div>
               <p className="text-xs text-muted-foreground mt-1 mb-1 truncate" title={label}>{label}</p>
-              <div className="text-[10px] sm:text-xs text-muted-foreground line-clamp-2">
-                {activeCount} activas
-                {inactiveCount > 0 && (
-                  <> • <span className="text-amber-600">{inactiveCount} cerradas</span></>
+              <div className="text-[10px] sm:text-xs text-muted-foreground space-y-0.5">
+                <div>
+                  {activeCount} activas
+                  {inactiveCount > 0 && (
+                    <> • <span className="text-destructive">{inactiveCount} cerradas</span></>
+                  )}
+                </div>
+                {activeCount > 0 && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-chart-1">{publicCount} públicas</span>
+                    <span>•</span>
+                    <span className="text-accent">{privateCount} privadas</span>
+                  </div>
                 )}
               </div>
             </CardContent>

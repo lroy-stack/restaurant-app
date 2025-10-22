@@ -585,12 +585,12 @@ export default function EnhancedDateTimeAndTableStep({
                 <div className="grid grid-cols-2 gap-3">
                   <Button
                     type="button"
-                    variant={preferredZone === 'TERRACE_CAMPANARI' ? 'default' : 'outline'}
-                    onClick={() => setPreferredZone('TERRACE_CAMPANARI')}
+                    variant={preferredZone === 'TERRACE_1' ? 'default' : 'outline'}
+                    onClick={() => setPreferredZone('TERRACE_1')}
                     className="h-auto flex-col items-start p-4 text-left"
                   >
                     <span className="font-medium">
-                      {language === 'es' ? 'Terraza Campanari' :
+                      {language === 'es' ? 'Terraza 1' :
                        language === 'en' ? 'Campanari Terrace' :
                        'Campanari Terrasse'}
                     </span>
@@ -603,8 +603,8 @@ export default function EnhancedDateTimeAndTableStep({
 
                   <Button
                     type="button"
-                    variant={preferredZone === 'SALA_PRINCIPAL' ? 'default' : 'outline'}
-                    onClick={() => setPreferredZone('SALA_PRINCIPAL')}
+                    variant={preferredZone === 'MAIN_ROOM' ? 'default' : 'outline'}
+                    onClick={() => setPreferredZone('MAIN_ROOM')}
                     className="h-auto flex-col items-start p-4 text-left"
                   >
                     <span className="font-medium">

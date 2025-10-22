@@ -9,58 +9,68 @@ import { ScrollProvider } from "@/contexts/ScrollContext";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { benaya, playfairDisplay, crimsonText, sourceSerif4, inter } from "./fonts";
+import { getRestaurant } from "@/lib/data/restaurant";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: {
-    default: "Enigma Cocina Con Alma - Restaurante en el Casco Antiguo de Calpe",
-    template: "%s | Enigma Calpe"
-  },
-  description: "Cocina mediterránea de autor en el corazón del casco antiguo de Calpe desde 2023. Ingredientes de proximidad, producto de temporada, técnicas tradicionales. Carrer Justicia 6A. Reserva online con pre-pedidos.",
-  keywords: "restaurante Calpe, casco antiguo Calpe, cocina mediterránea de autor, restaurante 2023 Calpe, ingredientes de proximidad, producto temporada, pre-pedidos restaurante, reserva online Calpe, Carrer Justicia",
-  authors: [{ name: "Enigma Cocina Con Alma" }],
-  creator: "Enigma Cocina Con Alma",
-  publisher: "Enigma Cocina Con Alma",
-  metadataBase: new URL('https://www.enigmaconalma.com'),
-  alternates: {
-    canonical: '/',
-  },
-  openGraph: {
-    type: 'website',
-    locale: 'es_ES',
-    url: 'https://www.enigmaconalma.com',
-    siteName: 'Enigma Cocina Con Alma',
-    title: 'Enigma Cocina Con Alma - Restaurante en el Casco Antiguo de Calpe',
-    description: 'Cocina mediterránea de autor en el corazón del casco antiguo de Calpe desde 2023. Ingredientes de proximidad y producto de temporada.',
-    images: [
-      {
-        url: 'https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1754141731421',
-        width: 1200,
-        height: 630,
-        alt: 'Enigma Cocina Con Alma - Restaurante Calpe',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Enigma Cocina Con Alma - Restaurante en Calpe',
-    description: 'Cocina mediterránea de autor en el casco antiguo de Calpe. Ingredientes de proximidad, producto de temporada.',
-    images: ['https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1754141731421'],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+/**
+ * Dynamic Metadata - 100% from DB
+ * NO fallbacks, NO hardcode
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const restaurant = await getRestaurant()
+
+  if (!restaurant) {
+    throw new Error('⚠️ DATABASE NOT CONNECTED - Configure restaurants table in Supabase')
+  }
+
+  return {
+    title: {
+      default: `${restaurant.name} - Restaurante en el Casco Antiguo de Calpe`,
+      template: `%s | ${restaurant.name}`
+    },
+    description: restaurant.description,
+    keywords: `restaurante Calpe, ${restaurant.name}, casco antiguo Calpe, cocina mediterránea, ${restaurant.address}`,
+    authors: [{ name: restaurant.name }],
+    creator: restaurant.name,
+    publisher: restaurant.name,
+    metadataBase: new URL('https://www.enigmaconalma.com'),
+    alternates: {
+      canonical: '/',
+    },
+    openGraph: {
+      type: 'website',
+      locale: 'es_ES',
+      url: 'https://www.enigmaconalma.com',
+      siteName: restaurant.name,
+      title: `${restaurant.name} - Restaurante en el Casco Antiguo de Calpe`,
+      description: restaurant.description,
+      images: restaurant.default_hero_image_url ? [
+        {
+          url: restaurant.default_hero_image_url,
+          width: 1200,
+          height: 630,
+          alt: `${restaurant.name} - Restaurante Calpe`,
+        },
+      ] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${restaurant.name} - Restaurante en Calpe`,
+      description: restaurant.description,
+      images: restaurant.default_hero_image_url ? [restaurant.default_hero_image_url] : [],
+    },
+    robots: {
       index: true,
       follow: true,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
-  },
-  verification: {
-    google: 'verification_token',
-  },
-};
+  }
+}
 
 export const viewport: Viewport = {
   width: 'device-width',

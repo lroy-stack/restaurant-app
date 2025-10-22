@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 import { cookies } from 'next/headers'
 
 export async function createClient() {
@@ -36,7 +37,7 @@ export async function createServiceClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
-      db: { schema: 'restaurante' }, // CRITICAL: Force schema routing
+      db: { schema: 'public' }, // CRITICAL: Force schema routing
       cookies: {
         getAll() {
           return cookieStore.getAll()
@@ -53,8 +54,8 @@ export async function createServiceClient() {
       },
       global: {
         headers: {
-          'Accept-Profile': 'restaurante',      // CRITICAL: Schema routing
-          'Content-Profile': 'restaurante',     // CRITICAL: Required for writes
+          // Schema handled by getSupabaseHeaders()      // CRITICAL: Schema routing
+          // Schema handled by getSupabaseHeaders()     // CRITICAL: Required for writes
           'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`, // CRITICAL: Required by Kong Gateway
           'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!  // CRITICAL: Required by Kong Gateway
         }

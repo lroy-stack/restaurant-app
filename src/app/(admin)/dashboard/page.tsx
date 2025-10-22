@@ -21,8 +21,10 @@ import { UpcomingReservationsWidget } from '@/components/dashboard/widgets/upcom
 import { QuickActionsWidget } from '@/components/dashboard/widgets/quick-actions'
 import { TableOccupancyChart } from '@/components/dashboard/charts/table-occupancy-chart'
 import { useTableOccupancy } from '@/hooks/useTableOccupancy'
+import { useRestaurant } from '@/hooks/use-restaurant'
 
 export default function DashboardPage() {
+  const { restaurant } = useRestaurant()
   const { metrics, loading, error, refetch } = useDashboardMetrics()
   const {
     reservations,
@@ -56,7 +58,7 @@ export default function DashboardPage() {
               Dashboard Principal
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Panel de control de Enigma Cocina Con Alma
+              Panel de control de {restaurant?.name || 'Dashboard'}
             </p>
           </div>
           <Button onClick={handleRefresh} variant="outline">
@@ -85,7 +87,7 @@ export default function DashboardPage() {
             Dashboard Principal
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground line-clamp-1">
-            Panel de control de Enigma Cocina Con Alma
+            Panel de control de {restaurant?.name || 'Dashboard'}
           </p>
         </div>
         <Button onClick={handleRefresh} variant="outline" size="sm" disabled={loading} className="w-full sm:w-auto shrink-0">

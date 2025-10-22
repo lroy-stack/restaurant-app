@@ -1,32 +1,40 @@
 import type { Metadata } from 'next'
+import { getRestaurant } from '@/lib/data/restaurant'
 
-export const metadata: Metadata = {
-  title: 'Menú - Restaurante Enigma Calpe | Cocina Mediterránea de Autor',
-  description: 'Descubre nuestra carta de cocina mediterránea de autor en Calpe. Platos especiales, croquetas artesanales, pulpo, pescados frescos, carnes selectas y pasta casera. Pre-pedidos disponibles con tu reserva.',
-  keywords: 'menú enigma calpe, carta restaurante calpe, cocina mediterránea, pulpo calpe, pescado fresco, vinos calpe, carta alérgenos, menú vegetariano, cocina de autor',
-  openGraph: {
-    title: 'Menú - Cocina Mediterránea de Autor | Enigma Calpe',
-    description: 'Explora nuestra exquisita selección de platos mediterráneos: Especiales del chef, croquetas artesanales, pulpo, pescados frescos y más. Pre-pedidos disponibles.',
-    url: 'https://enigmaconalma.com/menu',
-    type: 'website',
-    images: [
-      {
-        url: 'https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1754141731421',
-        width: 1200,
-        height: 630,
-        alt: 'Menú Restaurante Enigma Calpe',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Menú - Restaurante Enigma Calpe',
-    description: 'Cocina mediterránea de autor con ingredientes de proximidad. Pre-pedidos disponibles con tu reserva.',
-    images: ['https://ik.imagekit.io/insomnialz/enigma-dark.png?updatedAt=1754141731421'],
-  },
-  alternates: {
-    canonical: '/menu',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const restaurant = await getRestaurant()
+
+  if (!restaurant) {
+    throw new Error('⚠️ Configure restaurants table in database')
+  }
+
+  return {
+    title: restaurant.meta_menu_title,
+    description: restaurant.meta_menu_description,
+    openGraph: {
+      title: restaurant.meta_menu_title,
+      description: restaurant.meta_menu_description,
+      url: '/menu',
+      type: 'website',
+      images: restaurant.default_hero_image_url ? [
+        {
+          url: restaurant.default_hero_image_url,
+          width: 1200,
+          height: 630,
+          alt: `Menú ${restaurant.name}`,
+        },
+      ] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: restaurant.meta_menu_title,
+      description: restaurant.meta_menu_description,
+      images: restaurant.default_hero_image_url ? [restaurant.default_hero_image_url] : [],
+    },
+    alternates: {
+      canonical: '/menu',
+    },
+  }
 }
 
 export default function MenuLayout({

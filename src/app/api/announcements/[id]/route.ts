@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { UpdateAnnouncementInput } from '@/types/announcements'
 
-const SUPABASE_URL = 'https://supabase.enigmaconalma.com'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NTcxOTYwMDAsImV4cCI6MTkxNDk2MjQwMH0.m0raHGfbQAMISP5sMQ7xade4B30IOk0qTfyiNEt1Mkg'
+import { getSupabaseApiUrl, getSupabaseHeaders } from '@/lib/supabase/config'
 
 export async function GET(
   request: Request,
@@ -11,15 +10,10 @@ export async function GET(
   try {
     const { id } = await params
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/announcements?id=eq.${id}`,
+      getSupabaseApiUrl(`announcements?id=eq.${id}`),
       {
         method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'apikey': SUPABASE_KEY,
-        }
+        headers: getSupabaseHeaders(true)
       }
     )
 
@@ -142,16 +136,11 @@ export async function PATCH(
     if (body.maxDisplaysPerUser !== undefined) updateData.max_displays_per_user = body.maxDisplaysPerUser
 
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/announcements?id=eq.${id}`,
+      getSupabaseApiUrl(`announcements?id=eq.${id}`),
       {
         method: 'PATCH',
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante',
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'apikey': SUPABASE_KEY,
+          ...getSupabaseHeaders(true),
           'Prefer': 'return=representation'
         },
         body: JSON.stringify(updateData)
@@ -189,16 +178,10 @@ export async function DELETE(
   try {
     const { id } = await params
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/announcements?id=eq.${id}`,
+      getSupabaseApiUrl(`announcements?id=eq.${id}`),
       {
         method: 'DELETE',
-        headers: {
-          'Accept': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante',
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'apikey': SUPABASE_KEY,
-        }
+        headers: getSupabaseHeaders(true)
       }
     )
 

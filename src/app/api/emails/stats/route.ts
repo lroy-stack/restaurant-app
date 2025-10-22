@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
     // Obtener estadísticas de emails enviados desde logs
     const { data: emailLogs, error: logsError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('email_logs')
       .select('email_type, status, sent_at, created_at')
       .order('created_at', { ascending: false })
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 
     // Obtener estadísticas de emails programados
     const { data: scheduledEmails, error: scheduleError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('email_schedule')
       .select('email_type, status, scheduled_for, created_at, attempts')
       .order('created_at', { ascending: false })
@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
 
     // Obtener próximos emails programados
     const { data: upcomingEmails, error: upcomingError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('email_schedule')
       .select(`
         email_type,
@@ -248,7 +248,7 @@ export async function POST(request: NextRequest) {
 
         const supabase = await createServiceClient()
         const { error: clearError } = await supabase
-          .schema('restaurante')
+          .schema('public')
           .from('email_schedule')
           .delete()
           .eq('status', 'FAILED')

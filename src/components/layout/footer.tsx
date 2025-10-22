@@ -26,7 +26,7 @@ export function Footer() {
       links: [
         { name: 'Sobre Nosotros', href: '/historia' },
         { name: 'Contacto', href: '/contacto' },
-        { name: 'Reseñas', href: restaurant?.footer_tripadvisor_url || 'https://www.tripadvisor.es/Restaurant_Review-g187526-d23958723-Reviews-Enigma_Cocina_Con_Alma-Calpe_Costa_Blanca_Province_of_Alicante_Valencian_Communi.html' },
+        { name: 'Reseñas', href: restaurant?.footer_tripadvisor_url || 'https://www.tripadvisor.com' },
       ]
     },
     legal: {
@@ -44,15 +44,15 @@ export function Footer() {
   return (
     <footer className="bg-card border-t">
       <div className="container mx-auto px-4 py-6">
-        {/* Logo y descripción */}
+        {/* Logo y descripción - 100% Dinámico desde DB */}
         <div className="flex items-center gap-2 mb-3">
-          <EnigmaLogo className="h-5 w-5" variant="primary" />
+          <EnigmaLogo className="h-7 w-7" variant="primary" />
           <span className="enigma-brand-main text-base font-semibold">
-            {restaurant?.name || 'Enigma Cocina Con Alma'}
+            {restaurant?.name || 'Nombre de Tu Restaurante'}
           </span>
         </div>
         <p className="text-sm text-muted-foreground mb-6 max-w-2xl">
-          {restaurant?.description || 'Cocina mediterránea de autor en el corazón del casco antiguo de Calpe desde 2023.'}
+          {restaurant?.description || 'Descripción del restaurante desde base de datos'}
         </p>
 
         {/* Grid: Móvil 3 cols horizontal, Desktop 4 cols */}
@@ -107,12 +107,12 @@ export function Footer() {
             {loading && (
               <div className="space-y-2 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  <a href="tel:+34672796006">+34 672 79 60 06</a>
+                  <Phone className="h-4 w-4 flex-shrink-0" />
+                  <span>Loading...</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  <a href="mailto:reservas@enigmaconalma.com">reservas@enigmaconalma.com</a>
+                  <Mail className="h-4 w-4 flex-shrink-0" />
+                  <span>Loading...</span>
                 </div>
               </div>
             )}
@@ -154,7 +154,7 @@ export function Footer() {
       <div className="border-t bg-muted/30">
         <div className="container mx-auto px-4 py-3">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-muted-foreground">
-            <p className="text-center sm:text-left">© {currentYear} {restaurant?.footer_copyright_text || 'Enigma Cocina Con Alma. Todos los derechos reservados.'}</p>
+            <p className="text-center sm:text-left">© {currentYear} {restaurant?.footer_copyright_text || `${restaurant?.name || 'Restaurante'}. Todos los derechos reservados.`}</p>
             <div className="flex gap-3">
               <Link href="/legal/aviso-legal" className="hover:text-primary transition-colors">
                 Aviso Legal

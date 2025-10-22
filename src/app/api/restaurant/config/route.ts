@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createServiceClient()
 
     let query = supabase
-      .schema('restaurante')
+      .schema('public')
       .from('restaurant_config')
       .select('key, value, value_type, description, category')
       .order('category, key')
@@ -134,7 +134,7 @@ export async function PUT(request: NextRequest) {
 
     // Update configuration
     const { data: updatedConfig, error } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('restaurant_config')
       .update({
         value: value,
@@ -220,7 +220,7 @@ export async function getCachedConfigValue(key: string): Promise<any> {
   try {
     const supabase = await createServiceClient()
     const { data: config } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('restaurant_config')
       .select('value, value_type')
       .eq('key', key)

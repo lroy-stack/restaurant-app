@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { InteractionType } from '@/types/announcements'
 
-const SUPABASE_URL = 'https://supabase.enigmaconalma.com'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NTcxOTYwMDAsImV4cCI6MTkxNDk2MjQwMH0.m0raHGfbQAMISP5sMQ7xade4B30IOk0qTfyiNEt1Mkg'
+import { getSupabaseApiUrl, getSupabaseHeaders } from '@/lib/supabase/config'
 
 export async function POST(request: Request) {
   try {
@@ -29,8 +28,8 @@ export async function POST(request: Request) {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
+          // Schema handled by getSupabaseHeaders()
           'Authorization': `Bearer ${SUPABASE_KEY}`,
           'apikey': SUPABASE_KEY,
         },
@@ -63,7 +62,7 @@ export async function POST(request: Request) {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
-            'Accept-Profile': 'restaurante',
+            // Schema handled by getSupabaseHeaders()
             'Authorization': `Bearer ${SUPABASE_KEY}`,
             'apikey': SUPABASE_KEY,
           }
@@ -82,8 +81,8 @@ export async function POST(request: Request) {
             headers: {
               'Accept': 'application/json',
               'Content-Type': 'application/json',
-              'Accept-Profile': 'restaurante',
-              'Content-Profile': 'restaurante',
+              // Schema handled by getSupabaseHeaders()
+              // Schema handled by getSupabaseHeaders()
               'Authorization': `Bearer ${SUPABASE_KEY}`,
               'apikey': SUPABASE_KEY,
             },

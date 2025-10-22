@@ -5,11 +5,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { QRCodeSVG } from 'qrcode.react'
+import { useRestaurant } from '@/hooks/use-restaurant'
 import { toast } from 'sonner'
-import { 
-  QrCode, 
-  Download, 
-  Copy, 
+import {
+  QrCode,
+  Download,
+  Copy,
   Check,
   MapPin,
   Users,
@@ -29,15 +30,19 @@ interface QRViewerModalProps {
   }
 }
 
-// REAL Enigma zones with Spanish labels
-const ENIGMA_ZONES = {
-  'TERRACE_CAMPANARI': 'Terraza Campanari',
-  'SALA_PRINCIPAL': 'Sala Principal', 
-  'SALA_VIP': 'Sala VIP',
-  'TERRACE_JUSTICIA': 'Terraza Justicia'
+// Zone labels - Will be replaced with dynamic labels from DB
+const ZONE_LABELS = {
+  'TERRACE_1': 'Terraza 1',
+  'MAIN_ROOM': 'Sala Principal',
+  'VIP_ROOM': 'Sala VIP',
+  'TERRACE_2': 'Terraza 2',
+  'TERRACE': 'Terraza',
+  'INTERIOR': 'Interior',
+  'BAR': 'Bar'
 } as const
 
 export function QRViewerModal({ isOpen, onClose, table }: QRViewerModalProps) {
+  const { restaurant } = useRestaurant()
   const [copiedState, setCopiedState] = useState('')
 
   if (!table) return null
@@ -45,7 +50,7 @@ export function QRViewerModal({ isOpen, onClose, table }: QRViewerModalProps) {
   // Generate QR URL pointing to menu.enigmaconalma.com with UTM tracking
   const qrUrl = `https://menu.enigmaconalma.com?mesa=${table.number}&utm_source=qr&utm_medium=table&utm_campaign=restaurante&location=${table.location}`
   
-  const locationLabel = ENIGMA_ZONES[table.location as keyof typeof ENIGMA_ZONES] || table.location
+  const locationLabel = ZONE_LABELS[table.location as keyof typeof ZONE_LABELS] || table.location
 
   // Copy to clipboard function
   const copyToClipboard = async (text: string, type: string) => {
@@ -108,8 +113,9 @@ export function QRViewerModal({ isOpen, onClose, table }: QRViewerModalProps) {
       const blob = new Blob([svgData], { type: 'image/svg+xml' })
       const url = URL.createObjectURL(blob)
       
+      const restaurantPrefix = restaurant?.name?.split(' ')[0]?.toLowerCase() || 'restaurante'
       const link = document.createElement('a')
-      link.download = `enigma-qr-mesa-${table.number}.svg`
+      link.download = `${restaurantPrefix}-qr-mesa-${table.number}.svg`
       link.href = url
       document.body.appendChild(link)
       link.click()
@@ -161,8 +167,9 @@ export function QRViewerModal({ isOpen, onClose, table }: QRViewerModalProps) {
         canvas.toBlob((blob) => {
           if (blob) {
             const url = URL.createObjectURL(blob)
+            const restaurantPrefix = restaurant?.name?.split(' ')[0]?.toLowerCase() || 'restaurante'
             const link = document.createElement('a')
-            link.download = `enigma-qr-mesa-${table.number}.png`
+            link.download = `${restaurantPrefix}-qr-mesa-${table.number}.png`
             link.href = url
             document.body.appendChild(link)
             link.click()

@@ -1,4 +1,5 @@
 'use client'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 
 import { useState, useCallback, useMemo, useRef, useEffect, memo } from 'react'
 import dynamic from 'next/dynamic'
@@ -17,7 +18,7 @@ interface TableData {
   id: string
   number: string
   capacity: number
-  location: 'TERRACE_CAMPANARI' | 'SALA_PRINCIPAL' | 'SALA_VIP' | 'TERRACE_JUSTICIA'
+  location: 'TERRACE_1' | 'MAIN_ROOM' | 'VIP_ROOM' | 'TERRACE_2'
   qrCode: string
   isActive: boolean
   restaurantId: string
@@ -285,8 +286,8 @@ export function OptimizedTableFloorPlan({ tables }: OptimizedTableFloorPlanProps
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante'
+          // Schema handled by getSupabaseHeaders()
+          // Schema handled by getSupabaseHeaders()
         },
         body: JSON.stringify({ layouts })
       })

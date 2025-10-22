@@ -81,7 +81,7 @@ interface Reservation {
     id: string
     number: string
     capacity: number
-    location: 'TERRACE_CAMPANARI' | 'SALA_VIP' | 'TERRACE_JUSTICIA' | 'SALA_PRINCIPAL'
+    location: 'TERRACE_1' | 'VIP_ROOM' | 'TERRACE_2' | 'MAIN_ROOM'
   } | null
   reservation_items: ReservationItem[]
   createdAt: string
@@ -165,10 +165,10 @@ function formatDateForInput(dateTimeString: string): string {
 }
 
 const locationLabels = {
-  TERRACE_CAMPANARI: 'Terraza Campanari',
-  SALA_VIP: 'Sala VIP',
-  TERRACE_JUSTICIA: 'Terraza Justicia',
-  SALA_PRINCIPAL: 'Sala Principal'
+  TERRACE_1: 'Terraza 1',
+  VIP_ROOM: 'Sala VIP',
+  TERRACE_2: 'Terraza 2',
+  MAIN_ROOM: 'Sala Principal'
 }
 
 // Componente para editar pre-orden (versión customer simplificada)
@@ -580,7 +580,7 @@ export function CustomerEditReservationModal({ isOpen, onClose, reservation, onS
       // Determine preferred zone from current tables
       const preferredZone = reservation.allTables?.[0]?.location ||
                            reservation.tables?.location ||
-                           'SALA_PRINCIPAL'
+                           'MAIN_ROOM'
 
       reset({
         customerName: reservation.customerName,

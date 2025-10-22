@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
             COUNT(*) FILTER (WHERE converted_to_reservation = true)::decimal /
             NULLIF(COUNT(*), 0) * 100, 2
           ) as qr_conversion_rate
-        FROM restaurante.qr_scans qs
+        FROM public.qr_scans qs
         CROSS JOIN date_range dr
         WHERE qs.scanned_at >= dr.start_date
           AND qs.scanned_at <= dr.end_date
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
             AND c."lastVisit" >= (SELECT start_date FROM date_range)
             AND c."lastVisit" <= (SELECT end_date FROM date_range)
           ) as returning_customers
-        FROM restaurante.customers c
+        FROM public.customers c
       ),
       reservation_metrics AS (
         SELECT
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
             COUNT(*) FILTER (WHERE status = 'CONFIRMED')::decimal /
             NULLIF(COUNT(*), 0) * 100, 2
           ) as confirmation_rate
-        FROM restaurante.reservations r
+        FROM public.reservations r
         CROSS JOIN date_range dr
         WHERE r.date >= dr.start_date::date
           AND r.date <= dr.end_date::date
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
       ] = await Promise.all([
         // Total QR scans in period
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('qr_scans')
           .select('*', { count: 'exact', head: true })
           .gte('scanned_at', from)
@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
 
         // QR conversions
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('qr_scans')
           .select('*', { count: 'exact', head: true })
           .eq('converted_to_reservation', true)
@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
 
         // Total reservations
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('reservations')
           .select('*', { count: 'exact', head: true })
           .gte('date', from.split('T')[0])
@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
 
         // Confirmed reservations
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('reservations')
           .select('*', { count: 'exact', head: true })
           .eq('status', 'CONFIRMED')
@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
 
         // Customer data for retention analysis
         supabase
-          .schema('restaurante')
+          .schema('public')
           .from('customers')
           .select('id, createdAt, totalVisits, lastVisit')
           .gte('createdAt', from)

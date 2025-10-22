@@ -431,8 +431,8 @@ export function generateLegalPageMetadata(
   const docInfo = DOCUMENT_TYPE_INFO[content.document_type]
 
   const baseUrl = language === 'es'
-    ? 'https://enigmaconalma.com'
-    : 'https://enigmaconalma.com/en'
+    ? 'https://turestaurante.com'
+    : 'https://turestaurante.com/en'
 
   const path = language === 'es'
     ? `/legal/${getSpanishSlug(content.document_type)}`
@@ -461,8 +461,8 @@ export function generateLegalPageMetadata(
     alternates: {
       canonical: `${baseUrl}${path}`,
       languages: {
-        es: `https://enigmaconalma.com/legal/${getSpanishSlug(content.document_type)}`,
-        en: `https://enigmaconalma.com/en/legal/${getEnglishSlug(content.document_type)}`
+        es: `https://turestaurante.com/legal/${getSpanishSlug(content.document_type)}`,
+        en: `https://turestaurante.com/en/legal/${getEnglishSlug(content.document_type)}`
       }
     },
     robots: {

@@ -14,7 +14,7 @@ export async function GET() {
       SUPABASE_SERVICE_KEY,
       {
         db: {
-          schema: 'restaurante'
+          schema: 'public'
         }
       }
     )

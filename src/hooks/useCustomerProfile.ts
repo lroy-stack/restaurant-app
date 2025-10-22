@@ -1,4 +1,5 @@
 'use client'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 
 import { useState, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
@@ -157,8 +158,8 @@ export function useCustomerProfile(customerId: string) {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante'
+          // Schema handled by getSupabaseHeaders()
+          // Schema handled by getSupabaseHeaders()
         },
         body: JSON.stringify({ [field]: value })
       })
@@ -185,8 +186,8 @@ export function useCustomerProfile(customerId: string) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante'
+          // Schema handled by getSupabaseHeaders()
+          // Schema handled by getSupabaseHeaders()
         },
         body: JSON.stringify({ isVip: !customer.isVip })
       })
@@ -209,7 +210,7 @@ export function useCustomerProfile(customerId: string) {
       const response = await fetch(`/api/customers/${customerId}/export`, {
         method: 'GET',
         headers: {
-          'Accept-Profile': 'restaurante'
+          // Schema handled by getSupabaseHeaders()
         }
       })
 
@@ -243,8 +244,8 @@ export function useCustomerProfile(customerId: string) {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante'
+          // Schema handled by getSupabaseHeaders()
+          // Schema handled by getSupabaseHeaders()
         },
         body: JSON.stringify({
           consentType,
@@ -340,8 +341,8 @@ export function useCustomerProfile(customerId: string) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante'
+          // Schema handled by getSupabaseHeaders()
+          // Schema handled by getSupabaseHeaders()
         },
         body: JSON.stringify(customEmailData)
       })

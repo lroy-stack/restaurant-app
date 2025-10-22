@@ -4,6 +4,7 @@ import { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { useMobileNavigation } from '@/hooks/useMobileNavigation'
 import { useConditionalScrollLock } from '@/hooks/useScrollLock'
+import { useRestaurant } from '@/hooks/use-restaurant'
 import { Button } from './button'
 import { Separator } from './separator'
 import {
@@ -90,6 +91,7 @@ export function ResponsiveSidebar({ children, className }: ResponsiveSidebarProp
     shouldShowFloatingNav,
     shouldShowSidebar
   } = useMobileNavigation()
+  const { restaurant } = useRestaurant()
   const router = useRouter()
 
   // 🎯 MODULAR COMPOSITION: Separate scroll lock responsibility
@@ -144,7 +146,7 @@ export function ResponsiveSidebar({ children, className }: ResponsiveSidebarProp
               <EnigmaLogo size={20} className="text-primary-foreground" />
             </div>
             <div>
-              <h2 className="font-semibold text-lg text-foreground">Enigma</h2>
+              <h2 className="font-semibold text-lg text-foreground">{restaurant?.name?.split(' ')[0] || 'Admin'}</h2>
               <p className="text-sm text-muted-foreground">Admin Panel</p>
             </div>
           </div>

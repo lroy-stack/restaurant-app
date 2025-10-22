@@ -46,7 +46,7 @@ interface Reservation {
   tableId: string
   tables: {
     number: string
-    location: 'TERRACE_CAMPANARI' | 'SALA_VIP' | 'TERRACE_JUSTICIA' | 'SALA_PRINCIPAL'
+    location: 'TERRACE_1' | 'VIP_ROOM' | 'TERRACE_2' | 'MAIN_ROOM'
   } | null
 }
 
@@ -118,10 +118,10 @@ function CompactReservationItem({
 
   // Location shorthand
   const locationShort = {
-    TERRACE_CAMPANARI: 'T.Camp',
-    SALA_VIP: 'VIP',
-    TERRACE_JUSTICIA: 'T.Just',
-    SALA_PRINCIPAL: 'S.Prin'
+    TERRACE_1: 'T.Camp',
+    VIP_ROOM: 'VIP',
+    TERRACE_2: 'T.Just',
+    MAIN_ROOM: 'S.Prin'
   }
 
   const handleStatusChange = (newStatus: string) => {

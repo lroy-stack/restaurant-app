@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       SUPABASE_SERVICE_KEY,
       {
         db: {
-          schema: 'restaurante'
+          schema: 'public'
         }
       }
     )
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
       SUPABASE_SERVICE_KEY,
       {
         db: {
-          schema: 'restaurante'
+          schema: 'public'
         }
       }
     )

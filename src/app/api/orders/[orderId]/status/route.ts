@@ -20,7 +20,7 @@ export async function PATCH(
 
     if (itemId) {
       const { error } = await supabase
-        .schema('restaurante')
+        .schema('public')
         .from('order_items')
         .update({
           status,
@@ -37,7 +37,7 @@ export async function PATCH(
       if (status === 'SERVED') timestamps.servedAt = new Date().toISOString()
 
       const { error } = await supabase
-        .schema('restaurante')
+        .schema('public')
         .from('orders')
         .update({ status, ...timestamps })
         .eq('id', orderId)
@@ -50,7 +50,7 @@ export async function PATCH(
 
         // Fetch order items to return stock
         const { data: orderItems, error: fetchError } = await supabase
-          .schema('restaurante')
+          .schema('public')
           .from('order_items')
           .select('menuItemId, quantity')
           .eq('orderId', orderId)
@@ -62,7 +62,7 @@ export async function PATCH(
           // Return stock for each item
           for (const item of orderItems) {
             const { error: stockError } = await supabase
-              .schema('restaurante')
+              .schema('public')
               .rpc('increase_menu_item_stock', {
                 item_id: item.menuItemId,
                 increase_amount: item.quantity

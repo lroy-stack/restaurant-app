@@ -1,25 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getSupabaseHeaders, getSupabaseApiUrl } from '@/lib/supabase/config'
 import { z } from 'zod'
 import { createDirectAdminClient } from '@/lib/supabase/server'
 import { buildTokenUrl } from '@/lib/email/config/emailConfig'
 import { v4 as uuidv4 } from 'uuid'
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
+import { madridToUTC } from '@/lib/timezone-handler'
 
 /**
  * Get dynamic configuration from business_hours table
  */
 async function getReservationConfig(): Promise<{ maxPartySize: number; bufferMinutes: number }> {
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/business_hours?select=max_party_size,buffer_minutes&is_open=eq.true&limit=1`, {
-      headers: {
-        'Accept': 'application/json',
-        'Accept-Profile': 'restaurante',
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-        'apikey': SUPABASE_SERVICE_KEY,
-      }
-    })
+    const response = await fetch(
+      getSupabaseApiUrl('business_hours?select=max_party_size,buffer_minutes&is_open=eq.true&limit=1'),
+      { headers: getSupabaseHeaders(true) }
+    )
 
     if (response.ok) {
       const data = await response.json()
@@ -42,14 +37,10 @@ async function getReservationConfig(): Promise<{ maxPartySize: number; bufferMin
  */
 async function validateTimeSlot(date: string, time: string): Promise<{ valid: boolean; reason?: string }> {
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/business_hours?select=*&is_open=eq.true`, {
-      headers: {
-        'Accept': 'application/json',
-        'Accept-Profile': 'restaurante',
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-        'apikey': SUPABASE_SERVICE_KEY,
-      }
-    })
+    const response = await fetch(
+      getSupabaseApiUrl('business_hours?select=*&is_open=eq.true'),
+      { headers: getSupabaseHeaders(true) }
+    )
 
     if (response.ok) {
       const businessHours = await response.json()
@@ -138,28 +129,28 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
 
-    let query = `${SUPABASE_URL}/rest/v1/reservations?select=*,customers(*),reservation_items(*,menu_items(*,menu_categories(*)))`
+    let queryString = `reservations?select=*,customers(*),reservation_items(*,menu_items(*,menu_categories(*)))`
 
     if (status && status !== 'all') {
-      query += `&status=eq.${status}`
+      queryString += `&status=eq.${status}`
     }
 
     // Cursor pagination
     if (cursor) {
       if (direction === 'forward') {
-        query += `&date=gt.${cursor}`
+        queryString += `&date=gt.${cursor}`
       } else {
-        query += `&date=lt.${cursor}`
+        queryString += `&date=lt.${cursor}`
       }
     }
 
     // Date filtering logic
     if (startDate && endDate) {
       // Date range filter (for timeline/calendar)
-      query += `&date=gte.${startDate}T00:00:00&date=lte.${endDate}T23:59:59`
+      queryString += `&date=gte.${startDate}T00:00:00&date=lte.${endDate}T23:59:59`
     } else if (date) {
       // Explicit single date filter
-      query += `&date=gte.${date}T00:00:00&date=lte.${date}T23:59:59`
+      queryString += `&date=gte.${date}T00:00:00&date=lte.${date}T23:59:59`
     } else if (!cursor) {
       // Default: next 30 days (only if no cursor pagination)
       const today = new Date()
@@ -169,31 +160,27 @@ export async function GET(request: NextRequest) {
       const todayStr = today.toISOString().split('T')[0]
       const next30DaysStr = next30Days.toISOString().split('T')[0]
 
-      query += `&date=gte.${todayStr}T00:00:00&date=lte.${next30DaysStr}T23:59:59`
+      queryString += `&date=gte.${todayStr}T00:00:00&date=lte.${next30DaysStr}T23:59:59`
     }
 
     // Search filter
     if (search) {
-      query += `&or=(customerName.ilike.*${search}*,customerEmail.ilike.*${search}*,customerPhone.ilike.*${search}*)`
+      queryString += `&or=(customerName.ilike.*${search}*,customerEmail.ilike.*${search}*,customerPhone.ilike.*${search}*)`
     }
 
     // Table filter
     if (tableId) {
-      query += `&or=(tableId.eq.${tableId},table_ids.cs.{${tableId}})`
+      queryString += `&or=(tableId.eq.${tableId},table_ids.cs.{${tableId}})`
     }
 
     // Order and limit
-    query += `&order=date.${direction === 'forward' ? 'asc' : 'desc'},time.asc`
-    query += `&limit=${limit + 1}` // +1 to detect hasMore
+    queryString += `&order=date.${direction === 'forward' ? 'asc' : 'desc'},time.asc`
+    queryString += `&limit=${limit + 1}` // +1 to detect hasMore
 
-    const response = await fetch(query, {
-      headers: {
-        'Accept': 'application/json',
-        'Accept-Profile': 'restaurante',
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-        'apikey': SUPABASE_SERVICE_KEY,
-      }
-    })
+    const response = await fetch(
+      getSupabaseApiUrl(queryString),
+      { headers: getSupabaseHeaders(true) }
+    )
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
@@ -227,15 +214,10 @@ export async function GET(request: NextRequest) {
       // 2. Obtener información completa de todas las mesas necesarias
       let tablesData: any[] = []
       if (allTableIds.size > 0) {
-        const tablesQuery = `${SUPABASE_URL}/rest/v1/tables?select=id,number,location,capacity&id=in.(${Array.from(allTableIds).join(',')})`
-        const tablesResponse = await fetch(tablesQuery, {
-          headers: {
-            'Accept': 'application/json',
-            'Accept-Profile': 'restaurante',
-            'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-            'apikey': SUPABASE_SERVICE_KEY,
-          }
-        })
+        const tablesResponse = await fetch(
+          getSupabaseApiUrl(`tables?select=id,number,location,capacity&id=in.(${Array.from(allTableIds).join(',')})`),
+          { headers: getSupabaseHeaders(true) }
+        )
 
         if (tablesResponse.ok) {
           tablesData = await tablesResponse.json()
@@ -336,12 +318,11 @@ export async function POST(request: NextRequest) {
     }
     console.log('✅ Time slot validation passed:', `${data.date} ${data.time}`)
 
-    // Create proper Spain timezone datetime (sin suma adicional - DB ya maneja timezone)
-    const spainTimeString = `${data.date}T${data.time}:00`
-    const reservationDateTime = new Date(spainTimeString)
+    // ✅ TIMEZONE FIX: Convert Madrid time to UTC explicitly
+    const reservationDateTime = madridToUTC(data.date, data.time)
 
-    console.log('🕐 User input:', `${data.date}T${data.time}:00 (Spain time)`)
-    console.log('🇪🇸 Spain local stored:', reservationDateTime.toISOString())
+    console.log('🕐 User input (Madrid):', `${data.date} ${data.time}`)
+    console.log('🕐 Stored in DB (UTC):', reservationDateTime.toISOString())
 
     const supabase = createDirectAdminClient()
 
@@ -353,7 +334,7 @@ export async function POST(request: NextRequest) {
       console.log('🔍 Validating provided table IDs:', data.tableIds)
 
       const { data: fetchedTables, error: tablesError } = await supabase
-        .schema('restaurante')
+        .schema('public')
         .from('tables')
         .select('id,number,location,capacity,restaurantId')
         .in('id', data.tableIds)
@@ -393,7 +374,7 @@ export async function POST(request: NextRequest) {
       console.log('🔍 Checking conflicts for validated tables...')
 
       const { data: existingReservations, error: conflictError } = await supabase
-        .schema('restaurante')
+        .schema('public')
         .from('reservations')
         .select('id,table_ids,tableId,time,status')
         .gte('date', `${data.date}T00:00:00`)
@@ -454,7 +435,7 @@ export async function POST(request: NextRequest) {
     // 🎯 SMART LOOKUP: Find existing customer by phone first, then email
     console.log('🔍 Smart lookup: Searching by phone first...')
     const { data: existingByPhone } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('customers')
       .select('*')
       .eq('phone', data.phone)
@@ -483,7 +464,7 @@ export async function POST(request: NextRequest) {
       }
 
       const { data: updated, error: updateError } = await supabase
-        .schema('restaurante')
+        .schema('public')
         .from('customers')
         .update(updateData)
         .eq('id', existingByPhone.id)
@@ -519,7 +500,7 @@ export async function POST(request: NextRequest) {
       }
 
       const { data: created, error: createError } = await supabase
-        .schema('restaurante')
+        .schema('public')
         .from('customers')
         .insert(customerData)
         .select()
@@ -569,7 +550,7 @@ export async function POST(request: NextRequest) {
       hasPreOrder: (data.preOrderItems?.length || 0) > 0,
       table_ids: data.tableIds, // ✅ NEW: Use array
       tableId: data.tableIds.length > 0 ? data.tableIds[0] : null, // ✅ Legacy compatibility (use first table if available)
-      restaurantId: 'rest_enigma_001',
+      restaurantId: process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001',
       occasion: data.occasion || null,
       dietaryNotes: data.dietaryNotes || null,
       marketingConsent: data.marketingConsent,
@@ -591,7 +572,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: reservation, error: reservationError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('reservations')
       .insert(reservationData)
       .select()
@@ -620,7 +601,7 @@ export async function POST(request: NextRequest) {
       }))
 
       const { data: savedItems, error: itemsError } = await supabase
-        .schema('restaurante')
+        .schema('public')
         .from('reservation_items')
         .insert(reservationItems)
         .select()
@@ -640,7 +621,7 @@ export async function POST(request: NextRequest) {
     let reservationToken = null
     try {
       const { data: tokenData, error: tokenError } = await supabase
-        .schema('restaurante')
+        .schema('public')
         .from('reservation_tokens')
         .insert({
           id: `rt_${uuidv4()}`,
@@ -710,8 +691,8 @@ export async function POST(request: NextRequest) {
       reservation: {
         id: reservation.id,
         customerName: reservation.customerName,
-        date: reservation.date,
-        time: reservation.time,
+        date: new Date(reservation.date).toISOString(), // ✅ FIX: Forzar formato UTC con 'Z'
+        time: new Date(reservation.time).toISOString(), // ✅ FIX: Forzar formato UTC con 'Z'
         partySize: reservation.partySize,
         tables: validatedTableNames,
         status: reservation.status

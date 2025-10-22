@@ -45,7 +45,7 @@ export function ReservationHero({ language, setLanguage, isConnected }: Reservat
     <section 
       className="relative py-24 -mt-16 pt-32 min-h-[600px] flex items-center overflow-hidden"
       style={{
-        backgroundImage: 'url("https://ik.imagekit.io/insomnialz/cafe-leche.jpg?updatedAt=1754141886878")',
+        backgroundImage: 'url("https://images.unsplash.com/photo-1571997478779-2adcbbe9ab2f?w=1920&h=1080&fit=crop")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed'

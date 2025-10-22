@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -12,8 +13,8 @@ export async function GET(request: NextRequest) {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
+          // Schema handled by getSupabaseHeaders()
           'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
           'apikey': SUPABASE_SERVICE_KEY,
         }
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate location
-    const validLocations = ['TERRACE_CAMPANARI', 'SALA_PRINCIPAL', 'SALA_VIP', 'TERRACE_JUSTICIA']
+    const validLocations = ['TERRACE_1', 'MAIN_ROOM', 'VIP_ROOM', 'TERRACE_2']
     if (!validLocations.includes(tableData.location)) {
       return NextResponse.json(
         { success: false, error: 'Invalid location' },
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
     // CRITICAL: Include required fields for Enigma schema
     const createData = {
       ...tableData,
-      restaurantId: 'rest_enigma_001',
+      restaurantId: process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       currentStatus: 'available',
@@ -92,8 +93,8 @@ export async function POST(request: NextRequest) {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
+          // Schema handled by getSupabaseHeaders()
           'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
           'apikey': SUPABASE_SERVICE_KEY,
           'Content-Type': 'application/json',

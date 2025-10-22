@@ -90,7 +90,7 @@ export const createReservationSchema = (lang: Language = 'es', maxPartySize: num
     
     // Table Selection (required for dynamic table selection)
     tableId: z.string().min(1, messages.tableRequired),
-    tableZone: z.enum(['TERRACE', 'INTERIOR', 'BAR', 'TERRACE_CAMPANARI', 'SALA_VIP', 'SALA_PRINCIPAL', 'TERRACE_JUSTICIA']),
+    tableZone: z.enum(['TERRACE', 'INTERIOR', 'BAR', 'TERRACE_1', 'VIP_ROOM', 'MAIN_ROOM', 'TERRACE_2']),
     
     // Special Requirements
     occasion: z.string().max(100, messages.occasionMax).optional(),
@@ -136,7 +136,7 @@ export const createTableAvailabilitySchema = (maxPartySize: number = 10) => z.ob
   time: z.string(),
   partySize: z.number().int().min(1).max(maxPartySize), // DYNAMIC
   duration: z.number().int().min(60).max(300).default(120), // minutes from DB buffer_minutes
-  tableZone: z.enum(['TERRACE', 'INTERIOR', 'BAR', 'TERRACE_CAMPANARI', 'SALA_VIP', 'SALA_PRINCIPAL', 'TERRACE_JUSTICIA']).optional(),
+  tableZone: z.enum(['TERRACE', 'INTERIOR', 'BAR', 'TERRACE_1', 'VIP_ROOM', 'MAIN_ROOM', 'TERRACE_2']).optional(),
   preferredTables: z.array(z.string()).optional()
 })
 

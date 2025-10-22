@@ -1,4 +1,5 @@
 'use client'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 
 import { useParams } from 'next/navigation'
 import { useCustomerProfile } from '@/hooks/useCustomerProfile'
@@ -168,8 +169,8 @@ export default function CustomerProfilePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept-Profile': 'restaurante',
-          'Content-Profile': 'restaurante'
+          // Schema handled by getSupabaseHeaders()
+          // Schema handled by getSupabaseHeaders()
         },
         body: JSON.stringify(previewData)
       })

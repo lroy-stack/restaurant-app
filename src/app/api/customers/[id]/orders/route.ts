@@ -11,7 +11,7 @@ export async function GET(
 
     // Get customer email
     const { data: customer, error: customerError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('customers')
       .select('email')
       .eq('id', customerId)
@@ -26,7 +26,7 @@ export async function GET(
 
     // Fetch orders by email matching
     const { data: orders, error: ordersError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('orders')
       .select(`
         id,

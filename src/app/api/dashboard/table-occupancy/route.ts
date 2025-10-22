@@ -5,7 +5,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
-  db: { schema: 'restaurante' }
+  db: { schema: 'public' }
 })
 
 export async function GET() {
@@ -55,10 +55,10 @@ export async function GET() {
 
 function formatLocation(location: string): string {
   const mapping: Record<string, string> = {
-    'TERRACE_CAMPANARI': 'Terraza Campanari',
-    'SALA_PRINCIPAL': 'Sala Principal',
-    'SALA_VIP': 'Sala VIP',
-    'TERRACE_JUSTICIA': 'Terraza Justicia'
+    'TERRACE_1': 'Terraza 1',
+    'MAIN_ROOM': 'Sala Principal',
+    'VIP_ROOM': 'Sala VIP',
+    'TERRACE_2': 'Terraza 2'
   }
   return mapping[location] || location
 }

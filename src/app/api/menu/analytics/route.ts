@@ -10,7 +10,7 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 export async function GET() {
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
-      db: { schema: 'restaurante' }
+      db: { schema: 'public' }
     })
 
     // Parallel queries for optimal performance

@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { 
+import {
   Sheet,
   SheetContent,
   SheetTrigger,
@@ -15,33 +15,22 @@ import { Menu, Phone, Clock, MapPin, Camera, Utensils, Heart } from "lucide-reac
 import { cn } from "@/lib/utils"
 import { EnigmaLogo } from "@/components/ui/enigma-logo"
 import { useNavigationBreakpoints } from "@/hooks/useResponsiveLayout"
+import { useNavigation } from "@/hooks/useNavigation"
+import { useRestaurant } from "@/hooks/use-restaurant"
 
-const navigation = [
-  {
-    name: 'Menú',
-    href: '/menu',
-    description: 'Nuestras creaciones culinarias',
-    icon: Utensils,
-  },
-  {
-    name: 'Historia',
-    href: '/historia',
-    description: 'Nuestra historia y tradición',
-    icon: Heart,
-  },
-  {
-    name: 'Galería',
-    href: '/galeria',
-    description: 'Impresiones de nuestro restaurante',
-    icon: Camera,
-  },
-  {
-    name: 'Contacto',
-    href: '/contacto',
-    description: 'Encuéntranos en Calpe',
-    icon: MapPin,
-  },
-]
+// Icon mapping helper
+const getIconComponent = (iconName: string | null) => {
+  const icons: Record<string, any> = {
+    Utensils,
+    Heart,
+    Camera,
+    MapPin,
+    Phone,
+    Clock,
+    Menu
+  }
+  return icons[iconName || 'Menu'] || Menu
+}
 
 interface HeaderProps {
   variant?: 'default' | 'transparent'
@@ -50,9 +39,13 @@ interface HeaderProps {
 export function Header({ variant = 'default' }: HeaderProps) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
-  const { shouldShowDesktopNav, shouldShowMobileNav, currentBreakpoint, isTabletHorizontal } = useNavigationBreakpoints()
+  const { shouldShowDesktopNav, shouldShowMobileNav } = useNavigationBreakpoints()
+  const { getNavItems, getCTA, loading: navLoading } = useNavigation()
+  const { restaurant, loading: restaurantLoading } = useRestaurant()
 
   const isTransparent = variant === 'transparent'
+  const navigation = getNavItems()
+  const ctaButton = getCTA()
   
   return (
     <header className={cn(
@@ -63,37 +56,37 @@ export function Header({ variant = 'default' }: HeaderProps) {
     )}>
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
         >
           <EnigmaLogo
-            className="h-8 w-8"
+            className="h-10 w-10 sm:h-12 sm:w-12"
             variant={isTransparent ? "white" : "primary"}
           />
           <span className={cn(
             "enigma-brand-main text-xl font-bold hidden sm:block",
             isTransparent ? "text-white" : "text-primary"
           )}>
-            Enigma Cocina Con Alma
+            {restaurant?.name || 'Nombre Restaurante'}
           </span>
           <span className={cn(
             "enigma-brand-main text-xl font-bold sm:hidden",
             isTransparent ? "text-white" : "text-primary"
           )}>
-            Enigma
+            {restaurant?.name?.split(' ')[0] || 'Restaurante'}
           </span>
         </Link>
 
-        {/* Desktop Navigation - 🚨 NOW: Uses intelligent breakpoint detection */}
+        {/* Desktop Navigation - Dynamic from DB */}
         <nav className={cn(
           "items-center gap-6",
           shouldShowDesktopNav ? "flex" : "hidden"
         )}>
-          {navigation.map((item) => {
+          {!navLoading && navigation.map((item) => {
             const isActive = pathname === item.href
-            const Icon = item.icon
-            
+            const Icon = getIconComponent(item.icon)
+
             return (
               <Link
                 key={item.href}
@@ -106,28 +99,31 @@ export function Header({ variant = 'default' }: HeaderProps) {
                       ? "text-white/90 hover:text-white"
                       : "text-foreground/70 hover:text-primary dark:text-foreground/80 dark:hover:text-primary"
                 )}
+                title={item.description || item.name}
               >
                 <Icon className="h-4 w-4" />
                 {item.name}
               </Link>
             )
           })}
-          
-          {/* CTA Button */}
-          <Link href="/reservas">
-            <Button
-              size="sm"
-              className={cn(
-                "ml-2",
-                isTransparent
-                  ? "bg-white/90 text-primary hover:bg-white"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90"
-              )}
-            >
-              <Utensils className="h-4 w-4 mr-2" />
-              Reservar
-            </Button>
-          </Link>
+
+          {/* CTA Button - Dynamic from DB */}
+          {!navLoading && ctaButton && (
+            <Link href={ctaButton.href}>
+              <Button
+                size="sm"
+                className={cn(
+                  "ml-2",
+                  isTransparent
+                    ? "bg-white/90 text-primary hover:bg-white"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90"
+                )}
+              >
+                {getIconComponent(ctaButton.icon)({ className: "h-4 w-4 mr-2" })}
+                {ctaButton.name}
+              </Button>
+            </Link>
+          )}
         </nav>
 
         {/* Mobile Navigation - 🚨 NOW: Shows on mobile AND tablet horizontal */}
@@ -151,16 +147,16 @@ export function Header({ variant = 'default' }: HeaderProps) {
           <SheetContent side="right" className="w-80">
             <SheetHeader className="text-left mb-6">
               <SheetTitle className="flex items-center gap-2 enigma-brand-main">
-                <EnigmaLogo className="h-6 w-6" variant="primary" />
-                Enigma Cocina Con Alma
+                <EnigmaLogo className="h-8 w-8" variant="primary" />
+                {restaurant?.name || 'Nombre Restaurante'}
               </SheetTitle>
             </SheetHeader>
-            
+
             <nav className="flex flex-col gap-4">
-              {navigation.map((item) => {
+              {!navLoading && navigation.map((item) => {
                 const isActive = pathname === item.href
-                const Icon = item.icon
-                
+                const Icon = getIconComponent(item.icon)
+
                 return (
                   <Link
                     key={item.href}
@@ -174,42 +170,50 @@ export function Header({ variant = 'default' }: HeaderProps) {
                     <Icon className="h-5 w-5" />
                     <div className="flex flex-col">
                       <span className="font-medium">{item.name}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {item.description}
-                      </span>
+                      {item.description && (
+                        <span className="text-sm text-muted-foreground">
+                          {item.description}
+                        </span>
+                      )}
                     </div>
                   </Link>
                 )
               })}
-              
-              {/* Contact Info */}
-              <div className="mt-6 pt-6 border-t border-border space-y-3">
-                <div className="flex items-center gap-3 text-sm text-foreground/70">
-                  <Phone className="h-4 w-4" />
-                  <span>+34 672 79 60 06</span>
+
+              {/* Contact Info - Dynamic from DB */}
+              {!restaurantLoading && restaurant && (
+                <div className="mt-6 pt-6 border-t border-border space-y-3">
+                  <div className="flex items-center gap-3 text-sm text-foreground/70">
+                    <Phone className="h-4 w-4" />
+                    <a href={`tel:${restaurant.phone.replace(/\s+/g, '')}`}>
+                      {restaurant.phone}
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-foreground/70">
+                    <Clock className="h-4 w-4" />
+                    <span>{restaurant.hours_operation}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-foreground/70">
+                    <MapPin className="h-4 w-4" />
+                    <span>{restaurant.address}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-foreground/70">
-                  <Clock className="h-4 w-4" />
-                  <span>Mar-Dom: 18:00 - 23:00</span>
+              )}
+
+              {/* CTA Button - Dynamic from DB */}
+              {!navLoading && ctaButton && (
+                <div className="mt-4">
+                  <Link href={ctaButton.href}>
+                    <Button
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {getIconComponent(ctaButton.icon)({ className: "h-4 w-4 mr-2" })}
+                      {ctaButton.name}
+                    </Button>
+                  </Link>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-foreground/70">
-                  <MapPin className="h-4 w-4" />
-                  <span>Carrer Justicia 6A, Calpe</span>
-                </div>
-              </div>
-              
-              {/* CTA Button */}
-              <div className="mt-4">
-                <Link href="/reservas">
-                  <Button
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <Utensils className="h-4 w-4 mr-2" />
-                    Reservar Mesa
-                  </Button>
-                </Link>
-              </div>
+              )}
             </nav>
           </SheetContent>
         </Sheet>

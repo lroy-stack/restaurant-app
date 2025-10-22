@@ -18,7 +18,7 @@ interface Table {
   id: string
   number: string
   capacity: number
-  location: 'TERRACE_CAMPANARI' | 'SALA_VIP' | 'TERRACE_JUSTICIA' | 'SALA_PRINCIPAL'
+  location: 'TERRACE_1' | 'VIP_ROOM' | 'TERRACE_2' | 'MAIN_ROOM'
 }
 
 interface ReservationFiltersProps {
@@ -45,10 +45,10 @@ const statusOptions = [
 
 const locationOptions = [
   { value: 'all', label: 'Todas las Ubicaciones' },
-  { value: 'TERRACE_CAMPANARI', label: 'Terraza Campanari' },
-  { value: 'TERRACE_JUSTICIA', label: 'Terraza Justicia' },
-  { value: 'SALA_PRINCIPAL', label: 'Sala Principal' },
-  { value: 'SALA_VIP', label: 'Sala VIP' }
+  { value: 'TERRACE_1', label: 'Terraza 1' },
+  { value: 'TERRACE_2', label: 'Terraza 2' },
+  { value: 'MAIN_ROOM', label: 'Sala Principal' },
+  { value: 'VIP_ROOM', label: 'Sala VIP' }
 ]
 
 export function ReservationFilters({
@@ -232,10 +232,10 @@ export function ReservationFilters({
                 <div className="max-h-48 overflow-y-auto">
                   {tables.map((table) => {
                     const locationLabel = {
-                      'TERRACE_CAMPANARI': 'T.Camp',
-                      'TERRACE_JUSTICIA': 'T.Just',
-                      'SALA_PRINCIPAL': 'S.Prin',
-                      'SALA_VIP': 'VIP'
+                      'TERRACE_1': 'T.Camp',
+                      'TERRACE_2': 'T.Just',
+                      'MAIN_ROOM': 'S.Prin',
+                      'VIP_ROOM': 'VIP'
                     }[table.location] || table.location
 
                     return (

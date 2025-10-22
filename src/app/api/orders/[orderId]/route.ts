@@ -11,7 +11,7 @@ export async function GET(
     const supabase = await createServiceClient()
 
     const { data: order, error } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('orders')
       .select(`
         *,
@@ -88,7 +88,7 @@ export async function PATCH(
     }
 
     const { data: order, error } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('orders')
       .update(updateData)
       .eq('id', orderId)
@@ -129,7 +129,7 @@ export async function DELETE(
 
     // Soft delete by setting status to CANCELLED
     const { data: order, error } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('orders')
       .update({
         status: 'CANCELLED',
@@ -151,14 +151,14 @@ export async function DELETE(
 
     // Return stock for cancelled order
     const { data: orderItems } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('order_items')
       .select('menuItemId, quantity')
       .eq('orderId', orderId)
 
     if (orderItems && orderItems.length > 0) {
       for (const item of orderItems) {
-        await supabase.schema('restaurante').rpc('increase_menu_item_stock', {
+        await supabase.schema('public').rpc('increase_menu_item_stock', {
           item_id: item.menuItemId,
           increase_amount: item.quantity,
         })

@@ -42,11 +42,11 @@ interface ReservationStepTwoProps {
 // Modern location icons using Lucide - 2025 best practices
 const getLocationIcon = (locationKey: string) => {
   switch (locationKey) {
-    case 'TERRACE_CAMPANARI':
+    case 'TERRACE_1':
       return <TreePine className="h-5 w-5 text-secondary-foreground" />
-    case 'SALA_VIP':
+    case 'VIP_ROOM':
       return <Crown className="h-5 w-5 text-accent-foreground" />
-    case 'SALA_PRINCIPAL':
+    case 'MAIN_ROOM':
       return <Building className="h-5 w-5 text-primary" />
     default:
       return <MapPin className="h-5 w-5 text-muted-foreground" />

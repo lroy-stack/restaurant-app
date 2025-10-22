@@ -157,8 +157,8 @@ export default function ReservasPage() {
 
       // Preparar texto de zona preferida para comentarios (SIEMPRE en español para el equipo)
       const locationLabels: Record<string, string> = {
-        TERRACE_CAMPANARI: 'Zona preferida: Terraza Campanari',
-        SALA_PRINCIPAL: 'Zona preferida: Sala Principal'
+        TERRACE_1: 'Zona preferida: Terraza 1',
+        MAIN_ROOM: 'Zona preferida: Sala Principal'
       }
 
       const locationText = data.location && locationLabels[data.location]

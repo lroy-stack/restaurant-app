@@ -31,10 +31,10 @@ import {
 
 // REAL Enigma zones with chart colors
 const ENIGMA_ZONES = {
-  'TERRACE_CAMPANARI': 'Terraza Campanari',
-  'SALA_PRINCIPAL': 'Sala Principal', 
-  'SALA_VIP': 'Sala VIP',
-  'TERRACE_JUSTICIA': 'Terraza Justicia'
+  'TERRACE_1': 'Terraza 1',
+  'MAIN_ROOM': 'Sala Principal', 
+  'VIP_ROOM': 'Sala VIP',
+  'TERRACE_2': 'Terraza 2'
 } as const
 
 // Chart color palette for Enigma brand - Manual de Marca colors

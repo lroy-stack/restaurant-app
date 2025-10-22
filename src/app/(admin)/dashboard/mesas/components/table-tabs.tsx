@@ -29,7 +29,7 @@ interface TableData {
   id: string
   number: string
   capacity: number
-  location: 'TERRACE_CAMPANARI' | 'SALA_PRINCIPAL' | 'SALA_VIP' | 'TERRACE_JUSTICIA'
+  location: 'TERRACE_1' | 'MAIN_ROOM' | 'VIP_ROOM' | 'TERRACE_2'
   qrCode: string
   isActive: boolean
   restaurantId: string

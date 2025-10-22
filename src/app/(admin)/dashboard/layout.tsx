@@ -5,20 +5,29 @@ import { ResponsiveSidebar } from '@/components/ui/responsive-sidebar'
 import { FloatingNav } from '@/components/ui/mobile-nav'
 import { QueryProvider } from '@/providers/query-provider'
 import { cn } from '@/lib/utils'
+import { getRestaurant } from '@/lib/data/restaurant'
 
 // Force dynamic rendering for all dashboard routes
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: {
-    template: '%s | Dashboard - Enigma Cocina Con Alma',
-    default: 'Dashboard - Enigma Cocina Con Alma'
-  },
-  description: 'Panel de administración del restaurante Enigma Cocina Con Alma',
-  robots: {
-    index: false,
-    follow: false,
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const restaurant = await getRestaurant()
+
+  if (!restaurant) {
+    throw new Error('⚠️ Configure restaurants table in database')
+  }
+
+  return {
+    title: {
+      template: `%s | Dashboard - ${restaurant.name}`,
+      default: `Dashboard - ${restaurant.name}`
+    },
+    description: `Panel de administración del restaurante ${restaurant.name}`,
+    robots: {
+      index: false,
+      follow: false,
+    },
+  }
 }
 
 interface DashboardLayoutProps {

@@ -14,8 +14,11 @@ import { z } from 'zod'
 
 export async function GET(request: NextRequest) {
   try {
+    const supabase = await createClient()
+    const legalContentService = createLegalContentServiceWithClient(supabase)
+
     const { searchParams } = new URL(request.url)
-    const documentType = searchParams.get('type')
+    const documentType = searchParams.get('document_type')
     const language = searchParams.get('language') || 'es'
     const version = searchParams.get('version')
     const includeInactive = searchParams.get('includeInactive') === 'true'
@@ -47,7 +50,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        content
+        data: content
       })
     } else {
       // Get all content with optional filters
@@ -58,7 +61,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        contents,
+        data: contents,
         count: contents.length
       })
     }
@@ -81,6 +84,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient()
+    const legalContentService = createLegalContentServiceWithClient(supabase)
+
     const body = await request.json()
 
     // Validate request data
@@ -162,6 +168,9 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const supabase = await createClient()
+    const legalContentService = createLegalContentServiceWithClient(supabase)
+
     const body = await request.json()
     const { id, ...updateData } = body
 
@@ -227,6 +236,9 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const supabase = await createClient()
+    const legalContentService = createLegalContentServiceWithClient(supabase)
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 

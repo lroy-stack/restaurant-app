@@ -271,10 +271,10 @@ function MiReservaContent() {
   }
 
   const locationLabels = {
-    TERRACE_CAMPANARI: 'Terraza Campanari',
-    SALA_VIP: 'Sala VIP',
-    TERRACE_JUSTICIA: 'Terraza Justicia',
-    SALA_PRINCIPAL: 'Sala Principal'
+    TERRACE_1: 'Terraza 1',
+    VIP_ROOM: 'Sala VIP',
+    TERRACE_2: 'Terraza 2',
+    MAIN_ROOM: 'Sala Principal'
   }
 
   // Check if modifications are allowed

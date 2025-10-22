@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     // Build query
     let query = `${SUPABASE_URL}/rest/v1/media_library?`
-    const params = ['restaurant_id=eq.rest_enigma_001']
+    const params = ['restaurant_id=eq.${process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001'}']
 
     if (type) params.push(`type=eq.${type}`)
     if (category) params.push(`category=eq.${category}`)
@@ -26,8 +27,8 @@ export async function GET(request: NextRequest) {
     const response = await fetch(query, {
       headers: {
         'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-        'Accept-Profile': 'restaurante',
-        'Content-Profile': 'restaurante',
+        // Schema handled by getSupabaseHeaders()
+        // Schema handled by getSupabaseHeaders()
         'apikey': SUPABASE_SERVICE_KEY,
       },
     })

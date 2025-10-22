@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 
-const SUPABASE_URL = 'https://supabase.enigmaconalma.com'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NTcxOTYwMDAsImV4cCI6MTkxNDk2MjQwMH0.m0raHGfbQAMISP5sMQ7xade4B30IOk0qTfyiNEt1Mkg'
+import { getSupabaseApiUrl, getSupabaseHeaders } from '@/lib/supabase/config'
 
 /**
  * ADMIN ENDPOINT - Get ALL announcements regardless of status
@@ -18,7 +17,7 @@ export async function GET(request: Request) {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
-          'Accept-Profile': 'restaurante',
+          // Schema handled by getSupabaseHeaders()
           'Authorization': `Bearer ${SUPABASE_KEY}`,
           'apikey': SUPABASE_KEY,
         }

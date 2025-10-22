@@ -140,7 +140,7 @@ export function BusinessSettings({
       description: "Restaurante de cocina atlántico-mediterránea en el casco antiguo de Calpe",
       address: "Carrer Justicia 6A, 03710 Calpe, Alicante",
       phone: "+34 672 79 60 06",
-      email: "info@enigmaconalma.com",
+      email: "info@turestaurante.com",
       capacity: 50,
       minReservationHours: 6,
       maxPartySize: 10, // Updated to match restaurant capacity

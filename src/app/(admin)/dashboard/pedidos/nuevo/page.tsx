@@ -97,7 +97,7 @@ export default function NuevoPedidoPage() {
 
     const result = await createOrder.mutateAsync({
       tableId: selectedTable,
-      restaurantId: 'rest_enigma_001',
+      restaurantId: process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001',
       items: cart.items.map((item) => ({
         menuItemId: item.menuItemId,
         quantity: item.quantity,

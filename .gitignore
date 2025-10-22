@@ -72,3 +72,20 @@ test-*.js
 
 # Exception: Allow notification sounds (small files for UX)
 !public/sounds/*.mp3
+
+# Migration documentation (working files)
+docs/migration/
+scripts/migration/
+tests/sql/
+PLAN_MIGRACION_DB_DRIVEN_TEMPLATE_REFINED.md
+MIGRATION_READINESS_REPORT.md
+
+# Temporary/Working files
+coverage/
+*.tsbuildinfo
+backups/
+docs/archive/
+
+# Environment files - NEVER commit
+.env*
+!.env.example

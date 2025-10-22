@@ -160,7 +160,7 @@ export function RestaurantInfoForm({ data, onSubmit, loading }: RestaurantInfoFo
                     <FormLabel>Nombre del Restaurante</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Enigma Cocina Con Alma"
+                        placeholder={data?.name || '⚠️ CONECTAR DB'}
                         className="enigma-config-input"
                         {...field}
                       />
@@ -197,7 +197,7 @@ export function RestaurantInfoForm({ data, onSubmit, loading }: RestaurantInfoFo
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="info@enigmaconalma.com"
+                        placeholder={data?.email || '⚠️ CONECTAR DB'}
                         className="enigma-config-input"
                         {...field}
                       />
@@ -890,7 +890,7 @@ export function RestaurantInfoForm({ data, onSubmit, loading }: RestaurantInfoFo
                     <FormLabel>Texto Copyright</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Enigma Cocina Con Alma. Todos los derechos reservados."
+                        placeholder={data?.footer_copyright_text || '⚠️ CONECTAR DB'}
                         className="enigma-config-input"
                         {...field}
                       />

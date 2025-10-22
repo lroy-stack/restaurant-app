@@ -348,7 +348,7 @@ export default function MenuPage() {
             style={{
               backgroundImage: heroImage
                 ? `url(${buildImageUrl(heroImage)})`
-                : 'url(https://ik.imagekit.io/insomnialz/IMG_9755.HEIC?updatedAt=1754141888431&tr=w-1920,h-1080,c-at_max,f-auto,q-auto,pr-true)',
+                : 'url(https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1920&h=1080&auto=format&fit=crop)',
               backgroundPosition: 'center center'
             }}
           />

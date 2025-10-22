@@ -199,10 +199,10 @@ function getAvailabilityStatus(data: AvailabilityData | null) {
 // Función para obtener el icono de zona
 function getZoneIcon(zone: string) {
   const icons: Record<string, JSX.Element> = {
-    'TERRACE_CAMPANARI': <Eye className="h-4 w-4" />,
-    'SALA_VIP': <Crown className="h-4 w-4" />,
-    'TERRACE_JUSTICIA': <MapPin className="h-4 w-4" />,
-    'SALA_PRINCIPAL': <Utensils className="h-4 w-4" />
+    'TERRACE_1': <Eye className="h-4 w-4" />,
+    'VIP_ROOM': <Crown className="h-4 w-4" />,
+    'TERRACE_2': <MapPin className="h-4 w-4" />,
+    'MAIN_ROOM': <Utensils className="h-4 w-4" />
   }
   return icons[zone] || <MapPin className="h-4 w-4" />
 }
@@ -426,7 +426,7 @@ export default function AvailabilitySummary({
                       <span className="text-muted-foreground">{t.tips.quiet}</span>
                     </div>
                   )}
-                  {availabilityData.recommendations?.some(r => r.location === 'SALA_VIP') && (
+                  {availabilityData.recommendations?.some(r => r.location === 'VIP_ROOM') && (
                     <div className="flex items-start gap-2 text-sm">
                       <Crown className="h-4 w-4 text-yellow-600 mt-0.5" />
                       <span className="text-muted-foreground">{t.tips.vip}</span>

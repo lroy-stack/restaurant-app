@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Select,
@@ -14,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { useRestaurant } from '@/hooks/use-restaurant'
 import { toast } from 'sonner'
 import { Plus, Download, QrCode, MapPin, Menu as MenuIcon, Check, Copy, Power, PowerOff, TrendingUp } from 'lucide-react'
 import { jsPDF } from 'jspdf'
@@ -34,6 +36,7 @@ interface PhysicalMenu {
 }
 
 export function PhysicalMenuQRManager() {
+  const { restaurant } = useRestaurant()
   const [isLoading, setIsLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
   const [existingMenus, setExistingMenus] = useState<PhysicalMenu[]>([])
@@ -41,7 +44,21 @@ export function PhysicalMenuQRManager() {
   const [menuType, setMenuType] = useState<'CARTA_FISICA' | 'CARTELERIA'>('CARTA_FISICA')
   const [activeTab, setActiveTab] = useState<'CARTA_FISICA' | 'CARTELERIA'>('CARTA_FISICA')
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
-  const [selectedTemplate, setSelectedTemplate] = useState(QR_TEMPLATES[0])
+  const [customForegroundColor, setCustomForegroundColor] = useState(restaurant?.qr_primary_color || '#237584')
+  const [customBackgroundColor, setCustomBackgroundColor] = useState(restaurant?.qr_background_color || '#FFFFFF')
+  const [useCustomColors, setUseCustomColors] = useState(false)
+
+  // Dynamic template based on restaurant config
+  const getDynamicTemplate = () => ({
+    id: 'custom',
+    name: useCustomColors ? 'Personalizado' : 'Color Principal',
+    dotsColor: useCustomColors ? customForegroundColor : (restaurant?.qr_primary_color || '#237584'),
+    backgroundColor: useCustomColors ? customBackgroundColor : (restaurant?.qr_background_color || '#FFFFFF'),
+    cornerSquareColor: useCustomColors ? customForegroundColor : (restaurant?.qr_primary_color || '#237584'),
+    cornerDotColor: useCustomColors ? customForegroundColor : (restaurant?.qr_primary_color || '#237584')
+  })
+
+  const selectedTemplate = getDynamicTemplate()
 
   const BASE_URL = process.env.NEXT_PUBLIC_QR_MENU_URL || 'https://menu.enigmaconalma.com'
 
@@ -163,7 +180,7 @@ export function PhysicalMenuQRManager() {
         doc.setFontSize(14)
         doc.setFont('helvetica', 'bold')
         doc.text(
-          type === 'CARTA_FISICA' ? 'Cartas Físicas - Enigma' : 'Cartelería Exterior - Enigma',
+          type === 'CARTA_FISICA' ? `Cartas Físicas - ${restaurant?.name || 'Restaurante'}` : `Cartelería Exterior - ${restaurant?.name || 'Restaurante'}`,
           PAGE_WIDTH / 2,
           15,
           { align: 'center' }
@@ -173,7 +190,7 @@ export function PhysicalMenuQRManager() {
         doc.setFontSize(8)
         doc.setFont('helvetica', 'normal')
         doc.text(
-          `Template: ${selectedTemplate.name}`,
+          `Color: ${selectedTemplate.dotsColor}`,
           PAGE_WIDTH / 2,
           20,
           { align: 'center' }
@@ -224,7 +241,8 @@ export function PhysicalMenuQRManager() {
         )
       }
 
-      const filename = `enigma-${type === 'CARTA_FISICA' ? 'cartas-fisicas' : 'carteleria'}-${new Date().toISOString().split('T')[0]}.pdf`
+      const restaurantPrefix = restaurant?.name?.split(' ')[0]?.toLowerCase() || 'restaurante'
+      const filename = `${restaurantPrefix}-${type === 'CARTA_FISICA' ? 'cartas-fisicas' : 'carteleria'}-${new Date().toISOString().split('T')[0]}.pdf`
       doc.save(filename)
 
       toast.success(`✅ PDF exportado: ${menusToExport.length} códigos QR`)
@@ -256,8 +274,9 @@ export function PhysicalMenuQRManager() {
         600
       )
 
+      const restaurantPrefix = restaurant?.name?.split(' ')[0]?.toLowerCase() || 'restaurante'
       const link = document.createElement('a')
-      link.download = `enigma-${menu.type === 'CARTA_FISICA' ? 'carta' : 'exterior'}-${menu.code}-${selectedTemplate.id}.png`
+      link.download = `${restaurantPrefix}-${menu.type === 'CARTA_FISICA' ? 'carta' : 'exterior'}-${menu.code}-${selectedTemplate.id}.png`
       link.href = qrDataURL
       link.click()
 
@@ -354,29 +373,79 @@ export function PhysicalMenuQRManager() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>Estilo de QR</Label>
-              <Select
-                value={selectedTemplate.id}
-                onValueChange={(value) => setSelectedTemplate(QR_TEMPLATES.find(t => t.id === value) || QR_TEMPLATES[0])}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {QR_TEMPLATES.map((template) => (
-                    <SelectItem key={template.id} value={template.id}>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="h-3 w-3 rounded-sm border"
-                          style={{ backgroundColor: template.dotsColor }}
-                        />
-                        {template.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Configuración QR</Label>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="useCustomColors"
+                    checked={useCustomColors}
+                    onCheckedChange={(checked) => setUseCustomColors(checked as boolean)}
+                  />
+                  <Label htmlFor="useCustomColors" className="text-sm cursor-pointer">
+                    Personalizar colores
+                  </Label>
+                </div>
+              </div>
+
+              {useCustomColors && (
+                <div className="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
+                  <div className="space-y-2">
+                    <Label htmlFor="foregroundColor" className="text-sm">Color QR</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="foregroundColor"
+                        type="color"
+                        className="h-9 w-16 p-1 cursor-pointer"
+                        value={customForegroundColor}
+                        onChange={(e) => setCustomForegroundColor(e.target.value)}
+                      />
+                      <Input
+                        className="h-9 text-sm flex-1"
+                        value={customForegroundColor}
+                        onChange={(e) => setCustomForegroundColor(e.target.value)}
+                        placeholder="#237584"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="backgroundColor" className="text-sm">Color Fondo</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="backgroundColor"
+                        type="color"
+                        className="h-9 w-16 p-1 cursor-pointer"
+                        value={customBackgroundColor}
+                        onChange={(e) => setCustomBackgroundColor(e.target.value)}
+                      />
+                      <Input
+                        className="h-9 text-sm flex-1"
+                        value={customBackgroundColor}
+                        onChange={(e) => setCustomBackgroundColor(e.target.value)}
+                        placeholder="#FFFFFF"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!useCustomColors && (
+                <div className="p-3 bg-muted/30 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="h-8 w-8 rounded border"
+                      style={{ backgroundColor: restaurant?.qr_primary_color || '#237584' }}
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Color Principal</p>
+                      <p className="text-xs text-muted-foreground">
+                        {restaurant?.qr_primary_color || '#237584'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-2">

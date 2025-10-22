@@ -26,7 +26,7 @@ const sampleData: EmailTemplateData = {
   }),
   reservationTime: '20:30',
   partySize: 4,
-  tableLocation: 'TERRACE_CAMPANARI',
+  tableLocation: 'TERRACE_1',
   tableNumber: 'T5',
   specialRequests: 'Mesa cerca de la ventana, celebración de aniversario',
   preOrderItems: [

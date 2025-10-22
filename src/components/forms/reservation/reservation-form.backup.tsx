@@ -38,7 +38,7 @@ interface Table {
   id: string
   number: string
   capacity: number
-  location: 'TERRACE_CAMPANARI' | 'SALA_VIP' | 'TERRACE_JUSTICIA' | 'SALA_PRINCIPAL'
+  location: 'TERRACE_1' | 'VIP_ROOM' | 'TERRACE_2' | 'MAIN_ROOM'
   isActive: boolean
 }
 
@@ -67,10 +67,10 @@ const PARTY_SIZES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
 // Table location labels - dynamic from DB
 const TABLE_LOCATIONS = {
-  TERRACE_CAMPANARI: 'Terraza Campanari',
-  SALA_VIP: 'Sala VIP',
-  TERRACE_JUSTICIA: 'Terraza Justicia',
-  SALA_PRINCIPAL: 'Sala Principal'
+  TERRACE_1: 'Terraza 1',
+  VIP_ROOM: 'Sala VIP',
+  TERRACE_2: 'Terraza 2',
+  MAIN_ROOM: 'Sala Principal'
 } as const
 
 export function ReservationForm({

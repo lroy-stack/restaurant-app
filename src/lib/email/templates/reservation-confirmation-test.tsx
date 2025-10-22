@@ -28,7 +28,7 @@ export const ReservationConfirmationTestEmail = (props: ReservationConfirmationT
 
   // SIMPLIFIED formatTableInfo
   const tableInfo = tableNumber && tableLocation
-    ? `Mesa ${tableNumber} - ${tableLocation === 'TERRACE_CAMPANARI' ? 'Terraza Campanari' : tableLocation}`
+    ? `Mesa ${tableNumber} - ${tableLocation === 'TERRACE_1' ? 'Terraza 1' : tableLocation}`
     : 'Mesa por asignar'
 
   return (

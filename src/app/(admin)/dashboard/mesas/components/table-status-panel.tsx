@@ -43,30 +43,30 @@ const formatReservationTime = (timeString: string): string => {
 
 // REAL Enigma zones with responsive labels
 const ENIGMA_ZONES = {
-  'TERRACE_CAMPANARI': 'Terraza Campanari',
-  'SALA_PRINCIPAL': 'Sala Principal',
-  'SALA_VIP': 'Sala VIP',
-  'TERRACE_JUSTICIA': 'Terraza Justicia'
+  'TERRACE_1': 'Terraza 1',
+  'MAIN_ROOM': 'Sala Principal',
+  'VIP_ROOM': 'Sala VIP',
+  'TERRACE_2': 'Terraza 2'
 } as const
 
 const ZONE_LABELS_RESPONSIVE = {
-  'TERRACE_CAMPANARI': {
-    full: 'Terraza Campanari',
+  'TERRACE_1': {
+    full: 'Terraza 1',
     medium: 'T. Campanari',
     compact: 'T.C.'
   },
-  'SALA_PRINCIPAL': {
+  'MAIN_ROOM': {
     full: 'Sala Principal',
     medium: 'S. Principal',
     compact: 'S.P.'
   },
-  'SALA_VIP': {
+  'VIP_ROOM': {
     full: 'Sala VIP',
     medium: 'Sala VIP',
     compact: 'VIP'
   },
-  'TERRACE_JUSTICIA': {
-    full: 'Terraza Justicia',
+  'TERRACE_2': {
+    full: 'Terraza 2',
     medium: 'T. Justicia',
     compact: 'T.J.'
   }

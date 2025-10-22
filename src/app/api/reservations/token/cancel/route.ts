@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     // 1. Validar token y obtener reserva
     const { data: tokenData, error: tokenError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('reservation_tokens')
       .select('*')
       .eq('token', token)
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 
     // 3. Obtener datos actuales de la reserva
     const { data: reservation, error: reservationError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('reservations')
       .select('id, status, "specialRequests"')
       .eq('id', tokenData.reservation_id)
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       : cancellationNote
 
     const { error: updateError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('reservations')
       .update({
         status: 'CANCELLED',
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
 
     // 6. Delete token específico completamente
     const { error: tokenDeleteError } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('reservation_tokens')
       .delete()
       .eq('token', token)

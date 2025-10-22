@@ -81,7 +81,7 @@ interface Reservation {
     id: string
     number: string
     capacity: number
-    location: 'TERRACE_CAMPANARI' | 'SALA_VIP' | 'TERRACE_JUSTICIA' | 'SALA_PRINCIPAL'
+    location: 'TERRACE_1' | 'VIP_ROOM' | 'TERRACE_2' | 'MAIN_ROOM'
   }[] | null
 }
 
@@ -115,12 +115,13 @@ const statusLabels = {
 }
 
 const locationLabels = {
-  TERRACE_CAMPANARI: 'Terraza Campanari',
-  SALA_VIP: 'Sala VIP',
-  TERRACE_JUSTICIA: 'Terraza Justicia',
-  SALA_PRINCIPAL: 'Sala Principal'
+  TERRACE_1: 'Terraza 1',
+  VIP_ROOM: 'Sala VIP',
+  TERRACE_2: 'Terraza 2',
+  MAIN_ROOM: 'Sala Principal'
 }
 
+// ✅ SIMPLE: DB timestamp with timezone, browser handles display automatically
 function formatReservationDateTime(dateStr: string, timeStr: string) {
   try {
     const date = new Date(dateStr)
@@ -146,9 +147,11 @@ function formatReservationDateTime(dateStr: string, timeStr: string) {
       })
     }
 
+    // Browser timezone handles display automatically
     const timeFormatted = time.toLocaleTimeString('es-ES', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'Europe/Madrid'
     })
 
     return { date: dateFormatted, time: timeFormatted }
@@ -175,7 +178,7 @@ function extractPreferredZone(specialRequests?: string): { zone: string | null; 
   const match = specialRequests.match(/Zona preferida:\s*(.+?)(?:\n|$)/i)
 
   if (match) {
-    const zone = match[1].trim() // "Terraza Campanari" o "Sala Principal"
+    const zone = match[1].trim() // "Terraza 1" o "Sala Principal"
     const cleanRequests = specialRequests
       .replace(/Zona preferida:\s*.+?(?:\n\n?|$)/i, '')
       .trim()

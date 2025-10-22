@@ -24,7 +24,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       SUPABASE_SERVICE_KEY,
       {
         db: {
-          schema: 'restaurante'
+          schema: 'public'
         }
       }
     )
@@ -130,7 +130,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       SUPABASE_SERVICE_KEY,
       {
         db: {
-          schema: 'restaurante'
+          schema: 'public'
         }
       }
     )
@@ -271,7 +271,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       SUPABASE_SERVICE_KEY,
       {
         db: {
-          schema: 'restaurante'
+          schema: 'public'
         }
       }
     )

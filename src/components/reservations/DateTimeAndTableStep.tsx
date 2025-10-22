@@ -52,11 +52,11 @@ interface Zone {
 // Modern location icons using Lucide (from Step Two)
 const getLocationIcon = (locationKey: string) => {
   switch (locationKey) {
-    case 'TERRACE_CAMPANARI':
+    case 'TERRACE_1':
       return <TreePine className="h-5 w-5 text-green-600" />
-    case 'SALA_VIP':
+    case 'VIP_ROOM':
       return <Crown className="h-5 w-5 text-yellow-600" />
-    case 'SALA_PRINCIPAL':
+    case 'MAIN_ROOM':
       return <Building className="h-5 w-5 text-blue-600" />
     default:
       return <MapPin className="h-5 w-5 text-gray-600" />

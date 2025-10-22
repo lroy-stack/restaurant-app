@@ -1,4 +1,5 @@
 'use client'
+import { getSupabaseHeaders } from '@/lib/supabase/config'
 
 import React, { useState, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -135,8 +136,8 @@ const FloorPlanView: React.FC<FloorPlanViewProps> = ({ tables: propTables = [] }
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
-            'Accept-Profile': 'restaurante',
-            'Content-Profile': 'restaurante'
+            // Schema handled by getSupabaseHeaders()
+            // Schema handled by getSupabaseHeaders()
           },
           body: JSON.stringify({ currentStatus: status })
         })

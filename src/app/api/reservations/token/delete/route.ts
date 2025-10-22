@@ -25,7 +25,7 @@ export async function DELETE(request: NextRequest) {
 
     // Delete token using server-side service client
     const { error } = await supabase
-      .schema('restaurante')
+      .schema('public')
       .from('reservation_tokens')
       .delete()
       .eq('token', token)

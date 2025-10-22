@@ -253,7 +253,7 @@ export async function PUT(request: NextRequest) {
       .from('business_hours')
       .update(updates)
       .eq('day_of_week', day_of_week)
-      .eq('restaurant_id', 'rest_enigma_001')
+      .eq('restaurant_id', process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001')
       .select()
       .single()
 

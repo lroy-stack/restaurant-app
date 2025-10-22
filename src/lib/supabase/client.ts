@@ -26,10 +26,10 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
-// Cliente específico para esquema restaurante
-export const supabaseRestaurante = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+// Cliente específico para esquema público (migrado desde 'restaurante')
+export const supabasePublic = createBrowserClient(supabaseUrl, supabaseAnonKey, {
   db: {
-    schema: 'restaurante'
+    schema: (process.env.NEXT_PUBLIC_SUPABASE_SCHEMA || 'public') as 'public' | 'restaurante'
   },
   auth: {
     persistSession: true,
@@ -37,6 +37,9 @@ export const supabaseRestaurante = createBrowserClient(supabaseUrl, supabaseAnon
     detectSessionInUrl: true
   }
 })
+
+// Backward compatibility - alias para código existente
+export const supabaseRestaurante = supabasePublic
 
 // Note: supabaseAdmin is moved to server-only module for security
 // Use createAdminClient() from @/lib/supabase/server for admin operations
@@ -497,13 +500,15 @@ export const checkTableAvailability = async (
   return data
 }
 
-// Real-time subscriptions con esquema restaurante
+// Real-time subscriptions con esquema dinámico
+const SCHEMA = (process.env.NEXT_PUBLIC_SUPABASE_SCHEMA || 'public') as 'public' | 'restaurante'
+
 export const subscribeToTableUpdates = (callback: (payload: Record<string, unknown>) => void) => {
   return supabase
     .channel('table-updates')
     .on('postgres_changes', {
       event: '*',
-      schema: 'restaurante',
+      schema: SCHEMA,
       table: 'tables'
     }, callback)
     .subscribe()
@@ -514,7 +519,7 @@ export const subscribeToReservationUpdates = (callback: (payload: Record<string,
     .channel('reservation-updates')
     .on('postgres_changes', {
       event: '*',
-      schema: 'restaurante',
+      schema: SCHEMA,
       table: 'reservations'
     }, callback)
     .subscribe()
