@@ -310,7 +310,7 @@ export function FloatingNavbar({ className }: FloatingNavbarProps) {
               <div className="space-y-2 mb-6">
                 {navigationItems.map((item) => {
                   const isActive = pathname === item.href
-                  const Icon = item.icon
+                  const Icon = getIconComponent(item.icon)
                   
                   return (
                     <Link

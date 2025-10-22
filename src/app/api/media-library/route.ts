@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     // Build query
     let query = `${SUPABASE_URL}/rest/v1/media_library?`
-    const params = ['restaurant_id=eq.${process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001'}']
+    const params = [`restaurant_id=eq.${process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001'}`]
 
     if (type) params.push(`type=eq.${type}`)
     if (category) params.push(`category=eq.${category}`)
