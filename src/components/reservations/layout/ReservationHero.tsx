@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CheckCircle, Shield, Timer, Utensils } from 'lucide-react'
 import type { Language } from '@/lib/validations/reservation-professional'
-import { usePageTranslations } from '@/hooks/use-page-translations'
+import { HERO_TRANSLATIONS } from '@/lib/translations/static-reservations'
 
 interface ReservationHeroProps {
   language: Language
@@ -13,11 +13,8 @@ interface ReservationHeroProps {
 }
 
 export function ReservationHero({ language, onLanguageChange, isConnected = true }: ReservationHeroProps) {
-  const { t, loading } = usePageTranslations({
-    page: 'reservations',
-    language: language as 'es' | 'en' | 'de',
-    section: 'hero'
-  })
+  // ⚡ Use static translations for instant load (0ms latency)
+  const t = HERO_TRANSLATIONS[language]
 
   return (
     <section className="relative py-12 md:py-20 text-white overflow-hidden">
@@ -35,11 +32,11 @@ export function ReservationHero({ language, onLanguageChange, isConnected = true
       <div className="relative z-20 container mx-auto px-4">
         <div className="text-center pt-4 sm:pt-6">
           <h1 className="enigma-hero-title">
-            {loading ? 'Cargando...' : t('hero', 'title', 'Reservar Mesa')}
+            {t.title}
           </h1>
 
           <p className="enigma-hero-subtitle">
-            {loading ? '' : t('hero', 'subtitle', 'Reserva tu experiencia culinaria')}
+            {t.subtitle}
           </p>
 
           {/* Language Selector */}
@@ -57,34 +54,28 @@ export function ReservationHero({ language, onLanguageChange, isConnected = true
             ))}
           </div>
 
-          {/* Trust Signals - DYNAMIC */}
+          {/* Trust Signals */}
           <div className="flex flex-wrap justify-center gap-6">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5" />
-              <span className="text-sm">{loading ? 'Confirmación' : t('hero', 'trustSignals_confirmation', 'Confirmación inmediata')}</span>
+              <span className="text-sm">{t.trustSignals_confirmation}</span>
             </div>
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5" />
-              <span className="text-sm">{loading ? 'GDPR' : t('hero', 'trustSignals_gdpr', 'Cumplimiento GDPR')}</span>
+              <span className="text-sm">{t.trustSignals_gdpr}</span>
             </div>
             <div className="flex items-center gap-2">
               <Timer className="h-5 w-5" />
-              <span className="text-sm">{loading ? 'Cancelación' : t('hero', 'trustSignals_cancellation', 'Cancelación gratuita')}</span>
+              <span className="text-sm">{t.trustSignals_cancellation}</span>
             </div>
           </div>
 
-          {/* Connection Status - DYNAMIC */}
+          {/* Connection Status */}
           <div className="flex justify-center mt-6">
             <div className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
               <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
               <span className="text-sm">
-                {loading
-                  ? (isConnected ? 'En vivo' : 'Sin conexión')
-                  : (isConnected
-                      ? t('hero', 'connection_live', 'En vivo')
-                      : t('hero', 'connection_offline', 'Sin conexión')
-                    )
-                }
+                {isConnected ? t.connection_live : t.connection_offline}
               </span>
             </div>
           </div>

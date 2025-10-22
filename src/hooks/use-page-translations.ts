@@ -24,6 +24,10 @@ interface UsePageTranslationsReturn {
   refetch: () => Promise<void>
 }
 
+// In-memory cache for translations (shared across all hook instances)
+const translationCache = new Map<string, { data: TranslationData; timestamp: number }>()
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+
 /**
  * Hook for fetching and managing page translations from database
  * Pattern inspired by react-i18next but with PostgreSQL backend
@@ -47,10 +51,25 @@ export function usePageTranslations({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Sync internal state with prop changes
+  useEffect(() => {
+    setLanguage(initialLanguage)
+  }, [initialLanguage])
+
   const fetchTranslations = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
+
+      // ⚡ Check cache first
+      const cacheKey = `${page}-${language}-${section || 'all'}`
+      const cached = translationCache.get(cacheKey)
+
+      if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        setTranslations(cached.data)
+        setLoading(false)
+        return
+      }
 
       const params = new URLSearchParams({
         language,
@@ -64,7 +83,15 @@ export function usePageTranslations({
       }
 
       const data = await response.json()
-      setTranslations(data.translations || {})
+      const translationsData = data.translations || {}
+
+      setTranslations(translationsData)
+
+      // ⚡ Store in cache
+      translationCache.set(cacheKey, {
+        data: translationsData,
+        timestamp: Date.now()
+      })
     } catch (err) {
       console.error('Error fetching translations:', err)
       setError(err instanceof Error ? err.message : 'Failed to load translations')
