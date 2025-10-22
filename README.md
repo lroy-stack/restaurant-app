@@ -1,8 +1,8 @@
-# Enigma Restaurant Platform - Sistema Completo de Gestión Restaurantera
+# Restaurant Management Platform - Sistema Completo de Gestión Restaurantera
 
-**Enigma Restaurant Platform** es una solución integral 100% cloud-driven diseñada específicamente para la gestión moderna de restaurantes. Combina sistema de reservas inteligente, carta digital QR sin aplicación nativa, CRM integrado con análisis de comportamiento de clientes, y una web pública completamente dinámica en una única plataforma unificada.
+**Restaurant Management Platform** es una solución integral 100% cloud-driven diseñada específicamente para la gestión moderna de restaurantes. Combina sistema de reservas inteligente, carta digital QR sin aplicación nativa, CRM integrado con análisis de comportamiento de clientes, y una web pública completamente dinámica en una única plataforma unificada.
 
-A diferencia de soluciones fragmentadas del mercado que requieren múltiples proveedores (OpenTable para reservas, Glovo para menú digital, HubSpot para CRM), Enigma centraliza todas las operaciones críticas en un solo sistema sin vendor lock-in, reduciendo costes operativos hasta un 70% y eliminando complejidades de integración entre sistemas dispares.
+A diferencia de soluciones fragmentadas del mercado que requieren múltiples proveedores (OpenTable para reservas, Glovo para menú digital, HubSpot para CRM), esta plataforma centraliza todas las operaciones críticas en un solo sistema sin vendor lock-in, reduciendo costes operativos hasta un 70% y eliminando complejidades de integración entre sistemas dispares.
 
 Construida sobre Next.js 15 con React Server Components, Supabase Cloud y PostgreSQL 17.6, la plataforma garantiza escalabilidad automática, compliance GDPR nativo, y performance sub-200ms en operaciones críticas como asignación inteligente de mesas.
 
@@ -676,7 +676,7 @@ SMTP_HOST="smtp.gmail.com"
 SMTP_PORT="587"
 SMTP_USER="your-email@gmail.com"
 SMTP_PASSWORD="your-app-password"
-SMTP_FROM="Enigma Restaurant <noreply@enigma.com>"
+SMTP_FROM="Restaurant Platform <noreply@restaurant.com>"
 
 # Redis (opcional - caching avanzado)
 REDIS_URL="redis://localhost:6379"
@@ -716,7 +716,7 @@ Abrir navegador en [http://localhost:3000](http://localhost:3000)
 #### 7. Acceso admin panel
 
 - URL: [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
-- Credenciales demo: `admin@enigma.com` / `demo123`
+- Credenciales demo: `admin@restaurant.local` / `demo123`
 
 ---
 
@@ -952,7 +952,7 @@ git push origin main
 
 ### Tabla Comparativa Detallada
 
-| Funcionalidad | Enigma | OpenTable | TheFork | Toast | HubSpot |
+| Funcionalidad | la plataforma | OpenTable | TheFork | Toast | HubSpot |
 |---------------|--------|-----------|---------|-------|---------|
 | **Reservas multi-mesa** | ✅ Nativo | ❌ Manual | ❌ Manual | ⚠️ Básico | ❌ No |
 | **3 algoritmos ML** | ✅ Parallel | ❌ Único | ❌ Único | ❌ Ninguno | ❌ N/A |
@@ -975,7 +975,7 @@ git push origin main
 
 ### Ventaja Clave Diferencial
 
-**Sistema unificado end-to-end** sin integraciones externas ni vendor lock-in. Mientras competidores requieren 3-5 proveedores distintos (reservas + menú + CRM + analytics), Enigma centraliza todo en un único sistema con:
+**Sistema unificado end-to-end** sin integraciones externas ni vendor lock-in. Mientras competidores requieren 3-5 proveedores distintos (reservas + menú + CRM + analytics), la plataforma centraliza todo en un único sistema con:
 
 - **Data unificada**: Un solo PostgreSQL, zero sincronización, zero latencia
 - **UX consistente**: Mismo design system, misma lógica, misma navegación
@@ -1098,9 +1098,9 @@ Uso libre para proyectos comerciales y personales con atribución.
 
 ### Comunidad
 
-- **Discord**: [Enigma Developers Community](#) (próximamente)
-- **Stack Overflow**: Tag `enigma-restaurant-platform`
-- **Twitter**: [@EnigmaPlatform](#)
+- **Discord**: [la plataforma Developers Community](#) (próximamente)
+- **Stack Overflow**: Tag `restaurant-management-platform`
+- **Twitter**: [@la plataformaPlatform](#)
 
 ---
 
@@ -1133,7 +1133,7 @@ Construido con tecnologías open-source de clase mundial:
 
 **Desarrollado con ❤️ para la industria restaurantera española**
 
-*Enigma Restaurant Platform - Gestión moderna sin complicaciones*
+*Restaurant Management Platform - Gestión moderna sin complicaciones*
 
 ---
 
