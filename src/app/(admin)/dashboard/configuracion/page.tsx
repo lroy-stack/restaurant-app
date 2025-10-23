@@ -8,6 +8,7 @@ import { ConfigTabs, ConfigTabContent } from './components/config-tabs'
 import { RestaurantInfoSection } from './components/sections/restaurant-info-section'
 import { BusinessHoursSection } from './components/sections/business-hours-section'
 import { AnnouncementsSection } from './components/sections/announcements-section'
+import { EmailConfigSection } from './components/sections/email-config-section' // ✅ NEW
 
 export default function ConfiguracionPage() {
   return (
@@ -39,11 +40,9 @@ export default function ConfiguracionPage() {
           </div>
         </ConfigTabContent>
 
-        {/* TAB: Emails - EN DESARROLLO */}
+        {/* TAB: Emails - ✅ IMPLEMENTED */}
         <ConfigTabContent value="emails">
-          <div className="text-center py-12 text-muted-foreground">
-            Configuración de emails en desarrollo
-          </div>
+          <EmailConfigSection />
         </ConfigTabContent>
 
         {/* TAB: Social - EN DESARROLLO */}

@@ -22,13 +22,15 @@ import * as React from 'react'
 
 export interface EmailBaseProps {
   preview: string
-  restaurantName?: string
-  restaurantEmail?: string
-  restaurantPhone?: string
+  restaurantName: string // ✅ REQUIRED (no optional)
+  restaurantEmail: string // ✅ REQUIRED
+  restaurantPhone: string // ✅ REQUIRED
+  address: string // ✅ NEW - REQUIRED
   // Social Media URLs
   instagramUrl?: string
   facebookUrl?: string
   whatsappNumber?: string
+  tripadvisorUrl?: string // ✅ NEW
   // Branding configuration
   branding?: {
     logo: string
@@ -51,20 +53,23 @@ export const EmailBase = ({
   restaurantName,
   restaurantEmail,
   restaurantPhone,
+  address,
   instagramUrl,
   facebookUrl,
   whatsappNumber,
+  tripadvisorUrl,
   branding,
   children
 }: EmailBaseProps) => {
-  // Use fallback data if props not provided (REAL data from SSH verification)
-  const finalRestaurantName = restaurantName || 'Enigma Cocina Con Alma'
-  const finalRestaurantEmail = restaurantEmail || 'reservas@enigmaconalma.com'
-  const finalRestaurantPhone = restaurantPhone || '+34 672 79 60 06'
-  const finalAddress = 'Carrer Justicia 6A, 03710 Calpe, Alicante' // VERIFIED real address
-  const finalInstagramUrl = instagramUrl || 'https://www.instagram.com/enigmaconalma/'
-  const finalFacebookUrl = facebookUrl || 'https://www.facebook.com/enigma.restaurante.calpe/'
-  const finalWhatsappNumber = whatsappNumber || '+34 672 79 60 06'
+  // ✅ UPDATED: Generic fallbacks or visible warnings (no "Enigma" hardcoded)
+  const finalRestaurantName = restaurantName || '⚠️ [CONFIGURAR NOMBRE]'
+  const finalRestaurantEmail = restaurantEmail || 'info@turestaurante.com'
+  const finalRestaurantPhone = restaurantPhone || '+00 000 000 000'
+  const finalAddress = address || '⚠️ [CONFIGURAR DIRECCIÓN]'
+  const finalInstagramUrl = instagramUrl || '#'
+  const finalFacebookUrl = facebookUrl || '#'
+  const finalWhatsappNumber = whatsappNumber || ''
+  const finalTripadvisorUrl = tripadvisorUrl || '#'
   return (
     <Html lang="es">
       <Head>
@@ -126,19 +131,14 @@ export const EmailBase = ({
               src="https://enigmaconalma.com/logo512.png"
               width="80"
               height="80"
-              alt="Enigma Cocina Con Alma"
+              alt={finalRestaurantName} // ✅ Dynamic alt tag
               style={logoImage}
             />
 
-            {/* Brand Typography - Using Benaya + Playfair */}
+            {/* Brand Typography - DYNAMIC restaurant name */}
             <Text style={logoText}>
-              <span style={brandMain}>Enigma</span>
-              <br />
-              <span style={brandSubtitle}>Cocina Con Alma</span>
+              <span style={brandMain}>{finalRestaurantName}</span>
             </Text>
-
-            {/* Elegant Tagline - Crimson Text */}
-            <Text style={tagline}>Donde cada plato cuenta una historia</Text>
           </Section>
 
           {/* Dynamic Content */}
@@ -159,10 +159,17 @@ export const EmailBase = ({
 
             <Text style={footerText}>
               Síguenos en nuestras redes sociales<br />
-              <a href={finalInstagramUrl} style={footerLink}>Instagram</a> |
-              <a href={finalFacebookUrl} style={footerLink}> Facebook</a>
+              {finalInstagramUrl !== '#' && (
+                <><a href={finalInstagramUrl} style={footerLink}>Instagram</a> | </>
+              )}
+              {finalFacebookUrl !== '#' && (
+                <><a href={finalFacebookUrl} style={footerLink}>Facebook</a></>
+              )}
               {finalWhatsappNumber && (
-                <span> | <a href={`https://wa.me/${finalWhatsappNumber.replace(/[^\d]/g, '')}`} style={footerLink}> WhatsApp</a></span>
+                <> | <a href={`https://wa.me/${finalWhatsappNumber.replace(/[^\d]/g, '')}`} style={footerLink}>WhatsApp</a></>
+              )}
+              {finalTripadvisorUrl !== '#' && (
+                <> | <a href={finalTripadvisorUrl} style={footerLink}>TripAdvisor</a></>
               )}
             </Text>
 

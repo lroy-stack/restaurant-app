@@ -673,19 +673,18 @@ export async function POST(request: NextRequest) {
       source: body.source || 'web'
     }
 
-    // 🚀 BACKGROUND EMAIL SENDING (non-blocking, same as confirmation emails)
-    setImmediate(async () => {
-      try {
-        console.log('📧 Enviando emails de creación para reserva:', reservation.id)
-        const { sendReservationEmails } = await import('@/lib/email/sendReservationEmails')
-        await sendReservationEmails(emailData)
-        console.log('✅ Emails de creación enviados exitosamente')
-      } catch (emailError) {
-        console.error('❌ Error enviando emails de creación:', emailError)
-      }
-    })
+    // 📧 ENVÍO SÍNCRONO DE EMAILS (antes de retornar respuesta)
+    try {
+      console.log('📧 Enviando emails de creación para reserva:', reservation.id)
+      const { sendReservationEmails } = await import('@/lib/email/sendReservationEmails')
+      await sendReservationEmails(emailData)
+      console.log('✅ Emails de creación enviados exitosamente')
+    } catch (emailError) {
+      console.error('❌ Error enviando emails de creación:', emailError)
+      // Continuar aunque falle el email
+    }
 
-    // ⚡ RESPUESTA INMEDIATA (emails se envían en background)
+    // ⚡ RESPUESTA DESPUÉS DE ENVIAR EMAILS
     return NextResponse.json({
       success: true,
       reservation: {

@@ -57,7 +57,7 @@ export async function sendReservationEmails(
     // Update email_logs status
     if (emailLogId) {
       await supabase
-        .schema('restaurante')
+        .schema('public')
         .from('email_logs')
         .update({
           status: 'sent',
@@ -74,7 +74,7 @@ export async function sendReservationEmails(
     // Update email_logs with error
     if (emailLogId) {
       await supabase
-        .schema('restaurante')
+        .schema('public')
         .from('email_logs')
         .update({
           status: 'failed',
@@ -91,7 +91,7 @@ export async function sendReservationEmails(
     try {
       const { emailService } = await import('@/lib/email/emailService')
       const { data: restaurantData } = await supabase
-        .schema('restaurante')
+        .schema('public')
         .from('restaurants')
         .select('mailing')
         .eq('id', process.env.NEXT_PUBLIC_RESTAURANT_ID || 'rest_demo_001')

@@ -25,6 +25,11 @@ export const ReservationReviewEmail = ({
   restaurantName,
   restaurantEmail,
   restaurantPhone,
+  address,
+  instagramUrl,
+  facebookUrl,
+  whatsappNumber,
+  tripadvisorUrl,
   urls
 }: ReservationReviewEmailProps) => {
   const preview = `¡Gracias por visitarnos! ¿Cómo fue tu experiencia en ${restaurantName}?`
@@ -35,6 +40,11 @@ export const ReservationReviewEmail = ({
       restaurantName={restaurantName}
       restaurantEmail={restaurantEmail}
       restaurantPhone={restaurantPhone}
+      address={address}
+      instagramUrl={instagramUrl}
+      facebookUrl={facebookUrl}
+      whatsappNumber={whatsappNumber}
+      tripadvisorUrl={tripadvisorUrl}
     >
       {/* Modern Thank You Banner */}
       <Container style={thankYouBanner}>
@@ -96,7 +106,7 @@ export const ReservationReviewEmail = ({
             <Column style={reviewColumn}>
               <Button
                 style={tripadvisorButton}
-                href="https://www.tripadvisor.es/UserReviewEdit-g187526-d23958723-Enigma_Cocina_Con_Alma-Calpe_Costa_Blanca_Province_of_Alicante_Valencian_Community.html"
+                href={tripadvisorUrl || urls?.tripadvisor || '#'} // ✅ Dynamic from DB
               >
                 🌍 TripAdvisor
               </Button>
@@ -144,7 +154,7 @@ export const ReservationReviewEmail = ({
         <Text style={thankYouText}>
           {customerName}, gracias por elegir <strong>{restaurantName}</strong>.<br/><br/>
           <em>Esperamos verte pronto de nuevo,<br/>
-          El Equipo de Enigma Cocina Con Alma 👨‍🍳</em>
+          El Equipo de {restaurantName} 👨‍🍳</em> {/* ✅ Dynamic restaurant name */}
         </Text>
       </Section>
 

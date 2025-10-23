@@ -80,21 +80,12 @@ export const connectionPoolConfig = {
   rateLimit: 5 // max 5 emails per second per connection
 }
 
-// Sender information from .env.sample
+// Sender information from .env
+// ✅ UPDATED: Generic fallbacks (no "Enigma" hardcoded)
 export const senderConfig = {
-  name: process.env.SMTP_SENDER_NAME || 'Enigma Cocina Con Alma',
-  email: process.env.EMAIL_NOREPLY || 'noreply@enigmaconalma.com',
-  replyTo: process.env.EMAIL_INFO || 'info@enigmaconalma.com'
-}
-
-// Email addresses configuration from .env.sample
-export const emailAddresses = {
-  info: process.env.EMAIL_INFO || 'info@enigmaconalma.com',
-  admin: process.env.EMAIL_ADMIN || 'admin@enigmaconalma.com',
-  noreply: process.env.EMAIL_NOREPLY || 'noreply@enigmaconalma.com',
-  enigmito: process.env.EMAIL_ENIGMITO || 'enigmito@enigmaconalma.com',
-  gestion: process.env.EMAIL_GESTION || 'gestion@enigmaconalma.com',
-  reportes: process.env.EMAIL_REPORTES || 'reportes@enigmaconalma.com'
+  name: process.env.SMTP_SENDER_NAME || 'Tu Restaurante',
+  email: process.env.EMAIL_NOREPLY || 'noreply@turestaurante.com',
+  replyTo: process.env.EMAIL_INFO || 'info@turestaurante.com'
 }
 
 export default createSMTPConfig

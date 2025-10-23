@@ -48,7 +48,12 @@ export const ReservationReminderEmail = ({
   preOrderTotal = 0,
   restaurantName,
   restaurantEmail,
-  restaurantPhone
+  restaurantPhone,
+  address,
+  instagramUrl,
+  facebookUrl,
+  whatsappNumber,
+  tripadvisorUrl
 }: ReservationReminderEmailProps) => {
   const preview = `Recordatorio: Tu reserva en ${restaurantName} es mañana a las ${reservationTime}`
 
@@ -58,7 +63,11 @@ export const ReservationReminderEmail = ({
       restaurantName={restaurantName}
       restaurantEmail={restaurantEmail}
       restaurantPhone={restaurantPhone}
-      branding={branding}
+      address={address}
+      instagramUrl={instagramUrl}
+      facebookUrl={facebookUrl}
+      whatsappNumber={whatsappNumber}
+      tripadvisorUrl={tripadvisorUrl}
     >
       {/* Reminder Header */}
       <Section style={reminderBanner}>
@@ -222,7 +231,7 @@ export const ReservationReminderEmail = ({
         Nuestro equipo está preparando todo con mucho cariño para ti.<br/><br/>
 
         <em>¡Hasta muy pronto! 🌟<br/>
-        El Equipo de Enigma Cocina Con Alma</em>
+        El Equipo de {restaurantName}</em> {/* ✅ Dynamic restaurant name */}
       </Text>
     </EmailBase>
   )

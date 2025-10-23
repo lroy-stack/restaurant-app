@@ -85,7 +85,22 @@ export class EmailService {
         preOrderItemsCount: (emailData.preOrderItems || []).length,
         preOrderTotal: emailData.preOrderTotal
       })
-      return await this.sendEmailDirectWithData(emailData, EmailType.ReservationCreated)
+
+      // ✅ ENRICH: Add restaurant data from DB
+      const restaurantData = await this.getRestaurantDataForTemplate()
+      const enrichedData = {
+        ...emailData,
+        restaurantName: restaurantData.name,
+        restaurantEmail: restaurantData.email,
+        restaurantPhone: restaurantData.phone,
+        address: restaurantData.address,
+        instagramUrl: restaurantData.instagramUrl,
+        facebookUrl: restaurantData.facebookUrl,
+        whatsappNumber: restaurantData.whatsappNumber,
+        tripadvisorUrl: restaurantData.tripadvisorUrl
+      }
+
+      return await this.sendEmailDirectWithData(enrichedData, EmailType.ReservationCreated)
     } catch (error) {
       console.error('❌ CRITICAL: Error enviando confirmación:', {
         error,
@@ -104,7 +119,22 @@ export class EmailService {
   async sendReservationConfirmed(emailData: any): Promise<EmailResult> {
     try {
       console.log('📧 Enviando email de reserva confirmada:', emailData.customerEmail)
-      return await this.sendEmailDirectWithData(emailData, EmailType.ReservationConfirmed)
+
+      // ✅ ENRICH: Add restaurant data from DB
+      const restaurantData = await this.getRestaurantDataForTemplate()
+      const enrichedData = {
+        ...emailData,
+        restaurantName: restaurantData.name,
+        restaurantEmail: restaurantData.email,
+        restaurantPhone: restaurantData.phone,
+        address: restaurantData.address,
+        instagramUrl: restaurantData.instagramUrl,
+        facebookUrl: restaurantData.facebookUrl,
+        whatsappNumber: restaurantData.whatsappNumber,
+        tripadvisorUrl: restaurantData.tripadvisorUrl
+      }
+
+      return await this.sendEmailDirectWithData(enrichedData, EmailType.ReservationConfirmed)
     } catch (error) {
       console.error('❌ Error enviando confirmación:', error)
       return this.handleEmailError(error)
@@ -269,7 +299,7 @@ ID: ${emailData.reservationId}
       // CRITICAL: Use exact database field names and schema 'restaurante'
       // 🔧 MULTI-TABLE FIX: Get reservation data first
       const { data: reservation, error: reservationError } = await supabase
-        .schema('restaurante')
+        .schema('public')
         .from('reservations')
         .select(`
           *,
@@ -312,7 +342,7 @@ ID: ${emailData.reservationId}
         console.log('🔧 Loading multiple tables for reservation:', reservation.table_ids)
 
         const { data: tables, error: tablesError } = await supabase
-          .schema('restaurante')
+          .schema('public')
           .from('tables')
           .select('*')
           .in('id', reservation.table_ids)
@@ -328,7 +358,7 @@ ID: ${emailData.reservationId}
         console.log('🔧 Loading legacy single table:', reservation.tableId)
 
         const { data: table, error: tableError } = await supabase
-          .schema('restaurante')
+          .schema('public')
           .from('tables')
           .select('*')
           .eq('id', reservation.tableId)
@@ -390,6 +420,9 @@ ID: ${emailData.reservationId}
       }
     }
 
+    // ✅ Get restaurant data
+    const restaurantData = await this.getRestaurantDataForTemplate()
+
     return {
       // Customer data (DYNAMIC from DB)
       customerName: reservation.customerName,
@@ -438,19 +471,32 @@ ID: ${emailData.reservationId}
       branding: emailConfig.branding,
 
       // Restaurant data (DYNAMIC from real DB - NO MORE HARDCODED)
-      ...(await this.getRestaurantDataForTemplate())
+      restaurantName: restaurantData.name,
+      restaurantEmail: restaurantData.email,
+      restaurantPhone: restaurantData.phone,
+      address: restaurantData.address,
+      tripadvisorUrl: restaurantData.tripadvisorUrl,
+      instagramUrl: restaurantData.instagramUrl, // ✅ NEW
+      facebookUrl: restaurantData.facebookUrl, // ✅ NEW
+      whatsappNumber: restaurantData.whatsappNumber // ✅ NEW
     }
   }
 
   /**
    * Get restaurant data for email templates (DYNAMIC from real DB)
+   * ✅ UPDATED: Returns address, social URLs, and tripadvisorUrl
    */
   private async getRestaurantDataForTemplate() {
     const restaurantInfo = await getEmailRestaurantInfo()
     return {
-      restaurantName: restaurantInfo.name,
-      restaurantEmail: restaurantInfo.email,
-      restaurantPhone: restaurantInfo.phone
+      name: restaurantInfo.name,
+      email: restaurantInfo.email,
+      phone: restaurantInfo.phone,
+      address: restaurantInfo.address,
+      tripadvisorUrl: restaurantInfo.tripadvisorUrl,
+      instagramUrl: restaurantInfo.instagramUrl, // ✅ NEW
+      facebookUrl: restaurantInfo.facebookUrl, // ✅ NEW
+      whatsappNumber: restaurantInfo.whatsappNumber // ✅ NEW
     }
   }
 
@@ -489,7 +535,7 @@ ID: ${emailData.reservationId}
         text,
         // FIXED: Removed manual Content-Type header - Nodemailer handles multipart automatically
         headers: {
-          'X-Mailer': 'Enigma Cocina Con Alma Email System',
+          'X-Mailer': `${enhancedEmailData.restaurantName || 'Restaurant'} Email System`, // ✅ Dynamic
           'X-Email-Type': emailType
         }
       }
@@ -543,7 +589,7 @@ ID: ${emailData.reservationId}
         text,
         // FIXED: Removed manual Content-Type header - Nodemailer handles multipart automatically
         headers: {
-          'X-Mailer': 'Enigma Cocina Con Alma Email System',
+          'X-Mailer': `${templateData.restaurantName || 'Restaurant'} Email System`, // ✅ Dynamic
           'X-Email-Type': emailType
         }
       }
@@ -604,34 +650,38 @@ ID: ${emailData.reservationId}
 
   /**
    * Generate dynamic email subjects
+   * ✅ UPDATED: Uses restaurantName from data (DB)
    */
   private getEmailSubject(emailType: EmailType, data: EmailTemplateData): string {
+    // ✅ USE restaurantName from data (comes from DB)
+    const restaurantName = data.restaurantName || 'Tu Restaurante'
+
     switch (emailType) {
       case EmailType.ReservationCreated:
-        return `Nueva reserva recibida - ${data.reservationDate} - Enigma Cocina Con Alma`
+        return `Nueva reserva recibida - ${data.reservationDate} - ${restaurantName}`
 
       case EmailType.ReservationConfirmed:
-        return `¡Reserva confirmada! - ${data.reservationDate} - Enigma Cocina Con Alma`
+        return `¡Reserva confirmada! - ${data.reservationDate} - ${restaurantName}`
 
       case EmailType.ReservationReminder:
-        return `Recordatorio: Tu reserva es hoy - ${data.reservationTime} - Enigma Cocina Con Alma`
+        return `Recordatorio: Tu reserva es hoy - ${data.reservationTime} - ${restaurantName}`
 
       case EmailType.ReservationReview:
-        return `¿Cómo fue tu experiencia? - Enigma Cocina Con Alma`
+        return `¿Cómo fue tu experiencia? - ${restaurantName}`
 
       case EmailType.ReservationCancelled:
-        return `Reserva cancelada - Esperamos verte pronto - Enigma Cocina Con Alma`
+        return `Reserva cancelada - Esperamos verte pronto - ${restaurantName}`
 
       case EmailType.ReservationModified:
-        return `Reserva modificada - Confirmación pendiente - ${data.reservationDate} - Enigma Cocina Con Alma`
+        return `Reserva modificada - Confirmación pendiente - ${data.reservationDate} - ${restaurantName}`
 
       case EmailType.CustomMessage:
         // For custom messages, use the custom subject or fallback
         const customData = data as CustomEmailData
-        return customData.customSubject || `Mensaje personalizado - ${data.restaurantName}`
+        return customData.customSubject || `Mensaje personalizado - ${restaurantName}`
 
       default:
-        return `Notificación de reserva - Enigma Cocina Con Alma`
+        return `Notificación de reserva - ${restaurantName}`
     }
   }
 
@@ -649,7 +699,7 @@ ID: ${emailData.reservationId}
       const supabase = createDirectAdminClient()
 
       const { error } = await supabase
-        .schema('restaurante')
+        .schema('public')
         .from('email_logs')
         .insert({
           reservation_id: reservationId,

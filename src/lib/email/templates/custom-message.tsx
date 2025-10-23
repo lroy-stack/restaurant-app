@@ -65,7 +65,7 @@ const MESSAGE_TEMPLATES = {
 const replaceVariables = (text: string, data: CustomEmailData): string => {
   return text
     .replace(/{customerName}/g, data.customerName || 'Estimado cliente')
-    .replace(/{restaurantName}/g, data.restaurantName || 'Enigma Cocina Con Alma')
+    .replace(/{restaurantName}/g, data.restaurantName || 'Tu Restaurante') // ✅ Generic fallback
     .replace(/{totalVisits}/g, String(data.clientContext?.totalVisits || 0))
     .replace(/{lastVisit}/g, data.clientContext?.lastVisit || '')
     .replace(/{averageSpending}/g, String(data.clientContext?.averageSpending || 0))
@@ -106,6 +106,11 @@ export const CustomMessageEmail = (data: CustomEmailData) => {
       restaurantName={data.restaurantName}
       restaurantEmail={data.restaurantEmail}
       restaurantPhone={data.restaurantPhone}
+      address={data.address}
+      instagramUrl={data.instagramUrl}
+      facebookUrl={data.facebookUrl}
+      whatsappNumber={data.whatsappNumber}
+      tripadvisorUrl={data.tripadvisorUrl}
       branding={data.branding}
     >
       {/* Message Type Badge */}

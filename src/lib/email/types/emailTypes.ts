@@ -53,6 +53,11 @@ export interface EmailTemplateData {
   restaurantName: string
   restaurantEmail: string
   restaurantPhone: string
+  address: string
+  tripadvisorUrl?: string
+  instagramUrl?: string // ✅ NEW
+  facebookUrl?: string // ✅ NEW
+  whatsappNumber?: string // ✅ NEW
   reservationStatus: 'PENDING' | 'CONFIRMED' | 'SEATED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW'
 
   // CENTRALIZED CONFIG

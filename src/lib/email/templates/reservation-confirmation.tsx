@@ -53,6 +53,11 @@ export const ReservationConfirmationEmail = ({
   restaurantName,
   restaurantEmail,
   restaurantPhone,
+  address,
+  instagramUrl,
+  facebookUrl,
+  whatsappNumber,
+  tripadvisorUrl,
   reservationStatus,
   urls,
   branding
@@ -65,6 +70,11 @@ export const ReservationConfirmationEmail = ({
       restaurantName={restaurantName}
       restaurantEmail={restaurantEmail}
       restaurantPhone={restaurantPhone}
+      address={address}
+      instagramUrl={instagramUrl}
+      facebookUrl={facebookUrl}
+      whatsappNumber={whatsappNumber}
+      tripadvisorUrl={tripadvisorUrl}
       branding={branding}
     >
       {/* Greeting - DYNAMIC customer name */}

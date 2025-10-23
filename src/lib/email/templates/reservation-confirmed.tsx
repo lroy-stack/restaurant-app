@@ -53,6 +53,11 @@ export const ReservationConfirmedEmail = ({
   restaurantName,
   restaurantEmail,
   restaurantPhone,
+  address,
+  instagramUrl,
+  facebookUrl,
+  whatsappNumber,
+  tripadvisorUrl,
   urls,
   branding
 }: ReservationConfirmedEmailProps) => {
@@ -64,6 +69,11 @@ export const ReservationConfirmedEmail = ({
       restaurantName={restaurantName}
       restaurantEmail={restaurantEmail}
       restaurantPhone={restaurantPhone}
+      address={address}
+      instagramUrl={instagramUrl}
+      facebookUrl={facebookUrl}
+      whatsappNumber={whatsappNumber}
+      tripadvisorUrl={tripadvisorUrl}
       branding={branding}
     >
       {/* Modern Confirmation Banner */}

@@ -35,6 +35,11 @@ export const ReservationCancelledEmail = ({
   restaurantName,
   restaurantEmail,
   restaurantPhone,
+  address,
+  instagramUrl,
+  facebookUrl,
+  whatsappNumber,
+  tripadvisorUrl,
   urls
 }: ReservationCancelledEmailProps) => {
   const preview = `Tu reserva en ${restaurantName} para el ${reservationDate} ha sido cancelada`
@@ -45,6 +50,11 @@ export const ReservationCancelledEmail = ({
       restaurantName={restaurantName}
       restaurantEmail={restaurantEmail}
       restaurantPhone={restaurantPhone}
+      address={address || ''}
+      instagramUrl={instagramUrl}
+      facebookUrl={facebookUrl}
+      whatsappNumber={whatsappNumber}
+      tripadvisorUrl={tripadvisorUrl}
     >
       {/* Header simple */}
       <Section style={cancellationBanner}>
